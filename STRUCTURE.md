@@ -8,7 +8,10 @@
 ├── Directory.Packages.props
 ├── docs/
 │   ├── audits/
-│   │   └── repository-audit-2026-04-14.md
+│   │   ├── assessment-coding-agent-usefulness.md
+│   │   ├── maintainer-review.md
+│   │   ├── repository-audit-2026-04-14.md
+│   │   └── review-requirements.md
 │   ├── decisions/
 │   │   ├── adrs
 │   │   ├── decision-index.md
@@ -70,6 +73,7 @@
     │   ├── MdEditCommandTests.cs
     │   ├── OrientCommandTests.cs
     │   ├── OutlineCommandTests.cs
+    │   ├── SearchCommandTests.cs
     │   ├── StatusCommandTests.cs
     │   ├── Steward.Cli.Tests.csproj
     │   ├── TextFormatterTests.cs
@@ -94,12 +98,14 @@
     │   ├── PathPolicyEngineTests.cs
     │   ├── ProfileMergerTests.cs
     │   ├── RequiredArtifactRuleTests.cs
+    │   ├── RuleRegistryTests.cs
     │   ├── SearchEngineTests.cs
     │   ├── SecretFilterTests.cs
     │   ├── SectionSizeRuleTests.cs
     │   ├── Steward.Core.Tests.csproj
     │   ├── StructuralEditorTests.cs
-    │   └── ValidationEngineTests.cs
+    │   ├── ValidationEngineTests.cs
+    │   └── WellKnownRolesTests.cs
     └── Steward.TestFixtures/
         ├── InMemoryFileSystem.cs
         └── Steward.TestFixtures.csproj

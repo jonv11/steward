@@ -4,23 +4,68 @@ repository:
   type: tool
 
 artifacts:
+  # Core identity
   - path: README.md
     role: readme
-    description: Project overview and quick start
+    description: Project overview, quick start, command reference, and configuration guide
     required: true
+
+  # Requirements and specification
   - path: repository-steward-master-requirements.md
     role: requirements
-    description: Master requirements document
+    description: Master requirements document (MRD-0001) — original source of requirements
     required: true
+
+  - path: docs/requirements/PRD.md
+    role: requirements
+    description: Canonical product requirements document — authoritative living specification
+    required: true
+
+  # Current state
+  - path: docs/implementation-status.md
+    role: state-document
+    description: Implementation status by milestone — authoritative current-state view
+    required: false
+
+  # Navigation and planning
   - path: docs/planning-index.md
     role: planning
-    description: Planning document index
+    description: Central navigation hub for all planning, decision, and requirements artifacts
+    required: false
+
+  - path: docs/decisions/decision-index.md
+    role: reference
+    description: Index of all accepted RFCs and ADRs with links and status
+    required: false
+
+  - path: docs/planning/milestone-plan.md
+    role: planning
+    description: Detailed milestone plan from v0.1.0 through v1.0.0
+    required: false
+
+  # Audits
+  - path: docs/audits/repository-audit-2026-04-14.md
+    role: audit
+    description: Release-readiness audit and contract-alignment review (April 2026)
+    required: false
+
+  # Build
+  - path: steward.sln
+    role: build
+    description: .NET solution file — entry point for build and test
+    required: false
+
+  # Generated
+  - path: STRUCTURE.md
+    role: generated
+    description: Auto-generated repository structure document (maintained by steward maintain)
     required: false
 
 governance:
   section_size_warning_threshold: 500
   start_here:
     - README.md
+    - docs/implementation-status.md
     - docs/planning-index.md
 
 validation:
@@ -37,4 +82,6 @@ maintenance:
           - ".git/**"
           - "**/bin/**"
           - "**/obj/**"
+          - "**/TestResults/**"
+          - "**/publish/**"
           - ".steward/**"

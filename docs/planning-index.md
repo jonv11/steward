@@ -30,6 +30,7 @@ Central navigation for all planning and decision artifacts.
 | [ADR-007 Test Strategy](decisions/adrs/ADR-007-test-strategy.md) | Frameworks, coverage, test types |
 | [ADR-008 .gitignore Handling](decisions/adrs/ADR-008-gitignore-handling.md) | Ignore-file parsing approach |
 | [ADR-009 Packaging and Distribution](decisions/adrs/ADR-009-packaging-distribution.md) | dotnet tool, single-file publish |
+| [ADR-010 Agent Usefulness Improvements](decisions/adrs/ADR-010-agent-usefulness-improvements.md) | Targeted improvements for coding-agent ergonomics |
 
 ## Implementation Planning
 
@@ -43,8 +44,10 @@ Central navigation for all planning and decision artifacts.
 ## Audits
 
 | Document | Purpose |
-|----------|---------|
+| -------- | ------- |
 | [Repository Audit — 2026-04-14](audits/repository-audit-2026-04-14.md) | Requirement-driven release audit and contract-alignment review |
+| [Coding-Agent Usefulness Assessment — 2026-04-14](audits/assessment-coding-agent-usefulness.md) | Per-command assessment of Steward's value in the agent terminal workflow |
+| [Maintainer Review — 2026-04-14](audits/maintainer-review.md) | Maintainer-perspective gaps and improvement requests for rule enforcement |
 
 ## Source Materials
 
