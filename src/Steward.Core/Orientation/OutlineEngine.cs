@@ -26,11 +26,11 @@ public sealed class OutlineEngine
             {
                 try
                 {
-                    var fullPath = Path.Combine(rootPath, file.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+                    var fullPath = Path.Combine(rootPath, file.RelativePath);
                     var lines = _fileSystem.ReadAllLines(fullPath);
                     lineCount = lines.Length;
                 }
-                catch
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
                     lineCount = null;
                 }

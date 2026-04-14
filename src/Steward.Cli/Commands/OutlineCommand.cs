@@ -4,7 +4,6 @@ using Steward.Core.Abstractions;
 using Steward.Core.Discovery;
 using Steward.Core.Formatting;
 using Steward.Core.Orientation;
-using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -42,16 +41,19 @@ public static class OutlineCommand
 
         command.SetAction((parseResult) =>
         {
-            var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
-            var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
             var path = parseResult.GetValue(pathArgument);
             var depth = parseResult.GetValue(depthOption);
             var sizes = parseResult.GetValue(sizesOption);
             var lines = parseResult.GetValue(linesOption);
 
-            var formatter = CreateFormatter(output, noColor);
+            var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
+            var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+            var formatter = CommandSetup.CreateFormatter(output, noColor);
             var fileSystem = new PhysicalFileSystem();
 
+            // outline takes an explicit path argument, not necessarily CWD, so we
+            // cannot use CommandSetup.Build() (which roots discovery at CWD). We
+            // wire up discovery directly against the resolved target path instead.
             var rootPath = Path.GetFullPath(path ?? ".");
 
             var ignoreFilter = GitIgnoreFilter.Load(rootPath, fileSystem);
@@ -88,14 +90,5 @@ public static class OutlineCommand
         });
 
         return command;
-    }
-
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
-        };
     }
 }

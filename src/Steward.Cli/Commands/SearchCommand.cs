@@ -1,11 +1,7 @@
 using System.CommandLine;
 using Steward.Core;
-using Steward.Core.Abstractions;
-using Steward.Core.Configuration;
-using Steward.Core.Discovery;
 using Steward.Core.Formatting;
 using Steward.Core.Search;
-using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -23,6 +19,7 @@ public static class SearchCommand
             Description = "Search mode: content, headings, or all",
             DefaultValueFactory = _ => "all"
         };
+        modeOption.AcceptOnlyFromAmong("all", "content", "headings");
         command.Add(modeOption);
 
         var scopeOption = new Option<string?>("--scope", "-s")
@@ -40,13 +37,11 @@ public static class SearchCommand
 
         command.SetAction((parseResult) =>
         {
-            var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
-            var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var configPath = parseResult.GetValue(GlobalOptionsSetup.ConfigOption);
             var query = parseResult.GetValue(queryArg)!;
             var modeStr = parseResult.GetValue(modeOption)!;
             var scope = parseResult.GetValue(scopeOption);
             var max = parseResult.GetValue(maxOption);
+            var ctx = CommandSetup.Build(parseResult);
 
             var mode = modeStr.ToLowerInvariant() switch
             {
@@ -55,32 +50,14 @@ public static class SearchCommand
                 _ => SearchMode.All
             };
 
-            var formatter = CreateFormatter(output, noColor);
-            var fileSystem = new PhysicalFileSystem();
-            var rootPath = Directory.GetCurrentDirectory();
-
-            // Load config/policy
-            var configLoader = new ConfigLoader(fileSystem);
-            var configDir = configLoader.FindConfigDirectory(rootPath, configPath);
-            RepositoryPolicy? policy = null;
-            if (configDir != null)
-            {
-                policy = configLoader.LoadPolicy(configDir);
-            }
-
-            // Discover files
-            var ignoreFilter = GitIgnoreFilter.Load(rootPath, fileSystem);
-            var discoveryService = new FileDiscoveryService(fileSystem, ignoreFilter);
-            var files = discoveryService.Discover(rootPath);
-
             // Search
-            var engine = new SearchEngine(fileSystem, rootPath);
-            var result = engine.Search(query, files, mode, scope, policy, max);
+            var engine = new SearchEngine(ctx.FileSystem, ctx.RootPath);
+            var result = engine.Search(query, ctx.Files!, mode, scope, ctx.Policy, max);
 
             // Output
-            if (output == OutputFormat.Json)
+            if (ctx.OutputFormat == OutputFormat.Json)
             {
-                formatter.WriteObject(new
+                ctx.Formatter.WriteObject(new
                 {
                     query = result.Query,
                     mode = result.Mode.ToString().ToLowerInvariant(),
@@ -103,27 +80,18 @@ public static class SearchCommand
                 {
                     var context = match.HeadingContext != null ? $" [{match.HeadingContext}]" : "";
                     var kind = match.Kind == SearchMatchKind.Heading ? " (heading)" : "";
-                    formatter.WriteMessage($"{match.Path}:{match.Line}:{match.Column}{kind}{context}");
-                    formatter.WriteMessage($"  {match.Snippet}");
+                    ctx.Formatter.WriteMessage($"{match.Path}:{match.Line}:{match.Column}{kind}{context}");
+                    ctx.Formatter.WriteMessage($"  {match.Snippet}");
                 }
 
-                formatter.WriteMessage("");
+                ctx.Formatter.WriteMessage("");
                 var truncMsg = result.Truncated ? $" (showing {result.Matches.Count})" : "";
-                formatter.WriteMessage($"{result.TotalMatches} match(es) found{truncMsg}");
+                ctx.Formatter.WriteMessage($"{result.TotalMatches} match(es) found{truncMsg}");
             }
 
             return ExitCodes.Success;
         });
 
         return command;
-    }
-
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
-        };
     }
 }

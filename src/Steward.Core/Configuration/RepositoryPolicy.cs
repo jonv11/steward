@@ -63,6 +63,9 @@ public sealed class ValidationConfig
 
     [YamlMember(Alias = "disabled_rules")]
     public List<string>? DisabledRules { get; set; }
+
+    [YamlMember(Alias = "required_frontmatter_fields")]
+    public List<string>? RequiredFrontmatterFields { get; set; }
 }
 
 public sealed class MaintenanceConfig

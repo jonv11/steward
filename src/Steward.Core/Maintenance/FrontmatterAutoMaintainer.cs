@@ -38,7 +38,8 @@ public sealed class FrontmatterAutoMaintainer : IArtifactMaintainer
             if (!context.FileSystem.FileExists(fullPath)) continue;
 
             var content = context.FileSystem.ReadAllText(fullPath);
-            var doc = MarkdownParser.Parse(fullPath, content);
+            var doc = context.DocumentCache?.GetOrParse(file.RelativePath)
+                ?? MarkdownParser.Parse(fullPath, content);
 
             foreach (var (field, source) in config.Fields)
             {

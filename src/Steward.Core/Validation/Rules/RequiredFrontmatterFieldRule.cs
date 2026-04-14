@@ -16,19 +16,8 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
     public Task<IReadOnlyList<Diagnostic>> EvaluateAsync(ValidationContext context)
     {
         var diagnostics = new List<Diagnostic>();
-        var requiredFields = context.Policy?.Governance?.StartHere; // reuse or add dedicated config
 
-        // If no policy defines required frontmatter fields, skip
-        if (context.Policy?.Validation?.SeverityOverrides == null &&
-            context.Policy?.Governance?.StartHere == null)
-            return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
-
-        // Look for required_frontmatter_fields in validation config
-        // Convention: severity_overrides keys starting with "frontmatter." are required fields
-        var requiredFromPolicy = context.Policy?.Validation?.SeverityOverrides?
-            .Where(kv => kv.Key.StartsWith("frontmatter.", StringComparison.OrdinalIgnoreCase))
-            .Select(kv => kv.Key[12..])
-            .ToList() ?? [];
+        var requiredFromPolicy = context.Policy?.Validation?.RequiredFrontmatterFields ?? [];
 
         if (requiredFromPolicy.Count == 0)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
@@ -38,9 +27,9 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
         {
             try
             {
-                var content = context.FileSystem.ReadAllText(
-                    Path.Combine(context.RepositoryRoot, file.RelativePath));
-                var doc = MarkdownParser.Parse(file.RelativePath, content);
+                var doc = context.DocumentCache?.GetOrParse(file.RelativePath)
+                    ?? MarkdownParser.Parse(file.RelativePath,
+                        context.FileSystem.ReadAllText(Path.Combine(context.RepositoryRoot, file.RelativePath)));
 
                 if (doc.Frontmatter == null)
                 {
@@ -72,9 +61,17 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
                     }
                 }
             }
-            catch
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // Skip files that can't be read
+                diagnostics.Add(new Diagnostic(
+                    RuleId: RuleId,
+                    Severity: DiagnosticSeverity.Warning,
+                    Category: Category,
+                    Path: file.RelativePath,
+                    Line: null,
+                    Message: $"Could not read file '{file.RelativePath}': {ex.Message}",
+                    Remediation: "Check file permissions and encoding.",
+                    Source: null));
             }
         }
 

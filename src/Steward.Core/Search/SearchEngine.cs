@@ -1,3 +1,4 @@
+using DotNet.Globbing;
 using Steward.Core.Abstractions;
 using Steward.Core.Configuration;
 using Steward.Core.Discovery;
@@ -50,7 +51,7 @@ public sealed class SearchEngine
                     SearchHeadings(query, file.RelativePath, lines, matches, ref totalMatches, maxResults);
                 }
             }
-            catch
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 // Skip unreadable files
             }
@@ -139,14 +140,13 @@ public sealed class SearchEngine
         if (string.IsNullOrEmpty(scopeRole) || policy?.Artifacts == null)
             return files;
 
-        var rolePaths = new HashSet<string>(
-            policy.Artifacts
-                .Where(a => string.Equals(a.Role, scopeRole, StringComparison.OrdinalIgnoreCase) && a.Path != null)
-                .Select(a => a.Path!),
-            StringComparer.OrdinalIgnoreCase);
+        var roleGlobs = policy.Artifacts
+            .Where(a => string.Equals(a.Role, scopeRole, StringComparison.OrdinalIgnoreCase) && a.Path != null)
+            .Select(a => Glob.Parse(a.Path!))
+            .ToList();
 
-        if (rolePaths.Count == 0) return files;
+        if (roleGlobs.Count == 0) return files;
 
-        return files.Where(f => rolePaths.Contains(f.RelativePath)).ToList();
+        return files.Where(f => roleGlobs.Any(g => g.IsMatch(f.RelativePath))).ToList();
     }
 }

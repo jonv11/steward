@@ -1,5 +1,9 @@
 namespace Steward.Core.Markdown;
 
+using DiffPlex;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
+
 /// <summary>
 /// Structural editor: performs raw-text edits guided by structural model positions.
 /// All operations return EditResult without modifying the input.
@@ -208,49 +212,29 @@ public sealed class EditResult
     {
         if (!HasChanges) return "";
 
-        var oldLines = OriginalContent.Split('\n');
-        var newLines = NewContent.Split('\n');
+        var diffBuilder = new InlineDiffBuilder(new Differ());
+        var diff = diffBuilder.BuildDiffModel(OriginalContent, NewContent);
 
-        var diff = new System.Text.StringBuilder();
-        diff.AppendLine("--- a/file");
-        diff.AppendLine("+++ b/file");
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("--- a/file");
+        sb.AppendLine("+++ b/file");
 
-        // Simple line-by-line diff
-        var maxLen = Math.Max(oldLines.Length, newLines.Length);
-        var i = 0;
-        while (i < maxLen)
+        foreach (var line in diff.Lines)
         {
-            var oldLine = i < oldLines.Length ? oldLines[i] : null;
-            var newLine = i < newLines.Length ? newLines[i] : null;
-
-            if (oldLine != newLine)
+            switch (line.Type)
             {
-                // Find range of changed lines
-                var start = i;
-                while (i < maxLen)
-                {
-                    oldLine = i < oldLines.Length ? oldLines[i] : null;
-                    newLine = i < newLines.Length ? newLines[i] : null;
-                    if (oldLine == newLine) break;
-                    i++;
-                }
-
-                diff.AppendLine($"@@ -{start + 1},{i - start} +{start + 1},{i - start} @@");
-                for (var j = start; j < i; j++)
-                {
-                    if (j < oldLines.Length) diff.AppendLine($"-{oldLines[j]}");
-                }
-                for (var j = start; j < i; j++)
-                {
-                    if (j < newLines.Length) diff.AppendLine($"+{newLines[j]}");
-                }
-            }
-            else
-            {
-                i++;
+                case ChangeType.Inserted:
+                    sb.AppendLine($"+{line.Text}");
+                    break;
+                case ChangeType.Deleted:
+                    sb.AppendLine($"-{line.Text}");
+                    break;
+                case ChangeType.Unchanged:
+                    sb.AppendLine($" {line.Text}");
+                    break;
             }
         }
 
-        return diff.ToString();
+        return sb.ToString();
     }
 }

@@ -1,3 +1,6 @@
+using Markdig;
+using Markdig.Syntax;
+using Markdig.Syntax.Inlines;
 using Steward.Core.Abstractions;
 using Steward.Core.Markdown;
 
@@ -53,43 +56,33 @@ public sealed class BrokenInternalLinkRule : IValidationRule
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
     }
 
+    private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
+        .UsePreciseSourceLocation()
+        .Build();
+
     internal static List<(string Target, int Line)> ExtractInternalLinks(string content)
     {
         var results = new List<(string, int)>();
-        var lines = content.Split('\n');
+        var document = Markdig.Markdown.Parse(content, Pipeline);
 
-        for (var i = 0; i < lines.Length; i++)
+        foreach (var link in document.Descendants<LinkInline>())
         {
-            var line = lines[i];
-            var pos = 0;
+            var url = link.Url;
+            if (string.IsNullOrEmpty(url)) continue;
 
-            while (pos < line.Length)
+            // Strip fragment
+            var fragmentIdx = url.IndexOf('#');
+            if (fragmentIdx >= 0)
+                url = url[..fragmentIdx];
+
+            // Strip query string
+            var queryIdx = url.IndexOf('?');
+            if (queryIdx >= 0)
+                url = url[..queryIdx];
+
+            if (url.Length > 0 && IsInternalLink(url))
             {
-                var linkStart = line.IndexOf("](", pos, StringComparison.Ordinal);
-                if (linkStart < 0) break;
-
-                var targetStart = linkStart + 2;
-                var targetEnd = line.IndexOf(')', targetStart);
-                if (targetEnd < 0) break;
-
-                var target = line[targetStart..targetEnd];
-
-                // Strip fragment
-                var fragmentIdx = target.IndexOf('#');
-                if (fragmentIdx >= 0)
-                    target = target[..fragmentIdx];
-
-                // Strip query string
-                var queryIdx = target.IndexOf('?');
-                if (queryIdx >= 0)
-                    target = target[..queryIdx];
-
-                if (target.Length > 0 && IsInternalLink(target))
-                {
-                    results.Add((target, i + 1));
-                }
-
-                pos = targetEnd + 1;
+                results.Add((url, link.Line + 1)); // Markdig lines are 0-based
             }
         }
 

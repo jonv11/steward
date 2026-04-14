@@ -1,6 +1,7 @@
 using Steward.Core.Abstractions;
 using Steward.Core.Configuration;
 using Steward.Core.Discovery;
+using Steward.Core.Markdown;
 
 namespace Steward.Core.Validation;
 
@@ -21,4 +22,5 @@ public sealed class ValidationContext
     public required IFileSystem FileSystem { get; init; }
     public required string RepositoryRoot { get; init; }
     public CancellationToken CancellationToken { get; init; }
+    public DocumentCache? DocumentCache { get; init; }
 }

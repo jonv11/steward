@@ -24,26 +24,6 @@ public sealed class ManagedSectionMaintainer : IArtifactMaintainer
 
         var content = context.FileSystem.ReadAllText(targetPath);
         var sectionId = config.ManagedSection ?? config.Id;
-        var beginMarker = $"<!-- steward:begin id=\"{sectionId}\" owner=\"steward\" -->";
-        var endMarker = "<!-- steward:end -->";
-
-        var lines = content.Split('\n').ToList();
-        var beginIdx = lines.FindIndex(l => l.TrimEnd('\r').Contains(beginMarker, StringComparison.OrdinalIgnoreCase));
-        var endIdx = beginIdx >= 0
-            ? lines.FindIndex(beginIdx + 1, l => l.TrimEnd('\r').Contains(endMarker, StringComparison.OrdinalIgnoreCase))
-            : -1;
-
-        if (beginIdx < 0 || endIdx < 0)
-        {
-            return new MaintenanceAction
-            {
-                ArtifactId = config.Id,
-                ArtifactPath = config.Path,
-                Type = Type,
-                Description = $"Managed section '{sectionId}' markers not found.",
-                HasChanges = false
-            };
-        }
 
         // Compute expected content from source
         var expectedInner = ComputeExpectedContent(config, context);
@@ -59,11 +39,20 @@ public sealed class ManagedSectionMaintainer : IArtifactMaintainer
             };
         }
 
-        var newLines = new List<string>(lines.Take(beginIdx + 1));
-        newLines.AddRange(expectedInner.Split('\n'));
-        newLines.AddRange(lines.Skip(endIdx));
+        var expected = ManagedRegionRewriter.Replace(content, sectionId, expectedInner);
 
-        var expected = string.Join('\n', newLines);
+        if (expected == null)
+        {
+            return new MaintenanceAction
+            {
+                ArtifactId = config.Id,
+                ArtifactPath = config.Path,
+                Type = Type,
+                Description = $"Managed section '{sectionId}' markers not found.",
+                HasChanges = false
+            };
+        }
+
         var hasChanges = content != expected;
 
         return new MaintenanceAction

@@ -20,10 +20,7 @@ public class FrontmatterValidationRuleTests
         {
             Validation = new ValidationConfig
             {
-                SeverityOverrides = new Dictionary<string, string>
-                {
-                    ["frontmatter.title"] = "error"
-                }
+                RequiredFrontmatterFields = ["title"]
             }
         };
 
@@ -54,10 +51,7 @@ public class FrontmatterValidationRuleTests
         {
             Validation = new ValidationConfig
             {
-                SeverityOverrides = new Dictionary<string, string>
-                {
-                    ["frontmatter.title"] = "error"
-                }
+                RequiredFrontmatterFields = ["title"]
             }
         };
 
@@ -87,10 +81,7 @@ public class FrontmatterValidationRuleTests
         {
             Validation = new ValidationConfig
             {
-                SeverityOverrides = new Dictionary<string, string>
-                {
-                    ["frontmatter.title"] = "error"
-                }
+                RequiredFrontmatterFields = ["title"]
             }
         };
 
@@ -137,10 +128,7 @@ public class FrontmatterValidationRuleTests
         {
             Validation = new ValidationConfig
             {
-                SeverityOverrides = new Dictionary<string, string>
-                {
-                    ["frontmatter.title"] = "error"
-                }
+                RequiredFrontmatterFields = ["title"]
             }
         };
 

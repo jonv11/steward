@@ -1,11 +1,8 @@
 using System.CommandLine;
 using Steward.Core;
-using Steward.Core.Abstractions;
-using Steward.Core.Configuration;
-using Steward.Core.Discovery;
 using Steward.Core.Formatting;
 using Steward.Core.Maintenance;
-using Steward.Cli.Formatting;
+using Steward.Core.Markdown;
 
 namespace Steward.Cli.Commands;
 
@@ -30,48 +27,33 @@ public static class MaintainCommand
 
         command.SetAction(parseResult =>
         {
-            var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
-            var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var configPath = parseResult.GetValue(GlobalOptionsSetup.ConfigOption);
             var scope = parseResult.GetValue(scopeOption);
             var apply = parseResult.GetValue(applyOption);
+            var ctx = CommandSetup.Build(parseResult);
 
-            var formatter = CreateFormatter(output, noColor);
-            var fileSystem = new PhysicalFileSystem();
-            var rootPath = Directory.GetCurrentDirectory();
-
-            // Load config and policy
-            var configLoader = new ConfigLoader(fileSystem);
-            var configDir = configLoader.FindConfigDirectory(rootPath, configPath);
-
-            if (configDir == null)
+            if (ctx.ConfigDirectory == null)
             {
-                formatter.WriteError("No .steward configuration directory found. Run 'steward init' first.");
+                ctx.Formatter.WriteError("No .steward configuration directory found. Run 'steward init' first.");
                 return ExitCodes.UsageError;
             }
 
-            var policy = configLoader.LoadPolicy(configDir);
-
-            // Discover files
-            var ignoreFilter = GitIgnoreFilter.Load(rootPath, fileSystem);
-            var discoveryService = new FileDiscoveryService(fileSystem, ignoreFilter);
-            var files = discoveryService.Discover(rootPath);
-
             // Create maintenance context
+            var docCache = new DocumentCache(ctx.FileSystem, ctx.RootPath);
             var context = new MaintenanceContext
             {
-                RepositoryRoot = rootPath,
-                FileSystem = fileSystem,
-                Files = files
+                RepositoryRoot = ctx.RootPath,
+                FileSystem = ctx.FileSystem,
+                Files = ctx.Files!,
+                DocumentCache = docCache
             };
 
             // Evaluate
             var engine = new MaintenanceEngine();
-            var plan = engine.Evaluate(policy, context, scope);
+            var plan = engine.Evaluate(ctx.Policy, context, scope);
 
-            if (output == OutputFormat.Json)
+            if (ctx.OutputFormat == OutputFormat.Json)
             {
-                formatter.WriteObject(new
+                ctx.Formatter.WriteObject(new
                 {
                     hasChanges = plan.HasChanges,
                     actions = plan.Actions.Select(a => new
@@ -88,25 +70,25 @@ public static class MaintainCommand
             {
                 if (plan.Actions.Count == 0)
                 {
-                    formatter.WriteMessage("No maintenance artifacts configured.");
+                    ctx.Formatter.WriteMessage("No maintenance artifacts configured.");
                     return ExitCodes.Success;
                 }
 
                 foreach (var action in plan.Actions)
                 {
                     var status = action.HasChanges ? "MAINTAIN" : "OK      ";
-                    formatter.WriteMessage($"{status}  {action.ArtifactId}  {action.ArtifactPath}");
-                    formatter.WriteMessage($"  {action.Description}");
+                    ctx.Formatter.WriteMessage($"{status}  {action.ArtifactId}  {action.ArtifactPath}");
+                    ctx.Formatter.WriteMessage($"  {action.Description}");
                 }
 
-                formatter.WriteMessage("");
+                ctx.Formatter.WriteMessage("");
             }
 
             if (apply && plan.HasChanges)
             {
                 foreach (var action in plan.Actions.Where(a => a.HasChanges && a.ExpectedContent != null))
                 {
-                    var fullPath = Path.Combine(rootPath, action.ArtifactPath);
+                    var fullPath = Path.Combine(ctx.RootPath, action.ArtifactPath);
                     var dir = Path.GetDirectoryName(fullPath);
                     if (dir != null && !Directory.Exists(dir))
                         Directory.CreateDirectory(dir);
@@ -114,28 +96,19 @@ public static class MaintainCommand
                     File.WriteAllText(fullPath, action.ExpectedContent);
                 }
 
-                if (output != OutputFormat.Json)
+                if (ctx.OutputFormat != OutputFormat.Json)
                 {
-                    formatter.WriteMessage("Changes applied.");
+                    ctx.Formatter.WriteMessage("Changes applied.");
                 }
             }
-            else if (!apply && plan.HasChanges && output != OutputFormat.Json)
+            else if (!apply && plan.HasChanges && ctx.OutputFormat != OutputFormat.Json)
             {
-                formatter.WriteMessage("No changes applied. Run with --apply to commit changes.");
+                ctx.Formatter.WriteMessage("No changes applied. Run with --apply to commit changes.");
             }
 
             return ExitCodes.Success;
         });
 
         return command;
-    }
-
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
-        };
     }
 }

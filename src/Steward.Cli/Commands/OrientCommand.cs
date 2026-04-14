@@ -1,10 +1,7 @@
 using System.CommandLine;
 using Steward.Core;
-using Steward.Core.Abstractions;
-using Steward.Core.Discovery;
 using Steward.Core.Formatting;
 using Steward.Core.Orientation;
-using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -23,24 +20,15 @@ public static class OrientCommand
 
         command.SetAction((parseResult) =>
         {
-            var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
-            var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
             var depth = parseResult.GetValue(depthOption);
-
-            var formatter = CreateFormatter(output, noColor);
-            var fileSystem = new PhysicalFileSystem();
-            var rootPath = Directory.GetCurrentDirectory();
-
-            var ignoreFilter = GitIgnoreFilter.Load(rootPath, fileSystem);
-            var discoveryService = new FileDiscoveryService(fileSystem, ignoreFilter);
-            var files = discoveryService.Discover(rootPath);
+            var ctx = CommandSetup.Build(parseResult);
 
             var engine = new OrientationEngine();
-            var result = engine.Orient(rootPath, files, depth);
+            var result = engine.Orient(ctx.RootPath, ctx.Files!, depth);
 
-            if (output == OutputFormat.Json)
+            if (ctx.OutputFormat == OutputFormat.Json)
             {
-                formatter.WriteObject(result);
+                ctx.Formatter.WriteObject(result);
             }
             else
             {
@@ -49,7 +37,7 @@ public static class OrientCommand
                     var indent = new string(' ', entry.Depth * 2);
                     var icon = entry.IsDirectory ? "📁" : "📄";
                     var label = $"[{entry.Classification}]";
-                    formatter.WriteMessage($"{indent}{icon} {entry.Path} {label}");
+                    ctx.Formatter.WriteMessage($"{indent}{icon} {entry.Path} {label}");
                 }
             }
 
@@ -57,14 +45,5 @@ public static class OrientCommand
         });
 
         return command;
-    }
-
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
-        };
     }
 }

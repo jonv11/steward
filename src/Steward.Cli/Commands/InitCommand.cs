@@ -1,9 +1,7 @@
 using System.CommandLine;
 using Steward.Core;
-using Steward.Core.Abstractions;
 using Steward.Core.Configuration;
 using Steward.Core.Formatting;
-using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -18,6 +16,7 @@ public static class InitCommand
             Description = "Profile to use: software, docs, mixed, knowledge, minimal",
             DefaultValueFactory = _ => "software"
         };
+        profileOption.AcceptOnlyFromAmong("software", "docs", "mixed", "knowledge", "minimal");
         command.Add(profileOption);
 
         command.SetAction((parseResult) =>
@@ -26,7 +25,7 @@ public static class InitCommand
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
             var profile = parseResult.GetValue(profileOption) ?? "software";
 
-            var formatter = CreateFormatter(output, noColor);
+            var formatter = CommandSetup.CreateFormatter(output, noColor);
             var rootPath = Directory.GetCurrentDirectory();
             var stewardDir = Path.Combine(rootPath, ".steward");
 
@@ -65,12 +64,4 @@ public static class InitCommand
         return command;
     }
 
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
-        };
-    }
 }

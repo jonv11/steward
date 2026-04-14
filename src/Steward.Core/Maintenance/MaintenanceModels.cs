@@ -1,3 +1,5 @@
+using Steward.Core.Markdown;
+
 namespace Steward.Core.Maintenance;
 
 /// <summary>
@@ -63,4 +65,5 @@ public sealed class MaintenanceContext
     public required string RepositoryRoot { get; init; }
     public required Abstractions.IFileSystem FileSystem { get; init; }
     public required IReadOnlyList<Discovery.DiscoveredFile> Files { get; init; }
+    public DocumentCache? DocumentCache { get; init; }
 }

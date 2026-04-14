@@ -1,12 +1,9 @@
 using System.CommandLine;
 using Steward.Core;
-using Steward.Core.Abstractions;
-using Steward.Core.Configuration;
-using Steward.Core.Discovery;
 using Steward.Core.Formatting;
+using Steward.Core.Markdown;
 using Steward.Core.Validation;
 using Steward.Core.Validation.Rules;
-using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -25,40 +22,18 @@ public static class CheckCommand
 
         command.SetAction((parseResult) =>
         {
-            var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
-            var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var configPath = parseResult.GetValue(GlobalOptionsSetup.ConfigOption);
-
-            var formatter = CreateFormatter(output, noColor);
-            var fileSystem = new PhysicalFileSystem();
-            var rootPath = Directory.GetCurrentDirectory();
-
-            // Load config and policy
-            var configLoader = new ConfigLoader(fileSystem);
-            var configDir = configLoader.FindConfigDirectory(rootPath, configPath);
-
-            RepositoryPolicy? policy = null;
-            PathPolicyDocument? pathPolicy = null;
-
-            if (configDir != null)
-            {
-                policy = configLoader.LoadPolicy(configDir);
-                pathPolicy = configLoader.LoadPathPolicy(configDir);
-            }
-
-            // Discover files
-            var ignoreFilter = GitIgnoreFilter.Load(rootPath, fileSystem);
-            var discoveryService = new FileDiscoveryService(fileSystem, ignoreFilter);
-            var files = discoveryService.Discover(rootPath);
+            var ctx = CommandSetup.Build(parseResult);
 
             // Create validation context
+            var docCache = new DocumentCache(ctx.FileSystem, ctx.RootPath);
             var context = new ValidationContext
             {
-                Policy = policy,
-                PathPolicy = pathPolicy,
-                TargetFiles = files,
-                FileSystem = fileSystem,
-                RepositoryRoot = rootPath
+                Policy = ctx.Policy,
+                PathPolicy = ctx.PathPolicy,
+                TargetFiles = ctx.Files!,
+                FileSystem = ctx.FileSystem,
+                RepositoryRoot = ctx.RootPath,
+                DocumentCache = docCache
             };
 
             // Run validation
@@ -78,9 +53,9 @@ public static class CheckCommand
             var result = engine.ValidateAsync(context).GetAwaiter().GetResult();
 
             // Output
-            if (output == OutputFormat.Json)
+            if (ctx.OutputFormat == OutputFormat.Json)
             {
-                formatter.WriteObject(result);
+                ctx.Formatter.WriteObject(result);
             }
             else
             {
@@ -99,30 +74,21 @@ public static class CheckCommand
                         : "";
 
                     var message = SecretFilter.Redact(diag.Message);
-                    formatter.WriteMessage($"[{severity}] {diag.RuleId} {location}: {message}");
+                    ctx.Formatter.WriteMessage($"[{severity}] {diag.RuleId} {location}: {message}");
 
                     if (diag.Remediation != null)
-                        formatter.WriteMessage($"         Fix: {diag.Remediation}");
+                        ctx.Formatter.WriteMessage($"         Fix: {diag.Remediation}");
                 }
 
-                formatter.WriteMessage("");
-                formatter.WriteMessage($"Files checked: {result.Summary.FilesChecked}");
-                formatter.WriteMessage($"Errors: {result.Summary.Errors}, Warnings: {result.Summary.Warnings}, Info: {result.Summary.Infos}");
-                formatter.WriteMessage(result.Summary.Pass ? "PASS" : "FAIL");
+                ctx.Formatter.WriteMessage("");
+                ctx.Formatter.WriteMessage($"Files checked: {result.Summary.FilesChecked}");
+                ctx.Formatter.WriteMessage($"Errors: {result.Summary.Errors}, Warnings: {result.Summary.Warnings}, Info: {result.Summary.Infos}");
+                ctx.Formatter.WriteMessage(result.Summary.Pass ? "PASS" : "FAIL");
             }
 
             return result.Summary.Pass ? ExitCodes.Success : ExitCodes.ValidationFailure;
         });
 
         return command;
-    }
-
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
-        };
     }
 }

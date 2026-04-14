@@ -5,7 +5,6 @@ using Steward.Core.Configuration;
 using Steward.Core.Discovery;
 using Steward.Core.Formatting;
 using Steward.Core.Maintenance;
-using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -17,72 +16,55 @@ public static class StatusCommand
 
         command.SetAction(parseResult =>
         {
-            var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
-            var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var configPath = parseResult.GetValue(GlobalOptionsSetup.ConfigOption);
+            var ctx = CommandSetup.Build(parseResult);
 
-            var formatter = CreateFormatter(output, noColor);
-            var fileSystem = new PhysicalFileSystem();
-            var rootPath = Directory.GetCurrentDirectory();
-
-            // Load config
-            var configLoader = new ConfigLoader(fileSystem);
-            var configDir = configLoader.FindConfigDirectory(rootPath, configPath);
-
-            if (configDir == null)
+            if (ctx.ConfigDirectory == null)
             {
-                formatter.WriteError("No .steward configuration directory found. Run 'steward init' first.");
+                ctx.Formatter.WriteError("No .steward configuration directory found. Run 'steward init' first.");
                 return ExitCodes.UsageError;
             }
 
-            var policy = configLoader.LoadPolicy(configDir);
-
-            // Discover files
-            var ignoreFilter = GitIgnoreFilter.Load(rootPath, fileSystem);
-            var discoveryService = new FileDiscoveryService(fileSystem, ignoreFilter);
-            var files = discoveryService.Discover(rootPath);
-
             // Cheap status checks
-            var status = ComputeStatus(policy, fileSystem, rootPath, files);
+            var status = ComputeStatus(ctx.Policy, ctx.FileSystem, ctx.RootPath, ctx.Files!);
 
-            if (output == OutputFormat.Json)
+            if (ctx.OutputFormat == OutputFormat.Json)
             {
-                formatter.WriteObject(status);
+                ctx.Formatter.WriteObject(status);
             }
             else
             {
-                formatter.WriteMessage($"Repository: {status.RepositoryName ?? "(unnamed)"}");
-                formatter.WriteMessage($"Files: {status.FileCount}");
-                formatter.WriteMessage("");
+                ctx.Formatter.WriteMessage($"Repository: {status.RepositoryName ?? "(unnamed)"}");
+                ctx.Formatter.WriteMessage($"Files: {status.FileCount}");
+                ctx.Formatter.WriteMessage("");
 
                 // Required artifacts
                 if (status.RequiredArtifacts.Count > 0)
                 {
-                    formatter.WriteMessage("Required Artifacts:");
+                    ctx.Formatter.WriteMessage("Required Artifacts:");
                     foreach (var a in status.RequiredArtifacts)
                     {
                         var icon = a.Present ? "OK" : "MISSING";
-                        formatter.WriteMessage($"  [{icon}] {a.Path} ({a.Role})");
+                        ctx.Formatter.WriteMessage($"  [{icon}] {a.Path} ({a.Role})");
                     }
-                    formatter.WriteMessage("");
+                    ctx.Formatter.WriteMessage("");
                 }
 
                 // Maintenance status
                 if (status.MaintenanceArtifacts.Count > 0)
                 {
-                    formatter.WriteMessage("Maintained Artifacts:");
+                    ctx.Formatter.WriteMessage("Maintained Artifacts:");
                     foreach (var m in status.MaintenanceArtifacts)
                     {
                         var icon = m.Stale ? "STALE" : "OK   ";
-                        formatter.WriteMessage($"  [{icon}] {m.Id}: {m.Path}");
+                        ctx.Formatter.WriteMessage($"  [{icon}] {m.Id}: {m.Path}");
                     }
-                    formatter.WriteMessage("");
+                    ctx.Formatter.WriteMessage("");
                 }
 
                 // Completeness
-                formatter.WriteMessage($"Completeness: {status.PresentCount}/{status.RequiredCount} required artifacts present");
+                ctx.Formatter.WriteMessage($"Completeness: {status.PresentCount}/{status.RequiredCount} required artifacts present");
                 if (status.StaleCount > 0)
-                    formatter.WriteMessage($"Stale artifacts: {status.StaleCount}");
+                    ctx.Formatter.WriteMessage($"Stale artifacts: {status.StaleCount}");
             }
 
             return ExitCodes.Success;
@@ -150,15 +132,6 @@ public static class StatusCommand
             PresentCount = requiredArtifacts.Count(a => a.Present),
             RequiredCount = requiredArtifacts.Count,
             StaleCount = maintenanceArtifacts.Count(m => m.Stale)
-        };
-    }
-
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
         };
     }
 

@@ -23,15 +23,23 @@ public sealed class SectionSizeRule : IValidationRule
         {
             try
             {
-                var content = context.FileSystem.ReadAllText(
-                    Path.Combine(context.RepositoryRoot, file.RelativePath));
-                var doc = MarkdownParser.Parse(file.RelativePath, content);
+                var doc = context.DocumentCache?.GetOrParse(file.RelativePath)
+                    ?? MarkdownParser.Parse(file.RelativePath,
+                        context.FileSystem.ReadAllText(Path.Combine(context.RepositoryRoot, file.RelativePath)));
 
                 CheckSections(doc.Sections, file.RelativePath, threshold, diagnostics);
             }
-            catch
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // Skip files that can't be read
+                diagnostics.Add(new Diagnostic(
+                    RuleId: RuleId,
+                    Severity: DiagnosticSeverity.Warning,
+                    Category: Category,
+                    Path: file.RelativePath,
+                    Line: null,
+                    Message: $"Could not read file '{file.RelativePath}': {ex.Message}",
+                    Remediation: "Check file permissions and encoding.",
+                    Source: null));
             }
         }
 

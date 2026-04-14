@@ -1,4 +1,5 @@
 using Steward.Core.Abstractions;
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -56,7 +57,14 @@ public sealed class ConfigLoader
         if (!_fileSystem.FileExists(path)) return null;
 
         var yaml = _fileSystem.ReadAllText(path);
-        return Deserializer.Deserialize<StewardConfig>(yaml);
+        try
+        {
+            return Deserializer.Deserialize<StewardConfig>(yaml);
+        }
+        catch (YamlException ex)
+        {
+            throw new StewardConfigException($"Failed to parse '{path}': {ex.Message}", path, ex);
+        }
     }
 
     public RepositoryPolicy? LoadPolicy(string configDirectory)
@@ -65,7 +73,14 @@ public sealed class ConfigLoader
         if (!_fileSystem.FileExists(path)) return null;
 
         var yaml = _fileSystem.ReadAllText(path);
-        return Deserializer.Deserialize<RepositoryPolicy>(yaml);
+        try
+        {
+            return Deserializer.Deserialize<RepositoryPolicy>(yaml);
+        }
+        catch (YamlException ex)
+        {
+            throw new StewardConfigException($"Failed to parse '{path}': {ex.Message}", path, ex);
+        }
     }
 
     public PathPolicyDocument? LoadPathPolicy(string configDirectory)
@@ -74,7 +89,14 @@ public sealed class ConfigLoader
         if (!_fileSystem.FileExists(path)) return null;
 
         var yaml = _fileSystem.ReadAllText(path);
-        return Deserializer.Deserialize<PathPolicyDocument>(yaml);
+        try
+        {
+            return Deserializer.Deserialize<PathPolicyDocument>(yaml);
+        }
+        catch (YamlException ex)
+        {
+            throw new StewardConfigException($"Failed to parse '{path}': {ex.Message}", path, ex);
+        }
     }
 
     public static string SerializeConfig(StewardConfig config) => Serializer.Serialize(config);

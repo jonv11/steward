@@ -5,8 +5,8 @@ namespace Steward.Core.Validation.Rules;
 /// <summary>
 /// STWD-006: Detects content modifications inside managed/generated regions
 /// that should only be edited by their declared owner.
-/// Currently checks for structural anomalies: empty managed regions
-/// or managed regions that don't contain expected steward-generated patterns.
+/// Checks for structural anomalies: headings inside managed regions that
+/// were not placed there by the declared owner.
 /// </summary>
 public sealed class ManagedScopeViolationRule : IValidationRule
 {
@@ -28,29 +28,48 @@ public sealed class ManagedScopeViolationRule : IValidationRule
             if (!context.FileSystem.FileExists(fullPath))
                 continue;
 
-            var content = context.FileSystem.ReadAllText(fullPath);
-            var doc = MarkdownParser.Parse(fullPath, content);
+            var doc = context.DocumentCache?.GetOrParse(file.RelativePath)
+                ?? MarkdownParser.Parse(fullPath, context.FileSystem.ReadAllText(fullPath));
 
             foreach (var region in doc.ManagedRegions)
             {
                 if (region.Owner == null) continue;
 
-                // Check for headings inside managed regions that don't follow steward patterns
-                foreach (var section in FlattenSections(doc.Sections))
+                // Check for empty managed regions (markers exist but no content between them)
+                if (region.Range.End - region.Range.Start <= 1)
                 {
-                    if (section.Range.Start >= region.Range.Start &&
-                        section.Range.End <= region.Range.End)
+                    diagnostics.Add(new Diagnostic(
+                        RuleId: RuleId,
+                        Severity: DefaultSeverity,
+                        Category: Category,
+                        Path: file.RelativePath,
+                        Line: region.Range.Start,
+                        Message: $"Managed region '{region.Id}' (owner: '{region.Owner}') is empty.",
+                        Remediation: $"Run 'steward maintain' to regenerate content for this region.",
+                        Source: null));
+                    continue;
+                }
+
+                // Check for headings inside steward-owned managed regions
+                // These indicate manual insertion into a machine-managed section
+                if (string.Equals(region.Owner, "steward", StringComparison.OrdinalIgnoreCase))
+                {
+                    foreach (var section in FlattenSections(doc.Sections))
                     {
-                        // Section is inside the managed region — check for manual edits
-                        // If the section has content blocks that look hand-authored in a
-                        // steward-owned region, flag it
-                        if (string.Equals(region.Owner, "steward", StringComparison.OrdinalIgnoreCase))
+                        if (section.Range.Start > region.Range.Start &&
+                            section.Range.Start < region.Range.End)
                         {
-                            // Steward-owned regions shouldn't have manually-added sections
-                            // unless they were inserted by steward. We flag sections that
-                            // don't match expected patterns.
-                            // For now, we only flag if the managed region has nested headings
-                            // at unexpected levels (potential manual insertion).
+                            diagnostics.Add(new Diagnostic(
+                                RuleId: RuleId,
+                                Severity: DefaultSeverity,
+                                Category: Category,
+                                Path: file.RelativePath,
+                                Line: section.Range.Start,
+                                Message: $"Heading '{section.Heading}' inside managed region '{region.Id}' " +
+                                         $"(owner: '{region.Owner}') may have been manually inserted.",
+                                Remediation: "Avoid manually editing content inside steward-managed regions. " +
+                                             "Run 'steward maintain --apply' to regenerate.",
+                                Source: null));
                         }
                     }
                 }

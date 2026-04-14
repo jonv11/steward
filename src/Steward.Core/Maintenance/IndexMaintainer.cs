@@ -24,7 +24,8 @@ public sealed class IndexMaintainer : IArtifactMaintainer
         matchingFiles = sort switch
         {
             "filename" => matchingFiles.OrderBy(f => Path.GetFileName(f.RelativePath), StringComparer.OrdinalIgnoreCase).ToList(),
-            _ => matchingFiles.OrderBy(f => f.RelativePath, StringComparer.OrdinalIgnoreCase).ToList()
+            "path" => matchingFiles.OrderBy(f => f.RelativePath, StringComparer.OrdinalIgnoreCase).ToList(),
+            _ => throw new ArgumentException($"Invalid sort value '{sort}'. Expected 'filename' or 'path'.")
         };
 
         // Generate index entries
@@ -37,8 +38,8 @@ public sealed class IndexMaintainer : IArtifactMaintainer
             if (context.FileSystem.FileExists(fullPath) &&
                 file.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
             {
-                var content = context.FileSystem.ReadAllText(fullPath);
-                var doc = MarkdownParser.Parse(fullPath, content);
+                var doc = context.DocumentCache?.GetOrParse(file.RelativePath)
+                    ?? MarkdownParser.Parse(fullPath, context.FileSystem.ReadAllText(fullPath));
 
                 if (doc.Frontmatter?.Fields.TryGetValue("title", out var t) == true && t != null)
                     title = t.ToString()!;
@@ -96,16 +97,9 @@ public sealed class IndexMaintainer : IArtifactMaintainer
         }
 
         var content = context.FileSystem.ReadAllText(targetPath);
-        var lines = content.Split('\n').ToList();
-        var beginMarker = $"<!-- steward:begin id=\"{config.ManagedSection}\" owner=\"steward\" -->";
-        var endMarker = "<!-- steward:end -->";
+        var expected = ManagedRegionRewriter.Replace(content, config.ManagedSection!, expectedContent);
 
-        var beginIdx = lines.FindIndex(l => l.TrimEnd('\r').Contains(beginMarker, StringComparison.OrdinalIgnoreCase));
-        var endIdx = beginIdx >= 0
-            ? lines.FindIndex(beginIdx + 1, l => l.TrimEnd('\r').Contains(endMarker, StringComparison.OrdinalIgnoreCase))
-            : -1;
-
-        if (beginIdx < 0 || endIdx < 0)
+        if (expected == null)
         {
             return new MaintenanceAction
             {
@@ -117,12 +111,6 @@ public sealed class IndexMaintainer : IArtifactMaintainer
             };
         }
 
-        // Replace content between markers
-        var newLines = new List<string>(lines.Take(beginIdx + 1));
-        newLines.AddRange(expectedContent.Split('\n'));
-        newLines.AddRange(lines.Skip(endIdx));
-
-        var expected = string.Join('\n', newLines);
         var hasChanges = content != expected;
 
         return new MaintenanceAction

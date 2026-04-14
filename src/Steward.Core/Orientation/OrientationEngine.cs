@@ -48,7 +48,7 @@ public sealed class OrientationEngine
         ["resources"] = "resource",
     };
 
-    public OrientationResult Orient(string repositoryRoot, List<DiscoveredFile> files, int maxDepth = 3)
+    public OrientationResult Orient(string repositoryRoot, IReadOnlyList<DiscoveredFile> files, int maxDepth = 3)
     {
         var entries = BuildHierarchy(files, maxDepth);
         return new OrientationResult
@@ -58,7 +58,7 @@ public sealed class OrientationEngine
         };
     }
 
-    private List<OrientationEntry> BuildHierarchy(List<DiscoveredFile> files, int maxDepth)
+    private List<OrientationEntry> BuildHierarchy(IReadOnlyList<DiscoveredFile> files, int maxDepth)
     {
         var rootEntries = new List<OrientationEntry>();
 
