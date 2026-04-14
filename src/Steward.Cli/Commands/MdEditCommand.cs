@@ -7,6 +7,16 @@ namespace Steward.Cli.Commands;
 
 public static class MdEditCommand
 {
+    /// <summary>
+    /// Resolves content from the --content option. If the value is "-", reads from stdin.
+    /// </summary>
+    private static string? ResolveContent(string? value)
+    {
+        if (value == "-")
+            return Console.In.ReadToEnd();
+        return value;
+    }
+
     public static Command Create()
     {
         var command = new Command("edit", "Structural Markdown editing with preview/apply workflow");
@@ -51,7 +61,7 @@ public static class MdEditCommand
             var file = parseResult.GetValue(fileArg)!;
             var heading = parseResult.GetValue(headingOpt)!;
             var under = parseResult.GetValue(underOpt);
-            var content = parseResult.GetValue(contentOpt);
+            var content = ResolveContent(parseResult.GetValue(contentOpt));
             var apply = parseResult.GetValue(applyOption);
 
             return ExecuteEdit(parseResult, file, apply,
@@ -76,7 +86,7 @@ public static class MdEditCommand
         {
             var file = parseResult.GetValue(fileArg)!;
             var heading = parseResult.GetValue(headingOpt)!;
-            var content = parseResult.GetValue(contentOpt)!;
+            var content = ResolveContent(parseResult.GetValue(contentOpt))!;
             var apply = parseResult.GetValue(applyOption);
 
             return ExecuteEdit(parseResult, file, apply,
@@ -94,20 +104,29 @@ public static class MdEditCommand
         headingOpt.Required = true;
         var underOpt = new Option<string?>("--under") { Description = "Parent section heading" };
         var contentOpt = new Option<string?>("--content") { Description = "Section body content" };
+        var afterOpt = new Option<string?>("--after") { Description = "Insert after this sibling section" };
+        var beforeOpt = new Option<string?>("--before") { Description = "Insert before this sibling section" };
+        var levelOpt = new Option<int?>("--level") { Description = "Explicit heading level (1-6)" };
         command.Add(headingOpt);
         command.Add(underOpt);
         command.Add(contentOpt);
+        command.Add(afterOpt);
+        command.Add(beforeOpt);
+        command.Add(levelOpt);
 
         command.SetAction(parseResult =>
         {
             var file = parseResult.GetValue(fileArg)!;
             var heading = parseResult.GetValue(headingOpt)!;
             var under = parseResult.GetValue(underOpt);
-            var content = parseResult.GetValue(contentOpt);
+            var content = ResolveContent(parseResult.GetValue(contentOpt));
+            var after = parseResult.GetValue(afterOpt);
+            var before = parseResult.GetValue(beforeOpt);
+            var level = parseResult.GetValue(levelOpt);
             var apply = parseResult.GetValue(applyOption);
 
             return ExecuteEdit(parseResult, file, apply,
-                doc => StructuralEditor.InsertSection(doc, heading, under, content));
+                doc => StructuralEditor.InsertSection(doc, heading, under, content, after, before, level));
         });
 
         return command;
@@ -128,7 +147,7 @@ public static class MdEditCommand
         {
             var file = parseResult.GetValue(fileArg)!;
             var under = parseResult.GetValue(underOpt)!;
-            var content = parseResult.GetValue(contentOpt)!;
+            var content = ResolveContent(parseResult.GetValue(contentOpt))!;
             var apply = parseResult.GetValue(applyOption);
 
             return ExecuteEdit(parseResult, file, apply,
@@ -153,7 +172,7 @@ public static class MdEditCommand
         {
             var file = parseResult.GetValue(fileArg)!;
             var under = parseResult.GetValue(underOpt)!;
-            var content = parseResult.GetValue(contentOpt)!;
+            var content = ResolveContent(parseResult.GetValue(contentOpt))!;
             var apply = parseResult.GetValue(applyOption);
 
             return ExecuteEdit(parseResult, file, apply,

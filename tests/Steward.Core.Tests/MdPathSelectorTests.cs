@@ -167,4 +167,91 @@ public class MdPathSelectorTests
 
         result.IsEmpty.Should().BeTrue();
     }
+
+    [Fact]
+    public void Evaluate_ManagedWildcard_ReturnsAllRegions()
+    {
+        var content = """
+            # Title
+            <!-- steward:begin id="region1" owner="steward" -->
+            Region 1 content
+            <!-- steward:end -->
+            <!-- steward:begin id="region2" owner="steward" -->
+            Region 2 content
+            <!-- steward:end -->
+            """.Replace("            ", "");
+
+        var doc = MarkdownParser.Parse("test.md", content);
+        var result = MdPathSelector.Evaluate(doc, "managed[*]");
+
+        result.HasMatches.Should().BeTrue();
+        result.Matches.Should().HaveCount(2);
+        result.Matches[0].Label.Should().Be("region1");
+        result.Matches[1].Label.Should().Be("region2");
+    }
+
+    [Fact]
+    public void Evaluate_ManagedWildcard_NoRegions_ReturnsEmpty()
+    {
+        var doc = MarkdownParser.Parse("test.md", "# Title\nContent\n");
+        var result = MdPathSelector.Evaluate(doc, "managed[*]");
+
+        result.IsEmpty.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Evaluate_SubSelector_Lists_ReturnsListBlocks()
+    {
+        var content = """
+            # Section
+            Some paragraph.
+            - item 1
+            - item 2
+
+            Another paragraph.
+            """.Replace("            ", "");
+
+        var doc = MarkdownParser.Parse("test.md", content);
+        var result = MdPathSelector.Evaluate(doc, "heading[Section].lists");
+
+        result.HasMatches.Should().BeTrue();
+        result.Matches[0].Kind.Should().Be(MatchKind.ContentBlock);
+        result.Matches[0].Content.Should().Contain("item 1");
+    }
+
+    [Fact]
+    public void Evaluate_SubSelector_Tables_NoTables_ReturnsEmpty()
+    {
+        var content = """
+            # Section
+            Just text, no tables.
+            """.Replace("            ", "");
+
+        var doc = MarkdownParser.Parse("test.md", content);
+        var result = MdPathSelector.Evaluate(doc, "heading[Section].tables");
+
+        result.IsEmpty.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Evaluate_SubSelector_CodeBlocks_ReturnsCodeBlocks()
+    {
+        var content = "# Code\n```csharp\nConsole.WriteLine(\"hello\");\n```\n";
+
+        var doc = MarkdownParser.Parse("test.md", content);
+        var result = MdPathSelector.Evaluate(doc, "heading[Code].codeblocks");
+
+        result.HasMatches.Should().BeTrue();
+        result.Matches[0].Kind.Should().Be(MatchKind.ContentBlock);
+    }
+
+    [Fact]
+    public void Evaluate_SubSelector_Unknown_ReturnsError()
+    {
+        var doc = ParseSample();
+        var result = MdPathSelector.Evaluate(doc, "heading[Goals].unknown");
+
+        result.IsError.Should().BeTrue();
+        result.ErrorMessage.Should().Contain("Unknown sub-selector");
+    }
 }

@@ -188,4 +188,25 @@ maintenance:
 
         exitCode.Should().Be(2); // UsageError
     }
+
+    [Fact]
+    public void Diff_ShowsChanges()
+    {
+        WritePolicyYaml(@"
+maintenance:
+  artifacts:
+    - id: structure
+      path: STRUCTURE.md
+      type: structure-document
+");
+        WriteFile("README.md", "# Hello");
+        // Create an existing (stale) structure document so diff has both sides
+        WriteFile("STRUCTURE.md", "# Repository Structure\n\n```\nold tree\n```\n");
+
+        var (exitCode, output, _) = InvokeMaintain("maintain", "--diff");
+
+        exitCode.Should().Be(0);
+        // --diff should display lines with + or - prefix for changes
+        output.Should().Contain("+");
+    }
 }

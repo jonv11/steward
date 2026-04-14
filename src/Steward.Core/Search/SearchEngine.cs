@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using DotNet.Globbing;
 using Steward.Core.Abstractions;
 using Steward.Core.Configuration;
@@ -23,11 +24,33 @@ public sealed class SearchEngine
         SearchMode mode = SearchMode.All,
         string? scopeRole = null,
         RepositoryPolicy? policy = null,
-        int maxResults = 100)
+        int maxResults = 100,
+        bool useRegex = false)
     {
         var filteredFiles = FilterByScope(files, scopeRole, policy);
         var matches = new List<SearchMatch>();
         var totalMatches = 0;
+
+        Regex? regex = null;
+        if (useRegex)
+        {
+            try
+            {
+                regex = new Regex(query, RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+            }
+            catch (RegexParseException)
+            {
+                return new SearchResult
+                {
+                    Query = query,
+                    Mode = mode,
+                    Matches = [],
+                    TotalMatches = 0,
+                    Truncated = false,
+                    Error = $"Invalid regex pattern: '{query}'"
+                };
+            }
+        }
 
         foreach (var file in filteredFiles.Where(f => !f.IsDirectory))
         {
@@ -43,12 +66,12 @@ public sealed class SearchEngine
 
                 if (mode is SearchMode.All or SearchMode.Content)
                 {
-                    SearchContent(query, file.RelativePath, lines, isMd, matches, ref totalMatches, maxResults);
+                    SearchContent(query, file.RelativePath, lines, isMd, matches, ref totalMatches, maxResults, regex);
                 }
 
                 if (isMd && mode is SearchMode.All or SearchMode.Headings)
                 {
-                    SearchHeadings(query, file.RelativePath, lines, matches, ref totalMatches, maxResults);
+                    SearchHeadings(query, file.RelativePath, lines, matches, ref totalMatches, maxResults, regex);
                 }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -69,7 +92,7 @@ public sealed class SearchEngine
 
     private static void SearchContent(
         string query, string path, string[] lines, bool isMd,
-        List<SearchMatch> matches, ref int total, int max)
+        List<SearchMatch> matches, ref int total, int max, Regex? regex)
     {
         // Precompute heading context for Markdown files
         string? currentHeading = null;
@@ -83,7 +106,17 @@ public sealed class SearchEngine
                 currentHeading = line.TrimStart('#').Trim();
             }
 
-            var col = line.IndexOf(query, StringComparison.OrdinalIgnoreCase);
+            int col;
+            if (regex != null)
+            {
+                var match = regex.Match(line);
+                col = match.Success ? match.Index : -1;
+            }
+            else
+            {
+                col = line.IndexOf(query, StringComparison.OrdinalIgnoreCase);
+            }
+
             if (col >= 0)
             {
                 total++;
@@ -105,7 +138,7 @@ public sealed class SearchEngine
 
     private static void SearchHeadings(
         string query, string path, string[] lines,
-        List<SearchMatch> matches, ref int total, int max)
+        List<SearchMatch> matches, ref int total, int max, Regex? regex)
     {
         for (var i = 0; i < lines.Length; i++)
         {
@@ -113,7 +146,10 @@ public sealed class SearchEngine
             if (!line.StartsWith('#')) continue;
 
             var headingText = line.TrimStart('#').Trim();
-            if (headingText.Contains(query, StringComparison.OrdinalIgnoreCase))
+            var isMatch = regex != null
+                ? regex.IsMatch(headingText)
+                : headingText.Contains(query, StringComparison.OrdinalIgnoreCase);
+            if (isMatch)
             {
                 total++;
                 if (matches.Count < max)

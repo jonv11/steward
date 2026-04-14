@@ -62,29 +62,47 @@ public static class StructuralEditor
             $"Set content of section '{heading}'.");
     }
 
-    public static EditResult InsertSection(StructuredDocument doc, string heading, string? under = null, string? content = null)
+    public static EditResult InsertSection(StructuredDocument doc, string heading,
+        string? under = null, string? content = null,
+        string? after = null, string? before = null, int? level = null)
     {
         var lines = doc.RawContent.Split('\n').ToList();
-        int level;
+        int effectiveLevel;
         int insertIdx;
 
-        if (under != null)
+        if (after != null)
+        {
+            var target = FindSection(doc.Sections, after);
+            if (target == null)
+                return EditResult.Error($"Section '{after}' not found.");
+            effectiveLevel = level ?? target.Level;
+            insertIdx = target.Range.End; // Insert after the target section ends
+        }
+        else if (before != null)
+        {
+            var target = FindSection(doc.Sections, before);
+            if (target == null)
+                return EditResult.Error($"Section '{before}' not found.");
+            effectiveLevel = level ?? target.Level;
+            insertIdx = target.Range.Start - 1; // Insert before the target section starts (0-based)
+        }
+        else if (under != null)
         {
             var parent = FindSection(doc.Sections, under);
             if (parent == null)
                 return EditResult.Error($"Parent section '{under}' not found.");
 
-            level = parent.Level + 1;
-            insertIdx = parent.Range.End; // Insert at end of parent (0-based = End since End is 1-based)
+            effectiveLevel = level ?? (parent.Level + 1);
+            insertIdx = parent.Range.End; // Insert at end of parent
         }
         else
         {
             // Insert at end of document as top-level
-            level = 1;
+            effectiveLevel = level ?? 1;
             insertIdx = lines.Count;
         }
 
-        var hashes = new string('#', level);
+        var hashes = new string('#', effectiveLevel);
         var newLines = new List<string> { "", $"{hashes} {heading}" };
         if (!string.IsNullOrEmpty(content))
         {

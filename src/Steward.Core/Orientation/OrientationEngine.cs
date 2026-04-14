@@ -104,7 +104,12 @@ public sealed class OrientationEngine
     {
         var configuredRole = ResolveConfiguredRole(file, policy);
         if (configuredRole != null)
+        {
+            // State-document roles get a "state:" prefix for distinct display
+            if (WellKnownRoles.IsStateDocumentRole(configuredRole))
+                return $"state:{configuredRole}";
             return configuredRole;
+        }
 
         var fileName = Path.GetFileName(file.RelativePath);
 

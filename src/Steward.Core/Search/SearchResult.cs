@@ -7,6 +7,7 @@ public sealed record SearchResult
     public required IReadOnlyList<SearchMatch> Matches { get; init; }
     public int TotalMatches { get; init; }
     public bool Truncated { get; init; }
+    public string? Error { get; init; }
 }
 
 public sealed record SearchMatch

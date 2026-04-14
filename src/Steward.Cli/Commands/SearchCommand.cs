@@ -35,6 +35,12 @@ public static class SearchCommand
         };
         command.Add(maxOption);
 
+        var regexOption = new Option<bool>("--regex")
+        {
+            Description = "Treat query as a regular expression"
+        };
+        command.Add(regexOption);
+
         command.SetAction((parseResult) =>
         {
             if (!CommandSetup.TryBuild(parseResult, out var ctx))
@@ -44,6 +50,7 @@ public static class SearchCommand
             var modeStr = parseResult.GetValue(modeOption)!;
             var scope = parseResult.GetValue(scopeOption);
             var max = parseResult.GetValue(maxOption);
+            var useRegex = parseResult.GetValue(regexOption);
 
             var mode = modeStr.ToLowerInvariant() switch
             {
@@ -54,7 +61,13 @@ public static class SearchCommand
 
             // Search
             var engine = new SearchEngine(ctx!.FileSystem, ctx.RootPath);
-            var result = engine.Search(query, ctx.Files!, mode, scope, ctx.Policy, max);
+            var result = engine.Search(query, ctx.Files!, mode, scope, ctx.Policy, max, useRegex);
+
+            if (result.Error != null)
+            {
+                ctx.Formatter.WriteError(result.Error);
+                return ExitCodes.UsageError;
+            }
 
             // Output
             if (ctx.OutputFormat == OutputFormat.Json)

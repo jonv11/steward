@@ -39,7 +39,7 @@ public sealed class SectionSizeRule : IValidationRule
                     Line: null,
                     Message: $"Could not read file '{file.RelativePath}': {ex.Message}",
                     Remediation: "Check file permissions and encoding.",
-                    Source: null));
+                    Source: "policy.yaml"));
             }
         }
 

@@ -24,6 +24,12 @@ public static class OrientCommand
         };
         command.Add(signalsOption);
 
+        var compactOption = new Option<bool>("--compact")
+        {
+            Description = "Limit output to the ~15 most important entries"
+        };
+        command.Add(compactOption);
+
         command.SetAction((parseResult) =>
         {
             if (!CommandSetup.TryBuild(parseResult, out var ctx))
@@ -31,6 +37,7 @@ public static class OrientCommand
 
             var depth = parseResult.GetValue(depthOption);
             var includeSignals = parseResult.GetValue(signalsOption);
+            var compact = parseResult.GetValue(compactOption);
 
             var engine = new OrientationEngine();
             var status = includeSignals
@@ -43,6 +50,22 @@ public static class OrientCommand
                 ctx.Config?.Profile,
                 depth,
                 status != null ? ToSignalInput(status) : null);
+
+            // In compact mode, keep only top-priority entries (~15)
+            if (compact)
+            {
+                var prioritized = result.Entries
+                    .OrderByDescending(e => e.IsStartHere)
+                    .ThenByDescending(e => e.Classification is "authoritative" or "governance"
+                        || e.Classification.StartsWith("state:"))
+                    .ThenBy(e => e.Depth)
+                    .Take(15)
+                    .OrderBy(e => e.Path)
+                    .ToList();
+
+                result.Entries.Clear();
+                result.Entries.AddRange(prioritized);
+            }
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {

@@ -47,6 +47,14 @@ public static class CommandSetup
             pathPolicy = configLoader.LoadPathPolicy(configDir);
         }
 
+        // Merge profile defaults into policy where repo-local policy doesn't override.
+        var profileName = config?.Profile ?? "minimal";
+        var profilePolicy = ProfileDefaults.GetProfilePolicy(profileName);
+        if (profilePolicy != null)
+        {
+            policy = ProfileMerger.Merge(policy, profilePolicy);
+        }
+
         // Resolve effective output settings: CLI flag > config file > built-in default.
         var output = ResolveOutputFormat(parseResult, config);
         var verbosity = ResolveVerbosity(parseResult, config);

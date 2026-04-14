@@ -9,6 +9,10 @@ namespace Steward.Core.Markdown;
 ///   heading[Parent/Child]  — nested heading path
 ///   heading[#N]            — Nth heading (1-based)
 ///   managed[id]            — managed region by id
+///   managed[*]             — all managed regions
+///   heading[Name].lists    — list blocks in section
+///   heading[Name].tables   — table blocks in section
+///   heading[Name].codeblocks — code blocks in section
 /// </summary>
 public static class MdPathSelector
 {
@@ -25,6 +29,18 @@ public static class MdPathSelector
 
         if (selector.StartsWith("heading[", StringComparison.OrdinalIgnoreCase) && selector.EndsWith(']'))
             return EvaluateHeading(doc, selector[8..^1]);
+
+        // heading[Name].lists / .tables / .codeblocks sub-selectors
+        if (selector.StartsWith("heading[", StringComparison.OrdinalIgnoreCase))
+        {
+            var closeBracket = selector.IndexOf(']');
+            if (closeBracket > 8 && closeBracket < selector.Length - 1 && selector[closeBracket + 1] == '.')
+            {
+                var headingPath = selector[8..closeBracket];
+                var subSelector = selector[(closeBracket + 2)..];
+                return EvaluateHeadingSubSelector(doc, headingPath, subSelector);
+            }
+        }
 
         if (selector.StartsWith("managed[", StringComparison.OrdinalIgnoreCase) && selector.EndsWith(']'))
             return EvaluateManaged(doc, selector[8..^1]);
@@ -107,8 +123,77 @@ public static class MdPathSelector
         return MakeSectionResult($"heading[{path}]", matches[0], doc);
     }
 
+    private static SelectorResult EvaluateHeadingSubSelector(StructuredDocument doc, string headingPath, string subSelector)
+    {
+        var selectorStr = $"heading[{headingPath}].{subSelector}";
+        var blockType = subSelector.ToLowerInvariant() switch
+        {
+            "lists" => ContentBlockType.List,
+            "tables" => ContentBlockType.Table,
+            "codeblocks" => ContentBlockType.CodeBlock,
+            _ => (ContentBlockType?)null
+        };
+
+        if (blockType == null)
+            return SelectorResult.Error($"Unknown sub-selector '.{subSelector}'. Supported: .lists, .tables, .codeblocks");
+
+        // Find the section
+        var parts = headingPath.Split('/');
+        var sections = parts[0].StartsWith('#')
+            ? [FlattenSections(doc.Sections).ElementAtOrDefault(int.Parse(parts[0][1..]) - 1)!]
+            : FindSectionsByPath(doc.Sections, parts, 0);
+
+        if (sections.Count == 0 || sections[0] == null)
+            return SelectorResult.Empty(selectorStr);
+
+        if (sections.Count > 1)
+            return SelectorResult.Ambiguous(selectorStr, sections.Count);
+
+        var section = sections[0];
+        var blocks = section.ContentBlocks
+            .Where(b => b.Type == blockType)
+            .Select(b => new SelectorMatch
+            {
+                Kind = MatchKind.ContentBlock,
+                Label = $"{subSelector}@L{b.Range.Start}",
+                Content = ExtractLines(doc.RawContent, b.Range),
+                Range = b.Range
+            })
+            .ToList();
+
+        if (blocks.Count == 0)
+            return SelectorResult.Empty(selectorStr);
+
+        return new SelectorResult
+        {
+            Selector = selectorStr,
+            Matches = blocks
+        };
+    }
+
     private static SelectorResult EvaluateManaged(StructuredDocument doc, string id)
     {
+        // managed[*] — return all managed regions
+        if (id == "*")
+        {
+            if (doc.ManagedRegions.Count == 0)
+                return SelectorResult.Empty("managed[*]");
+
+            var allMatches = doc.ManagedRegions.Select(r => new SelectorMatch
+            {
+                Kind = MatchKind.ManagedRegion,
+                Label = r.Id,
+                Content = ExtractLines(doc.RawContent, r.Range),
+                Range = r.Range
+            }).ToList();
+
+            return new SelectorResult
+            {
+                Selector = "managed[*]",
+                Matches = allMatches
+            };
+        }
+
         var matches = doc.ManagedRegions.Where(r => r.Id == id).ToList();
 
         if (matches.Count == 0)
@@ -246,5 +331,6 @@ public enum MatchKind
     Frontmatter,
     FrontmatterField,
     Section,
-    ManagedRegion
+    ManagedRegion,
+    ContentBlock
 }

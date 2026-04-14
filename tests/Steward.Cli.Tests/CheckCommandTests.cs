@@ -47,6 +47,39 @@ public class CheckCommandTests : IDisposable
     }
 
     [Fact]
+    public void Check_Quiet_SuppressesOutput_Pass()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            artifacts:
+              - path: README.md
+                role: readme
+                required: true
+            """);
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--quiet");
+
+        exitCode.Should().Be(0);
+        output.Trim().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Check_Quiet_SuppressesOutput_Fail()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            artifacts:
+              - path: MISSING.md
+                role: readme
+                required: true
+            """);
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--quiet");
+
+        exitCode.Should().NotBe(0);
+        output.Trim().Should().BeEmpty();
+    }
+
+    [Fact]
     public void Check_JsonOutput_UsesStringSeverity()
     {
         File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """

@@ -241,4 +241,95 @@ public class StructuralEditorTests
         result.NewContent.Should().Contain("Intro text.");
         result.NewContent.Should().Contain("Goal text.");
     }
+
+    [Fact]
+    public void InsertSection_After_InsertsAfterTargetSection()
+    {
+        var content = "# Introduction\nIntro text.\n# Goals\nGoal text.\n# Appendix\nAppendix text.\n";
+        var doc = ParseDoc(content);
+
+        var result = StructuralEditor.InsertSection(doc, "New Section", after: "Goals");
+
+        result.HasChanges.Should().BeTrue();
+        var introIdx = result.NewContent.IndexOf("# Introduction", StringComparison.Ordinal);
+        var goalsIdx = result.NewContent.IndexOf("# Goals", StringComparison.Ordinal);
+        var newIdx = result.NewContent.IndexOf("# New Section", StringComparison.Ordinal);
+        var appendixIdx = result.NewContent.IndexOf("# Appendix", StringComparison.Ordinal);
+        newIdx.Should().BeGreaterThan(goalsIdx);
+        newIdx.Should().BeLessThan(appendixIdx);
+    }
+
+    [Fact]
+    public void InsertSection_Before_InsertsBeforeTargetSection()
+    {
+        var content = "# Introduction\nIntro text.\n# Goals\nGoal text.\n";
+        var doc = ParseDoc(content);
+
+        var result = StructuralEditor.InsertSection(doc, "Preamble", before: "Goals");
+
+        result.HasChanges.Should().BeTrue();
+        var preambleIdx = result.NewContent.IndexOf("# Preamble", StringComparison.Ordinal);
+        var goalsIdx = result.NewContent.IndexOf("# Goals", StringComparison.Ordinal);
+        preambleIdx.Should().BeLessThan(goalsIdx);
+    }
+
+    [Fact]
+    public void InsertSection_After_NonExistent_ReturnsError()
+    {
+        var content = "# Introduction\nSome text.\n";
+        var doc = ParseDoc(content);
+
+        var result = StructuralEditor.InsertSection(doc, "New", after: "Missing");
+
+        result.IsError.Should().BeTrue();
+        result.Message.Should().Contain("not found");
+    }
+
+    [Fact]
+    public void InsertSection_Before_NonExistent_ReturnsError()
+    {
+        var content = "# Introduction\nSome text.\n";
+        var doc = ParseDoc(content);
+
+        var result = StructuralEditor.InsertSection(doc, "New", before: "Missing");
+
+        result.IsError.Should().BeTrue();
+        result.Message.Should().Contain("not found");
+    }
+
+    [Fact]
+    public void InsertSection_Level_OverridesDefault()
+    {
+        var content = "# Introduction\nSome text.\n";
+        var doc = ParseDoc(content);
+
+        var result = StructuralEditor.InsertSection(doc, "Deep Section", level: 3);
+
+        result.HasChanges.Should().BeTrue();
+        result.NewContent.Should().Contain("### Deep Section");
+    }
+
+    [Fact]
+    public void InsertSection_After_InheritsTargetLevel()
+    {
+        var content = "# Introduction\nIntro text.\n## Details\nDetail text.\n";
+        var doc = ParseDoc(content);
+
+        var result = StructuralEditor.InsertSection(doc, "More Details", after: "Details");
+
+        result.HasChanges.Should().BeTrue();
+        result.NewContent.Should().Contain("## More Details");
+    }
+
+    [Fact]
+    public void InsertSection_After_WithLevelOverride()
+    {
+        var content = "# Introduction\nIntro text.\n## Details\nDetail text.\n";
+        var doc = ParseDoc(content);
+
+        var result = StructuralEditor.InsertSection(doc, "Sidebar", after: "Details", level: 3);
+
+        result.HasChanges.Should().BeTrue();
+        result.NewContent.Should().Contain("### Sidebar");
+    }
 }

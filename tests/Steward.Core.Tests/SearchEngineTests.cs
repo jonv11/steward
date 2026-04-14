@@ -158,4 +158,51 @@ public class SearchEngineTests
         result.Matches[0].Line.Should().Be(2);
         result.Matches[0].Column.Should().Be(8); // "second " = 7 chars, column 8
     }
+
+    [Fact]
+    public void Search_Regex_MatchesPattern()
+    {
+        _fs.AddFile("root/doc.txt", "Hello world\nFoo bar 123\nHello again\n");
+        var files = new[] { new DiscoveredFile("doc.txt", 40, false) };
+
+        var result = CreateEngine().Search(@"\d+", files, SearchMode.Content, useRegex: true);
+
+        result.Matches.Should().HaveCount(1);
+        result.Matches[0].Snippet.Should().Contain("123");
+    }
+
+    [Fact]
+    public void Search_Regex_CaseInsensitive()
+    {
+        _fs.AddFile("root/doc.txt", "Hello World\nhello again\n");
+        var files = new[] { new DiscoveredFile("doc.txt", 30, false) };
+
+        var result = CreateEngine().Search("hello", files, SearchMode.Content, useRegex: true);
+
+        result.Matches.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void Search_Regex_InvalidPattern_ReturnsError()
+    {
+        _fs.AddFile("root/doc.txt", "Hello world\n");
+        var files = new[] { new DiscoveredFile("doc.txt", 15, false) };
+
+        var result = CreateEngine().Search("[invalid", files, SearchMode.Content, useRegex: true);
+
+        result.Matches.Should().BeEmpty();
+        result.Error.Should().Contain("Invalid regex");
+    }
+
+    [Fact]
+    public void Search_Regex_HeadingsMode_MatchesHeadings()
+    {
+        _fs.AddFile("root/doc.md", "# Version 1.0\nContent\n## Version 2.0\nMore\n");
+        var files = new[] { new DiscoveredFile("doc.md", 50, false) };
+
+        var result = CreateEngine().Search(@"Version \d+\.\d+", files, SearchMode.Headings, useRegex: true);
+
+        result.Matches.Should().HaveCount(2);
+        result.Matches.Should().OnlyContain(m => m.Kind == SearchMatchKind.Heading);
+    }
 }

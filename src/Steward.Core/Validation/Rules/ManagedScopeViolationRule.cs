@@ -46,7 +46,7 @@ public sealed class ManagedScopeViolationRule : IValidationRule
                         Line: region.Range.Start,
                         Message: $"Managed region '{region.Id}' (owner: '{region.Owner}') is empty.",
                         Remediation: $"Run 'steward maintain' to regenerate content for this region.",
-                        Source: null));
+                        Source: file.RelativePath));
                     continue;
                 }
 
@@ -69,7 +69,7 @@ public sealed class ManagedScopeViolationRule : IValidationRule
                                          $"(owner: '{region.Owner}') may have been manually inserted.",
                                 Remediation: "Avoid manually editing content inside steward-managed regions. " +
                                              "Run 'steward maintain --apply' to regenerate.",
-                                Source: null));
+                                Source: file.RelativePath));
                         }
                     }
                 }

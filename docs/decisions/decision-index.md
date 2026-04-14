@@ -26,3 +26,4 @@ Index of all accepted RFCs and ADRs for the Repository Steward project.
 | [ADR-007](adrs/ADR-007-test-strategy.md) | Test Strategy | Accepted | xUnit, FluentAssertions, Verify, fixture repos |
 | [ADR-008](adrs/ADR-008-gitignore-handling.md) | .gitignore Handling | Accepted | Custom implementation, IIgnoreFilter, early pruning |
 | [ADR-009](adrs/ADR-009-packaging-distribution.md) | Packaging and Distribution | Accepted | dotnet tool, self-contained single-file, NuGet |
+| [ADR-010](adrs/ADR-010-agent-usefulness-improvements.md) | Agent-Usefulness Improvements | Accepted | --compact orient, --regex search, --quiet check, stdin content, maintain diff, batch query |

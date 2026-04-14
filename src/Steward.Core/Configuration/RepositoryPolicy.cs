@@ -30,6 +30,9 @@ public sealed class RepositoryInfo
 
     [YamlMember(Alias = "type")]
     public string? Type { get; set; }
+
+    [YamlMember(Alias = "terminology")]
+    public Dictionary<string, string>? Terminology { get; set; }
 }
 
 public sealed class ArtifactDefinition
@@ -54,6 +57,48 @@ public sealed class GovernanceConfig
 
     [YamlMember(Alias = "start_here")]
     public List<string>? StartHere { get; set; }
+
+    [YamlMember(Alias = "frontmatter")]
+    public FrontmatterConfig? Frontmatter { get; set; }
+
+    [YamlMember(Alias = "managed_regions")]
+    public ManagedRegionsConfig? ManagedRegions { get; set; }
+
+    [YamlMember(Alias = "completion_policy")]
+    public CompletionPolicyConfig? CompletionPolicy { get; set; }
+}
+
+public sealed class FrontmatterConfig
+{
+    [YamlMember(Alias = "required_fields")]
+    public List<string>? RequiredFields { get; set; }
+
+    [YamlMember(Alias = "auto_fields")]
+    public Dictionary<string, bool>? AutoFields { get; set; }
+}
+
+public sealed class ManagedRegionsConfig
+{
+    [YamlMember(Alias = "marker")]
+    public string? Marker { get; set; }
+
+    [YamlMember(Alias = "enforce_ownership")]
+    public bool EnforceOwnership { get; set; }
+}
+
+public sealed class CompletionPolicyConfig
+{
+    [YamlMember(Alias = "rules")]
+    public List<CompletionRule>? Rules { get; set; }
+}
+
+public sealed class CompletionRule
+{
+    [YamlMember(Alias = "id")]
+    public string? Id { get; set; }
+
+    [YamlMember(Alias = "description")]
+    public string? Description { get; set; }
 }
 
 public sealed class ValidationConfig

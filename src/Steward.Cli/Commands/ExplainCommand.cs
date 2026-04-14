@@ -2,24 +2,11 @@ using System.CommandLine;
 using Steward.Core;
 using Steward.Core.Formatting;
 using Steward.Core.Validation;
-using Steward.Core.Validation.Rules;
-
 namespace Steward.Cli.Commands;
 
 public static class ExplainCommand
 {
-    private static readonly IValidationRule[] AllRules =
-    [
-        new RequiredArtifactRule(),
-        new ForbiddenPathRule(),
-        new RequiredFrontmatterFieldRule(),
-        new SectionSizeRule(),
-        new ManagedRegionIntegrityRule(),
-        new ManagedScopeViolationRule(),
-        new StaleArtifactRule(),
-        new BrokenInternalLinkRule(),
-        new BrokenArtifactReferenceRule()
-    ];
+    private static readonly IValidationRule[] AllRules = RuleRegistry.CreateAllRules();
 
     public static Command Create()
     {

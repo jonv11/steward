@@ -3,24 +3,11 @@ using Steward.Core;
 using Steward.Core.Formatting;
 using Steward.Core.Markdown;
 using Steward.Core.Validation;
-using Steward.Core.Validation.Rules;
-
 namespace Steward.Cli.Commands;
 
 public static class CheckCommand
 {
-    internal static IValidationRule[] AllRules =>
-    [
-        new RequiredArtifactRule(),
-        new ForbiddenPathRule(),
-        new RequiredFrontmatterFieldRule(),
-        new SectionSizeRule(),
-        new ManagedRegionIntegrityRule(),
-        new ManagedScopeViolationRule(),
-        new StaleArtifactRule(),
-        new BrokenInternalLinkRule(),
-        new BrokenArtifactReferenceRule()
-    ];
+    internal static IValidationRule[] AllRules => RuleRegistry.CreateAllRules();
 
     public static Command Create()
     {
@@ -42,11 +29,16 @@ public static class CheckCommand
         {
             Description = "Show what --fix would change without applying"
         };
+        var quietOption = new Option<bool>("--quiet")
+        {
+            Description = "Suppress output and return only the exit code"
+        };
 
         command.Add(scopeOption);
         command.Add(pathsOption);
         command.Add(fixOption);
         command.Add(dryRunOption);
+        command.Add(quietOption);
 
         command.SetAction((parseResult) =>
         {
@@ -57,6 +49,7 @@ public static class CheckCommand
             var pathsValue = parseResult.GetValue(pathsOption);
             var fixRequested = parseResult.GetValue(fixOption);
             var dryRunRequested = parseResult.GetValue(dryRunOption);
+            var quiet = parseResult.GetValue(quietOption);
 
             // Resolve scope
             IScopeResolver scopeResolver = ResolveScope(scopeValue, pathsValue);
@@ -94,14 +87,14 @@ public static class CheckCommand
                 var fixes = ComputeFixes(rules, context);
                 if (fixes.Count == 0)
                 {
-                    if (ctx.OutputFormat != OutputFormat.Json)
+                    if (!quiet && ctx.OutputFormat != OutputFormat.Json)
                         ctx.Formatter.WriteMessage("No automatic fixes available.");
                 }
                 else
                 {
                     foreach (var fix in fixes)
                     {
-                        if (ctx.OutputFormat != OutputFormat.Json)
+                        if (!quiet && ctx.OutputFormat != OutputFormat.Json)
                         {
                             ctx.Formatter.WriteMessage($"[fix] {fix.RuleId}: {fix.Description}");
                             ctx.Formatter.WriteMessage($"       {fix.FilePath}");
@@ -116,12 +109,19 @@ public static class CheckCommand
                         }
                     }
 
-                    if (dryRunRequested && ctx.OutputFormat != OutputFormat.Json)
+                    if (!quiet && dryRunRequested && ctx.OutputFormat != OutputFormat.Json)
                         ctx.Formatter.WriteMessage($"\nDry run: {fixes.Count} fix(es) would be applied. Use --fix to apply.");
-                    else if (fixRequested && ctx.OutputFormat != OutputFormat.Json)
+                    else if (!quiet && fixRequested && ctx.OutputFormat != OutputFormat.Json)
                         ctx.Formatter.WriteMessage($"\nApplied {fixes.Count} fix(es).");
                 }
             }
+
+            // In quiet mode, return only the exit code
+            if (quiet)
+                return result.Summary.Pass ? ExitCodes.Success : ExitCodes.ValidationFailure;
+
+            // Compute completion data for output
+            var completionData = ComputeCompletionData(result.Diagnostics);
 
             // Output
             if (ctx.OutputFormat == OutputFormat.Json)
@@ -137,6 +137,7 @@ public static class CheckCommand
                         Infos = result.Summary.Infos,
                         Pass = result.Summary.Pass
                     },
+                    Completion = completionData,
                     Diagnostics =
                     [
                         .. orderedDiagnostics.Select(diag => new CheckDiagnosticResponse
@@ -221,24 +222,32 @@ public static class CheckCommand
 
     private static void WriteCompletionSummary(CommandContext ctx, IReadOnlyList<Diagnostic> diagnostics)
     {
-        var requiredMissing = diagnostics.Count(d => d.RuleId == "STWD-001");
-        var staleArtifacts = diagnostics.Count(d => d.RuleId == "STWD-007");
-        var brokenLinks = diagnostics.Count(d => d.RuleId == "STWD-008");
-        var brokenRefs = diagnostics.Count(d => d.RuleId == "STWD-009");
-
-        if (requiredMissing == 0 && staleArtifacts == 0 && brokenLinks == 0 && brokenRefs == 0)
+        var data = ComputeCompletionData(diagnostics);
+        if (data.RequiredArtifactsMissing == 0 && data.StaleArtifacts == 0 &&
+            data.BrokenLinks == 0 && data.BrokenReferences == 0)
             return;
 
         ctx.Formatter.WriteMessage("");
         ctx.Formatter.WriteMessage("Completion:");
-        if (requiredMissing > 0)
-            ctx.Formatter.WriteMessage($"  - {requiredMissing} required artifact(s) missing");
-        if (staleArtifacts > 0)
-            ctx.Formatter.WriteMessage($"  - {staleArtifacts} maintained artifact(s) stale → run 'steward maintain --apply'");
-        if (brokenLinks > 0)
-            ctx.Formatter.WriteMessage($"  - {brokenLinks} broken internal link(s)");
-        if (brokenRefs > 0)
-            ctx.Formatter.WriteMessage($"  - {brokenRefs} broken artifact reference(s) in policy");
+        if (data.RequiredArtifactsMissing > 0)
+            ctx.Formatter.WriteMessage($"  - {data.RequiredArtifactsMissing} required artifact(s) missing");
+        if (data.StaleArtifacts > 0)
+            ctx.Formatter.WriteMessage($"  - {data.StaleArtifacts} maintained artifact(s) stale → run 'steward maintain --apply'");
+        if (data.BrokenLinks > 0)
+            ctx.Formatter.WriteMessage($"  - {data.BrokenLinks} broken internal link(s)");
+        if (data.BrokenReferences > 0)
+            ctx.Formatter.WriteMessage($"  - {data.BrokenReferences} broken artifact reference(s) in policy");
+    }
+
+    private static CheckCompletionResponse ComputeCompletionData(IReadOnlyList<Diagnostic> diagnostics)
+    {
+        return new CheckCompletionResponse
+        {
+            RequiredArtifactsMissing = diagnostics.Count(d => d.RuleId == "STWD-001"),
+            StaleArtifacts = diagnostics.Count(d => d.RuleId == "STWD-007"),
+            BrokenLinks = diagnostics.Count(d => d.RuleId == "STWD-008"),
+            BrokenReferences = diagnostics.Count(d => d.RuleId == "STWD-009")
+        };
     }
 
     private static List<Diagnostic> OrderDiagnostics(IEnumerable<Diagnostic> diagnostics)
@@ -264,6 +273,7 @@ public static class CheckCommand
 internal sealed class CheckResponse
 {
     public required CheckSummaryResponse Summary { get; init; }
+    public CheckCompletionResponse? Completion { get; init; }
     public required List<CheckDiagnosticResponse> Diagnostics { get; init; }
 }
 
@@ -275,6 +285,14 @@ internal sealed class CheckSummaryResponse
     public required int Warnings { get; init; }
     public required int Infos { get; init; }
     public required bool Pass { get; init; }
+}
+
+internal sealed class CheckCompletionResponse
+{
+    public int RequiredArtifactsMissing { get; init; }
+    public int StaleArtifacts { get; init; }
+    public int BrokenLinks { get; init; }
+    public int BrokenReferences { get; init; }
 }
 
 internal sealed class CheckDiagnosticResponse

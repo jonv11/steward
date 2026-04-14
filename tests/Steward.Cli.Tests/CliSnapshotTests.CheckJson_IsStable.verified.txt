@@ -7,6 +7,12 @@
     "infos": 0,
     "pass": false
   },
+  "completion": {
+    "requiredArtifactsMissing": 1,
+    "staleArtifacts": 0,
+    "brokenLinks": 0,
+    "brokenReferences": 0
+  },
   "diagnostics": [
     {
       "ruleId": "STWD-001",

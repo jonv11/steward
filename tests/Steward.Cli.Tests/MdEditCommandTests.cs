@@ -142,4 +142,56 @@ public class MdEditCommandTests : IDisposable
         output.Should().Contain("\"hasChanges\"");
         output.Should().Contain("\"message\"");
     }
+
+    [Fact]
+    public void InsertSection_After_PlacesCorrectly()
+    {
+        WriteTestFile("# Intro\nIntro text.\n# Goals\nGoal text.\n# Appendix\nEnd.\n");
+
+        var (exitCode, _, _) = InvokeEdit(
+            "md", "edit", "insert-section", _testFile,
+            "--heading", "Details", "--after", "Goals", "--apply");
+
+        exitCode.Should().Be(0);
+
+        var modified = File.ReadAllText(_testFile);
+        var goalsIdx = modified.IndexOf("# Goals", StringComparison.Ordinal);
+        var detailsIdx = modified.IndexOf("# Details", StringComparison.Ordinal);
+        var appendixIdx = modified.IndexOf("# Appendix", StringComparison.Ordinal);
+        detailsIdx.Should().BeGreaterThan(goalsIdx);
+        detailsIdx.Should().BeLessThan(appendixIdx);
+    }
+
+    [Fact]
+    public void InsertSection_Before_PlacesCorrectly()
+    {
+        WriteTestFile("# Intro\nIntro text.\n# Goals\nGoal text.\n");
+
+        var (exitCode, _, _) = InvokeEdit(
+            "md", "edit", "insert-section", _testFile,
+            "--heading", "Preamble", "--before", "Goals", "--apply");
+
+        exitCode.Should().Be(0);
+
+        var modified = File.ReadAllText(_testFile);
+        var preambleIdx = modified.IndexOf("# Preamble", StringComparison.Ordinal);
+        var goalsIdx = modified.IndexOf("# Goals", StringComparison.Ordinal);
+        preambleIdx.Should().BeGreaterThan(-1);
+        preambleIdx.Should().BeLessThan(goalsIdx);
+    }
+
+    [Fact]
+    public void InsertSection_Level_OverridesDefault()
+    {
+        WriteTestFile("# Intro\nSome text.\n");
+
+        var (exitCode, _, _) = InvokeEdit(
+            "md", "edit", "insert-section", _testFile,
+            "--heading", "Deep", "--level", "3", "--apply");
+
+        exitCode.Should().Be(0);
+
+        var modified = File.ReadAllText(_testFile);
+        modified.Should().Contain("### Deep");
+    }
 }

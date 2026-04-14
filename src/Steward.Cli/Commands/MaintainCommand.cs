@@ -1,4 +1,7 @@
 using System.CommandLine;
+using DiffPlex;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
 using Steward.Core;
 using Steward.Core.Formatting;
 using Steward.Core.Maintenance;
@@ -22,8 +25,14 @@ public static class MaintainCommand
             Description = "Apply maintenance changes (default is preview)"
         };
 
+        var diffOption = new Option<bool>("--diff")
+        {
+            Description = "Show unified diff for each changed artifact in preview mode"
+        };
+
         command.Add(scopeOption);
         command.Add(applyOption);
+        command.Add(diffOption);
 
         command.SetAction(parseResult =>
         {
@@ -32,6 +41,7 @@ public static class MaintainCommand
 
             var scope = parseResult.GetValue(scopeOption);
             var apply = parseResult.GetValue(applyOption);
+            var showDiff = parseResult.GetValue(diffOption);
 
             if (ctx!.ConfigDirectory == null)
             {
@@ -81,6 +91,23 @@ public static class MaintainCommand
                     var status = action.HasChanges ? "MAINTAIN" : "OK      ";
                     ctx.Formatter.WriteMessage($"{status}  {action.ArtifactId}  {action.ArtifactPath}");
                     ctx.Formatter.WriteMessage($"  {action.Description}");
+
+                    if (showDiff && action.HasChanges && action.CurrentContent != null && action.ExpectedContent != null)
+                    {
+                        var diffBuilder = new InlineDiffBuilder(new Differ());
+                        var diff = diffBuilder.BuildDiffModel(action.CurrentContent, action.ExpectedContent);
+                        foreach (var line in diff.Lines)
+                        {
+                            var prefix = line.Type switch
+                            {
+                                ChangeType.Inserted => "+",
+                                ChangeType.Deleted => "-",
+                                _ => " "
+                            };
+                            if (line.Type != ChangeType.Unchanged)
+                                ctx.Formatter.WriteMessage($"  {prefix}{line.Text}");
+                        }
+                    }
                 }
 
                 ctx.Formatter.WriteMessage("");

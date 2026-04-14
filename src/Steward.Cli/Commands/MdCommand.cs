@@ -24,21 +24,36 @@ public static class MdCommand
     {
         var command = new Command("query", "Extract content using an MdPath selector");
 
-        var fileArg = new Argument<string>("file") { Description = "Path to the Markdown file" };
+        var fileArg = new Argument<string?>("file") { Description = "Path to the Markdown file", Arity = ArgumentArity.ZeroOrOne };
         var selectorArg = new Argument<string>("selector") { Description = "MdPath selector expression" };
+        var patternOpt = new Option<string?>("--pattern") { Description = "Glob pattern to query multiple files (e.g. 'docs/**/*.md')" };
 
         command.Add(fileArg);
         command.Add(selectorArg);
+        command.Add(patternOpt);
 
         command.SetAction((parseResult) =>
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var file = parseResult.GetValue(fileArg)!;
+            var file = parseResult.GetValue(fileArg);
             var selector = parseResult.GetValue(selectorArg)!;
+            var pattern = parseResult.GetValue(patternOpt);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
             var fileSystem = new PhysicalFileSystem();
+
+            // Batch mode: --pattern glob
+            if (pattern != null)
+            {
+                return ExecuteBatchQuery(formatter, fileSystem, output, selector, pattern);
+            }
+
+            if (file == null)
+            {
+                formatter.WriteError("Provide a file argument or --pattern for batch query.");
+                return ExitCodes.UsageError;
+            }
 
             var fullPath = Path.GetFullPath(file);
             if (!fileSystem.FileExists(fullPath))
@@ -91,6 +106,67 @@ public static class MdCommand
         });
 
         return command;
+    }
+
+    private static int ExecuteBatchQuery(IOutputFormatter formatter, IFileSystem fileSystem,
+        OutputFormat output, string selector, string pattern)
+    {
+        var root = Directory.GetCurrentDirectory();
+        var glob = DotNet.Globbing.Glob.Parse(pattern);
+        var allFiles = Directory.EnumerateFiles(root, "*.md", SearchOption.AllDirectories)
+            .Select(f => Path.GetRelativePath(root, f).Replace('\\', '/'))
+            .Where(f => glob.IsMatch(f))
+            .OrderBy(f => f)
+            .ToList();
+
+        if (allFiles.Count == 0)
+        {
+            formatter.WriteError($"No files matched pattern '{pattern}'.");
+            return ExitCodes.UsageError;
+        }
+
+        var allResults = new List<object>();
+
+        foreach (var relativePath in allFiles)
+        {
+            var fullPath = Path.Combine(root, relativePath);
+            var content = fileSystem.ReadAllText(fullPath);
+            var doc = MarkdownParser.Parse(fullPath, content);
+            var result = MdPathSelector.Evaluate(doc, selector);
+
+            if (result.IsError || result.IsEmpty) continue;
+
+            if (output == OutputFormat.Json)
+            {
+                allResults.Add(new
+                {
+                    file = relativePath,
+                    selector = result.Selector,
+                    matches = result.Matches.Select(m => new
+                    {
+                        kind = m.Kind.ToString().ToLowerInvariant(),
+                        label = m.Label,
+                        content = m.Content
+                    }).ToArray()
+                });
+            }
+            else
+            {
+                foreach (var match in result.Matches)
+                {
+                    formatter.WriteMessage($"--- {relativePath} ---");
+                    formatter.WriteMessage(match.Content);
+                    formatter.WriteMessage("");
+                }
+            }
+        }
+
+        if (output == OutputFormat.Json)
+        {
+            formatter.WriteObject(new { pattern, selector, results = allResults });
+        }
+
+        return ExitCodes.Success;
     }
 
     private static Command CreateOutlineCommand()

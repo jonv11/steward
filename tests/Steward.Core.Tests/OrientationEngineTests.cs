@@ -109,4 +109,61 @@ public class OrientationEngineTests
         result.Entries.Should().Contain(e => e.Path == "src");
         result.Entries.Should().Contain(e => e.Path == "src/app");
     }
+
+    [Theory]
+    [InlineData("vision")]
+    [InlineData("roadmap")]
+    [InlineData("current-state")]
+    [InlineData("milestones")]
+    [InlineData("decision-log")]
+    public void Classify_StateDocumentRole_GetsStatePrefix(string role)
+    {
+        var file = new DiscoveredFile("VISION.md", 100, false);
+        var policy = new RepositoryPolicy
+        {
+            Artifacts = [new ArtifactDefinition { Path = "VISION.md", Role = role }]
+        };
+
+        var result = OrientationEngine.Classify(file, policy);
+
+        result.Should().Be($"state:{role}");
+    }
+
+    [Theory]
+    [InlineData("authoritative")]
+    [InlineData("governance")]
+    [InlineData("documentation")]
+    public void Classify_NonStateRole_NoPrefix(string role)
+    {
+        var file = new DiscoveredFile("doc.md", 100, false);
+        var policy = new RepositoryPolicy
+        {
+            Artifacts = [new ArtifactDefinition { Path = "doc.md", Role = role }]
+        };
+
+        var result = OrientationEngine.Classify(file, policy);
+
+        result.Should().Be(role);
+    }
+
+    [Fact]
+    public void Classify_ExtensionFallback_JsonIsConfiguration()
+    {
+        var file = new DiscoveredFile("settings.json", 50, false);
+        OrientationEngine.Classify(file).Should().Be("configuration");
+    }
+
+    [Fact]
+    public void Classify_ExtensionFallback_ShIsTool()
+    {
+        var file = new DiscoveredFile("build.sh", 50, false);
+        OrientationEngine.Classify(file).Should().Be("tooling");
+    }
+
+    [Fact]
+    public void Classify_UnknownExtension_IsOther()
+    {
+        var file = new DiscoveredFile("data.xyz", 50, false);
+        OrientationEngine.Classify(file).Should().Be("other");
+    }
 }

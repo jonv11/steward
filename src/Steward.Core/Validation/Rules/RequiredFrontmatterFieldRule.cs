@@ -19,7 +19,13 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
 
         var requiredFromPolicy = context.Policy?.Validation?.RequiredFrontmatterFields ?? [];
 
-        if (requiredFromPolicy.Count == 0)
+        // Also check governance.frontmatter.required_fields (RFC-002 canonical location)
+        var requiredFromGovernance = context.Policy?.Governance?.Frontmatter?.RequiredFields ?? [];
+
+        // Merge both sources, removing duplicates
+        var allRequired = requiredFromPolicy.Union(requiredFromGovernance, StringComparer.OrdinalIgnoreCase).ToList();
+
+        if (allRequired.Count == 0)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
 
         foreach (var file in context.TargetFiles.Where(f =>
@@ -45,7 +51,7 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
                     continue;
                 }
 
-                foreach (var field in requiredFromPolicy)
+                foreach (var field in allRequired)
                 {
                     if (!doc.Frontmatter.Fields.ContainsKey(field))
                     {
@@ -71,7 +77,7 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
                     Line: null,
                     Message: $"Could not read file '{file.RelativePath}': {ex.Message}",
                     Remediation: "Check file permissions and encoding.",
-                    Source: null));
+                    Source: "policy.yaml"));
             }
         }
 

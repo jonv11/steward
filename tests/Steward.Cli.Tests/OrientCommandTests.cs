@@ -71,4 +71,50 @@ public class OrientCommandTests : IDisposable
         output.Should().Contain("\"signals\": [");
         output.Should().Contain("missing-required-artifact");
     }
+
+    [Fact]
+    public void Orient_Compact_LimitsEntries()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "config.yaml"), "profile: software\n");
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            repository:
+              name: demo
+            """);
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
+        // Create many files to exceed 15
+        for (int i = 0; i < 20; i++)
+        {
+            File.WriteAllText(Path.Combine(_tempDir, $"doc{i}.md"), $"# Doc {i}");
+        }
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("orient", "--compact", "--output", "json");
+
+        exitCode.Should().Be(0);
+        // In compact mode, at most 15 entries
+        var entryCount = output.Split("\"path\"").Length - 1;
+        entryCount.Should().BeLessThanOrEqualTo(15);
+    }
+
+    [Fact]
+    public void Orient_Compact_PrioritizesStartHere()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            repository:
+              name: demo
+            governance:
+              start_here:
+                - README.md
+            """);
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
+        for (int i = 0; i < 20; i++)
+        {
+            File.WriteAllText(Path.Combine(_tempDir, $"file{i}.txt"), "content");
+        }
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("orient", "--compact", "--output", "json");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("README.md");
+        output.Should().Contain("\"isStartHere\": true");
+    }
 }

@@ -36,4 +36,7 @@ public sealed class PathRule
 
     [YamlMember(Alias = "exact")]
     public bool Exact { get; set; }
+
+    [YamlMember(Alias = "kind")]
+    public string? Kind { get; set; }
 }
