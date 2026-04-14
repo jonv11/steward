@@ -13,6 +13,7 @@
 │   │   ├── adrs
 │   │   ├── decision-index.md
 │   │   └── rfcs
+│   ├── implementation-status.md
 │   ├── planning/
 │   │   ├── curation-notes.md
 │   │   ├── delivery-strategy.md
@@ -53,6 +54,7 @@
 └── tests/
     ├── Steward.Cli.Tests/
     │   ├── CheckCommandTests.cs
+    │   ├── CheckFixTests.cs
     │   ├── CliSnapshotTests.CheckJson_IsStable.verified.txt
     │   ├── CliSnapshotTests.cs
     │   ├── CliSnapshotTests.RootHelp_IsStable.verified.txt
@@ -73,6 +75,7 @@
     │   ├── TextFormatterTests.cs
     │   └── VersionCommandTests.cs
     ├── Steward.Core.Tests/
+    │   ├── BrokenArtifactReferenceRuleTests.cs
     │   ├── BrokenInternalLinkRuleTests.cs
     │   ├── ConfigLoaderTests.cs
     │   ├── DiagnosticTests.cs

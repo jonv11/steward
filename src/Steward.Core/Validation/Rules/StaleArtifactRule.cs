@@ -4,8 +4,9 @@ namespace Steward.Core.Validation.Rules;
 
 /// <summary>
 /// STWD-007: Detects maintained artifacts that are stale (differ from what maintenance would produce).
+/// Implements IFixableRule to support 'steward check --fix' for stale artifacts.
 /// </summary>
-public sealed class StaleArtifactRule : IValidationRule
+public sealed class StaleArtifactRule : IValidationRule, IFixableRule
 {
     public string RuleId => "STWD-007";
     public string Category => "stale-artifact";
@@ -15,19 +16,9 @@ public sealed class StaleArtifactRule : IValidationRule
     public Task<IReadOnlyList<Diagnostic>> EvaluateAsync(ValidationContext context)
     {
         var diagnostics = new List<Diagnostic>();
-
-        if (context.Policy?.Maintenance?.Artifacts == null)
+        var plan = EvaluatePlan(context);
+        if (plan == null)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
-
-        var maintenanceContext = new MaintenanceContext
-        {
-            RepositoryRoot = context.RepositoryRoot,
-            FileSystem = context.FileSystem,
-            Files = context.TargetFiles
-        };
-
-        var engine = new MaintenanceEngine();
-        var plan = engine.Evaluate(context.Policy, maintenanceContext);
 
         foreach (var action in plan.Actions.Where(a => a.HasChanges))
         {
@@ -38,10 +29,45 @@ public sealed class StaleArtifactRule : IValidationRule
                 action.ArtifactPath,
                 null,
                 $"Maintained artifact '{action.ArtifactId}' is stale. {action.Description}",
-                "Run 'steward maintain --apply' to update.",
+                "Run 'steward maintain --apply' or 'steward check --fix' to update.",
                 null));
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
+    }
+
+    public Task<IReadOnlyList<Fix>> ComputeFixesAsync(ValidationContext context)
+    {
+        var fixes = new List<Fix>();
+        var plan = EvaluatePlan(context);
+        if (plan == null)
+            return Task.FromResult<IReadOnlyList<Fix>>(fixes);
+
+        foreach (var action in plan.Actions.Where(a => a.HasChanges && a.ExpectedContent != null))
+        {
+            fixes.Add(new Fix(
+                RuleId,
+                action.ArtifactPath,
+                $"Update stale artifact '{action.ArtifactId}'",
+                action.ExpectedContent!));
+        }
+
+        return Task.FromResult<IReadOnlyList<Fix>>(fixes);
+    }
+
+    private static MaintenancePlan? EvaluatePlan(ValidationContext context)
+    {
+        if (context.Policy?.Maintenance?.Artifacts == null)
+            return null;
+
+        var maintenanceContext = new MaintenanceContext
+        {
+            RepositoryRoot = context.RepositoryRoot,
+            FileSystem = context.FileSystem,
+            Files = context.TargetFiles
+        };
+
+        var engine = new MaintenanceEngine();
+        return engine.Evaluate(context.Policy, maintenanceContext);
     }
 }

@@ -68,7 +68,7 @@ steward maintain --apply  # apply changes
 | `steward init` | Initialize .steward configuration |
 | `steward config show [--effective]` | Show loaded configuration, raw files, and effective runtime defaults |
 | `steward config validate` | Validate configuration files for errors |
-| `steward check` | Validate repository against policy |
+| `steward check` | Validate repository against policy (supports `--scope`, `--fix`, `--dry-run`) |
 | `steward md outline <file>` | Show Markdown heading hierarchy |
 | `steward md query <file> <selector>` | Query Markdown structure with selectors |
 | `steward md edit <operation> <file>` | Structural Markdown editing operations |
@@ -98,6 +98,7 @@ steward maintain --apply  # apply changes
 | STWD-006 | ownership | Content in steward-managed regions should not be edited manually |
 | STWD-007 | stale-artifact | Maintained artifacts must match expected state |
 | STWD-008 | broken-link | Internal Markdown links should resolve |
+| STWD-009 | broken-reference | Policy-declared artifact paths should resolve to existing files |
 
 Use `steward explain <rule-id>` for detailed guidance on any rule. Run `steward explain` (no argument) to list all rules.
 

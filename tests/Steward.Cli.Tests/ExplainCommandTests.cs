@@ -78,12 +78,34 @@ public class ExplainCommandTests
     public void Explain_EachRuleHasRemediation()
     {
         foreach (var ruleId in new[] { "STWD-001", "STWD-002", "STWD-003", "STWD-004",
-                                        "STWD-005", "STWD-006", "STWD-007", "STWD-008" })
+                                        "STWD-005", "STWD-006", "STWD-007", "STWD-008",
+                                        "STWD-009" })
         {
             var remediation = ExplainCommand.GetRemediation(ruleId);
             remediation.Should().NotBeNullOrWhiteSpace($"Rule {ruleId} should have remediation guidance");
             remediation.Should().NotBe("No specific remediation guidance available.",
                 $"Rule {ruleId} should have specific remediation");
         }
+    }
+
+    [Fact]
+    public void Explain_STWD009_ShowsDetails()
+    {
+        var (exitCode, output, _) = InvokeExplain("explain", "STWD-009");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("STWD-009");
+        output.Should().Contain("broken-reference");
+        output.Should().Contain("Remediation:");
+    }
+
+    [Fact]
+    public void Explain_ListAll_IncludesSTWD009()
+    {
+        var (exitCode, output, _) = InvokeExplain("explain");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("STWD-009");
+        output.Should().Contain("STWD-001");
     }
 }

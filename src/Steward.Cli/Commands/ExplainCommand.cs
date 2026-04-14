@@ -17,7 +17,8 @@ public static class ExplainCommand
         new ManagedRegionIntegrityRule(),
         new ManagedScopeViolationRule(),
         new StaleArtifactRule(),
-        new BrokenInternalLinkRule()
+        new BrokenInternalLinkRule(),
+        new BrokenArtifactReferenceRule()
     ];
 
     public static Command Create()
@@ -117,6 +118,7 @@ public static class ExplainCommand
             "STWD-006" => "Do not manually edit content within managed regions. Use 'steward maintain --apply' to update.",
             "STWD-007" => "Run 'steward maintain --apply' to synchronize maintained artifacts.",
             "STWD-008" => "Fix the broken link target or remove the link. Verify the referenced file exists.",
+            "STWD-009" => "Create the artifact, remove it from policy.yaml, or mark it as required if it is mandatory.",
             _ => "No specific remediation guidance available."
         };
     }

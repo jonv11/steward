@@ -127,4 +127,115 @@ public class StaleArtifactRuleTests
         rule.Category.Should().Be("stale-artifact");
         rule.DefaultSeverity.Should().Be(DiagnosticSeverity.Warning);
     }
+
+    [Fact]
+    public void StaleArtifactRule_ImplementsIFixableRule()
+    {
+        var rule = new StaleArtifactRule();
+        rule.Should().BeAssignableTo<IFixableRule>();
+    }
+
+    [Fact]
+    public async Task ComputeFixes_StaleArtifact_ReturnsFix()
+    {
+        var fs = new InMemoryFileSystem();
+        var policy = new RepositoryPolicy
+        {
+            Maintenance = new MaintenanceConfig
+            {
+                Artifacts =
+                [
+                    new MaintenanceArtifactDef
+                    {
+                        Id = "structure",
+                        Path = "STRUCTURE.md",
+                        Type = "structure-document"
+                    }
+                ]
+            }
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [new DiscoveredFile("README.md", 100, false)],
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new StaleArtifactRule();
+        var fixes = await ((IFixableRule)rule).ComputeFixesAsync(context);
+
+        fixes.Should().HaveCount(1);
+        fixes[0].RuleId.Should().Be("STWD-007");
+        fixes[0].FilePath.Should().Be("STRUCTURE.md");
+        fixes[0].NewContent.Should().Contain("# Repository Structure");
+    }
+
+    [Fact]
+    public async Task ComputeFixes_FreshArtifact_NoFixes()
+    {
+        var fs = new InMemoryFileSystem();
+        var files = new[] { new DiscoveredFile("README.md", 100, false) };
+
+        var engine = new Core.Maintenance.MaintenanceEngine();
+        var mCtx = new Core.Maintenance.MaintenanceContext
+        {
+            RepositoryRoot = "/repo",
+            FileSystem = fs,
+            Files = files.ToList()
+        };
+
+        var policy = new RepositoryPolicy
+        {
+            Maintenance = new MaintenanceConfig
+            {
+                Artifacts =
+                [
+                    new MaintenanceArtifactDef
+                    {
+                        Id = "structure",
+                        Path = "STRUCTURE.md",
+                        Type = "structure-document"
+                    }
+                ]
+            }
+        };
+
+        var plan = engine.Evaluate(policy, mCtx);
+        fs.AddFile("/repo/STRUCTURE.md", plan.Actions[0].ExpectedContent!);
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = files.ToList(),
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new StaleArtifactRule();
+        var fixes = await ((IFixableRule)rule).ComputeFixesAsync(context);
+
+        fixes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ComputeFixes_NoMaintenance_NoFixes()
+    {
+        var context = new ValidationContext
+        {
+            Policy = new RepositoryPolicy(),
+            PathPolicy = null,
+            TargetFiles = [],
+            FileSystem = new InMemoryFileSystem(),
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new StaleArtifactRule();
+        var fixes = await ((IFixableRule)rule).ComputeFixesAsync(context);
+
+        fixes.Should().BeEmpty();
+    }
 }
