@@ -1,0 +1,93 @@
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
+
+namespace Steward.Core.Markdown;
+
+/// <summary>
+/// Edits YAML frontmatter within Markdown documents.
+/// </summary>
+public static class FrontmatterEditor
+{
+    private static readonly ISerializer YamlSerializer = new SerializerBuilder()
+        .WithNamingConvention(UnderscoredNamingConvention.Instance)
+        .Build();
+
+    private static readonly IDeserializer YamlDeserializer = new DeserializerBuilder()
+        .WithNamingConvention(UnderscoredNamingConvention.Instance)
+        .IgnoreUnmatchedProperties()
+        .Build();
+
+    public static EditResult SetField(StructuredDocument doc, string key, string value)
+    {
+        var lines = doc.RawContent.Split('\n').ToList();
+
+        if (doc.Frontmatter == null)
+        {
+            // Create new frontmatter
+            lines.InsertRange(0, ["---", $"{key}: {value}", "---", ""]);
+            var newContent = string.Join('\n', lines);
+            return EditResult.Changed(doc.RawContent, newContent,
+                $"Created frontmatter with '{key}' = '{value}'.");
+        }
+
+        // Modify existing frontmatter
+        var fields = new Dictionary<string, object?>(doc.Frontmatter.Fields);
+        fields[key] = value;
+
+        return ReplaceFrontmatter(doc, lines, fields,
+            $"Set frontmatter field '{key}' = '{value}'.");
+    }
+
+    public static EditResult MergeFields(StructuredDocument doc, string yamlInput)
+    {
+        Dictionary<string, object?> newFields;
+        try
+        {
+            newFields = YamlDeserializer.Deserialize<Dictionary<string, object?>>(yamlInput)
+                        ?? new Dictionary<string, object?>();
+        }
+        catch (Exception ex)
+        {
+            return EditResult.Error($"Invalid YAML input: {ex.Message}");
+        }
+
+        var lines = doc.RawContent.Split('\n').ToList();
+
+        if (doc.Frontmatter == null)
+        {
+            var yaml = YamlSerializer.Serialize(newFields).TrimEnd('\n', '\r');
+            lines.InsertRange(0, ["---", yaml, "---", ""]);
+            var newContent = string.Join('\n', lines);
+            return EditResult.Changed(doc.RawContent, newContent, "Created frontmatter from merged fields.");
+        }
+
+        var merged = new Dictionary<string, object?>(doc.Frontmatter.Fields);
+        foreach (var kv in newFields)
+        {
+            merged[kv.Key] = kv.Value;
+        }
+
+        return ReplaceFrontmatter(doc, lines, merged, "Merged fields into frontmatter.");
+    }
+
+    private static EditResult ReplaceFrontmatter(
+        StructuredDocument doc, List<string> lines,
+        Dictionary<string, object?> fields, string message)
+    {
+        var yaml = YamlSerializer.Serialize(fields).TrimEnd('\n', '\r');
+        var startIdx = doc.Frontmatter!.Range.Start - 1; // 0-based
+        var endIdx = doc.Frontmatter.Range.End - 1;
+
+        // Remove old frontmatter block (including --- markers)
+        lines.RemoveRange(startIdx, endIdx - startIdx + 1);
+
+        // Insert new frontmatter
+        var newFm = new List<string> { "---" };
+        newFm.AddRange(yaml.Split('\n'));
+        newFm.Add("---");
+        lines.InsertRange(startIdx, newFm);
+
+        var newContent = string.Join('\n', lines);
+        return EditResult.Changed(doc.RawContent, newContent, message);
+    }
+}

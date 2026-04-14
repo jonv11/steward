@@ -1,0 +1,37 @@
+repository:
+  name: steward
+  description: A configurable repository stewardship CLI for humans and AI agents
+  type: tool
+
+artifacts:
+  - path: README.md
+    role: readme
+    description: Project overview and quick start
+    required: true
+  - path: repository-steward-master-requirements.md
+    role: requirements
+    description: Master requirements document
+    required: true
+  - path: docs/planning-index.md
+    role: planning
+    description: Planning document index
+    required: false
+
+governance:
+  section_size_warning_threshold: 500
+
+validation:
+  disabled_rules: []
+
+maintenance:
+  artifacts:
+    - id: structure
+      path: STRUCTURE.md
+      type: structure-document
+      options:
+        depth: 3
+        exclude:
+          - ".git/**"
+          - "**/bin/**"
+          - "**/obj/**"
+          - ".steward/**"

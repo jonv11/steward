@@ -1,0 +1,139 @@
+using FluentAssertions;
+using Steward.Cli.Commands;
+using System.CommandLine;
+using Xunit;
+
+namespace Steward.Cli.Tests;
+
+[Collection("Console")]
+public class StatusCommandTests : IDisposable
+{
+    private readonly string _tempDir;
+    private readonly string _origDir;
+
+    public StatusCommandTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), "steward-status-" + Guid.NewGuid().ToString("N")[..8]);
+        Directory.CreateDirectory(_tempDir);
+        Directory.CreateDirectory(Path.Combine(_tempDir, ".steward"));
+        _origDir = Directory.GetCurrentDirectory();
+        Directory.SetCurrentDirectory(_tempDir);
+    }
+
+    public void Dispose()
+    {
+        Directory.SetCurrentDirectory(_origDir);
+        if (Directory.Exists(_tempDir))
+            Directory.Delete(_tempDir, true);
+    }
+
+    private void WritePolicyYaml(string yaml)
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), yaml);
+    }
+
+    private void WriteFile(string relativePath, string content)
+    {
+        var fullPath = Path.Combine(_tempDir, relativePath);
+        var dir = Path.GetDirectoryName(fullPath);
+        if (dir != null && !Directory.Exists(dir))
+            Directory.CreateDirectory(dir);
+        File.WriteAllText(fullPath, content);
+    }
+
+    private (int ExitCode, string Output, string Error) InvokeStatus(params string[] args)
+    {
+        var rootCommand = new RootCommand("Repository Steward");
+        GlobalOptionsSetup.AddGlobalOptions(rootCommand);
+        rootCommand.Add(StatusCommand.Create());
+
+        var stdOut = new StringWriter();
+        var stdErr = new StringWriter();
+        var origOut = Console.Out;
+        var origErr = Console.Error;
+
+        Console.SetOut(stdOut);
+        Console.SetError(stdErr);
+
+        try
+        {
+            var exitCode = rootCommand.Parse(args).Invoke();
+            return (exitCode, stdOut.ToString(), stdErr.ToString());
+        }
+        finally
+        {
+            Console.SetOut(origOut);
+            Console.SetError(origErr);
+        }
+    }
+
+    [Fact]
+    public void Status_ShowsRequiredArtifacts()
+    {
+        WritePolicyYaml(@"
+repository:
+  name: test-repo
+artifacts:
+  - path: README.md
+    role: readme
+    required: true
+");
+        WriteFile("README.md", "# Hello");
+
+        var (exitCode, output, _) = InvokeStatus("status");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("test-repo");
+        output.Should().Contain("README.md");
+        output.Should().Contain("OK");
+        output.Should().Contain("1/1");
+    }
+
+    [Fact]
+    public void Status_ShowsMissingArtifact()
+    {
+        WritePolicyYaml(@"
+artifacts:
+  - path: CHANGELOG.md
+    role: changelog
+    required: true
+");
+
+        var (exitCode, output, _) = InvokeStatus("status");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("MISSING");
+        output.Should().Contain("CHANGELOG.md");
+        output.Should().Contain("0/1");
+    }
+
+    [Fact]
+    public void Status_JsonOutput()
+    {
+        WritePolicyYaml(@"
+repository:
+  name: test-repo
+artifacts:
+  - path: README.md
+    role: readme
+    required: true
+");
+        WriteFile("README.md", "# Hello");
+
+        var (exitCode, output, _) = InvokeStatus("status", "--output", "json");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("\"repositoryName\"");
+        output.Should().Contain("\"fileCount\"");
+    }
+
+    [Fact]
+    public void Status_NoConfig_ReportsError()
+    {
+        Directory.Delete(Path.Combine(_tempDir, ".steward"), true);
+
+        var (exitCode, _, _) = InvokeStatus("status");
+
+        exitCode.Should().Be(2);
+    }
+}
