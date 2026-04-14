@@ -1,0 +1,21 @@
+{
+  "summary": {
+    "scope": "full",
+    "filesChecked": 2,
+    "errors": 1,
+    "warnings": 0,
+    "infos": 0,
+    "pass": false
+  },
+  "diagnostics": [
+    {
+      "ruleId": "STWD-001",
+      "severity": "error",
+      "category": "path-policy",
+      "path": "README.md",
+      "message": "Required artifact \u0027README.md\u0027 is missing.",
+      "remediation": "Create the file \u0027README.md\u0027 as specified in the repository policy.",
+      "source": "policy.yaml"
+    }
+  ]
+}

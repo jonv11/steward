@@ -4,7 +4,6 @@ using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Formatting;
 using Steward.Core.Markdown;
-using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -38,7 +37,7 @@ public static class MdCommand
             var file = parseResult.GetValue(fileArg)!;
             var selector = parseResult.GetValue(selectorArg)!;
 
-            var formatter = CreateFormatter(output, noColor);
+            var formatter = CommandSetup.CreateFormatter(output, noColor);
             var fileSystem = new PhysicalFileSystem();
 
             var fullPath = Path.GetFullPath(file);
@@ -107,7 +106,7 @@ public static class MdCommand
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
             var file = parseResult.GetValue(fileArg)!;
 
-            var formatter = CreateFormatter(output, noColor);
+            var formatter = CommandSetup.CreateFormatter(output, noColor);
             var fileSystem = new PhysicalFileSystem();
 
             var fullPath = Path.GetFullPath(file);
@@ -184,12 +183,4 @@ public static class MdCommand
         }
     }
 
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
-        };
-    }
 }

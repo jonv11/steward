@@ -37,11 +37,13 @@ public static class SearchCommand
 
         command.SetAction((parseResult) =>
         {
+            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+                return ExitCodes.UsageError;
+
             var query = parseResult.GetValue(queryArg)!;
             var modeStr = parseResult.GetValue(modeOption)!;
             var scope = parseResult.GetValue(scopeOption);
             var max = parseResult.GetValue(maxOption);
-            var ctx = CommandSetup.Build(parseResult);
 
             var mode = modeStr.ToLowerInvariant() switch
             {
@@ -51,7 +53,7 @@ public static class SearchCommand
             };
 
             // Search
-            var engine = new SearchEngine(ctx.FileSystem, ctx.RootPath);
+            var engine = new SearchEngine(ctx!.FileSystem, ctx.RootPath);
             var result = engine.Search(query, ctx.Files!, mode, scope, ctx.Policy, max);
 
             // Output

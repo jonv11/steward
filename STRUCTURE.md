@@ -7,6 +7,8 @@
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/
+│   ├── audits/
+│   │   └── repository-audit-2026-04-14.md
 │   ├── decisions/
 │   │   ├── adrs
 │   │   ├── decision-index.md
@@ -25,7 +27,9 @@
 ├── repository-steward-master-requirements.md
 ├── src/
 │   ├── Steward.Cli/
+│   │   ├── CommandContext.cs
 │   │   ├── Commands
+│   │   ├── CommandSetup.cs
 │   │   ├── Formatting
 │   │   ├── GlobalOptionsSetup.cs
 │   │   ├── Program.cs
@@ -48,13 +52,22 @@
 ├── STRUCTURE.md
 └── tests/
     ├── Steward.Cli.Tests/
+    │   ├── CheckCommandTests.cs
+    │   ├── CliSnapshotTests.CheckJson_IsStable.verified.txt
+    │   ├── CliSnapshotTests.cs
+    │   ├── CliSnapshotTests.RootHelp_IsStable.verified.txt
+    │   ├── ConfigCommandTests.cs
+    │   ├── ConfigSettingsTests.cs
     │   ├── ExitCodeTests.cs
     │   ├── ExplainCommandTests.cs
     │   ├── GlobalOptionsTests.cs
     │   ├── Helpers
+    │   ├── InitCommandTests.cs
     │   ├── JsonFormatterTests.cs
     │   ├── MaintainCommandTests.cs
     │   ├── MdEditCommandTests.cs
+    │   ├── OrientCommandTests.cs
+    │   ├── OutlineCommandTests.cs
     │   ├── StatusCommandTests.cs
     │   ├── Steward.Cli.Tests.csproj
     │   ├── TextFormatterTests.cs

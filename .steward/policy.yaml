@@ -19,6 +19,9 @@ artifacts:
 
 governance:
   section_size_warning_threshold: 500
+  start_here:
+    - README.md
+    - docs/planning-index.md
 
 validation:
   disabled_rules: []

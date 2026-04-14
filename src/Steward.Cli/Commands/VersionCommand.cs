@@ -1,9 +1,7 @@
 using System.CommandLine;
 using System.Runtime.InteropServices;
 using Steward.Core;
-using Steward.Core.Formatting;
 using Steward.Core.Models;
-using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -17,7 +15,7 @@ public static class VersionCommand
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
 
-            var formatter = CreateFormatter(output, noColor);
+            var formatter = CommandSetup.CreateFormatter(output, noColor);
 
             var info = new VersionInfo
             {
@@ -44,12 +42,5 @@ public static class VersionCommand
         return command;
     }
 
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
-        };
-    }
+
 }

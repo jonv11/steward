@@ -12,9 +12,15 @@ public sealed class ValidationEngine
     public async Task<ValidationResult> ValidateAsync(ValidationContext context)
     {
         var diagnostics = new List<Diagnostic>();
+        var disabledRules = new HashSet<string>(
+            context.Policy?.Validation?.DisabledRules ?? [],
+            StringComparer.OrdinalIgnoreCase);
 
         foreach (var rule in _rules)
         {
+            if (disabledRules.Contains(rule.RuleId))
+                continue;
+
             context.CancellationToken.ThrowIfCancellationRequested();
 
             var results = await rule.EvaluateAsync(context);

@@ -91,4 +91,11 @@ public static class ProfileDefaults
     {
         return Profiles.TryGetValue(profileName, out var policy) ? policy : null;
     }
+
+    public static IReadOnlyList<string> GetValidProfileNames()
+    {
+        return Profiles.Keys
+            .OrderBy(static name => name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
 }

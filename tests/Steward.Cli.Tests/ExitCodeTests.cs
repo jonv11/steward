@@ -8,10 +8,18 @@ namespace Steward.Cli.Tests;
 public class ExitCodeTests
 {
     [Fact]
-    public void UnknownCommand_ReturnsNonZeroExitCode()
+    public void UnknownCommand_ReturnsUsageErrorExitCode()
     {
         var (exitCode, _, _) = CliTestHelper.InvokeCapture("nonexistent-command");
 
-        exitCode.Should().NotBe(0);
+        exitCode.Should().Be(2);
+    }
+
+    [Fact]
+    public void UnknownOption_ReturnsUsageErrorExitCode()
+    {
+        var (exitCode, _, _) = CliTestHelper.InvokeCapture("check", "--not-a-real-option");
+
+        exitCode.Should().Be(2);
     }
 }

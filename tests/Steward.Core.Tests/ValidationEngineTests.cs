@@ -123,6 +123,22 @@ public class ValidationEngineTests
         result.Summary.FilesChecked.Should().Be(2);
     }
 
+    [Fact]
+    public async Task ValidateAsync_DisabledRules_AreSkipped()
+    {
+        var engine = new ValidationEngine([new AlwaysErrorRule(), new AlwaysWarningRule()]);
+        var context = MakeContext();
+        context.Policy!.Validation = new ValidationConfig
+        {
+            DisabledRules = ["TEST-001"]
+        };
+
+        var result = await engine.ValidateAsync(context);
+
+        result.Diagnostics.Should().HaveCount(1);
+        result.Diagnostics[0].RuleId.Should().Be("TEST-002");
+    }
+
     private static ValidationContext MakeContext(IReadOnlyList<DiscoveredFile>? files = null) => new()
     {
         Policy = new RepositoryPolicy(),

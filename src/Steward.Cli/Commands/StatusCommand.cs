@@ -16,16 +16,17 @@ public static class StatusCommand
 
         command.SetAction(parseResult =>
         {
-            var ctx = CommandSetup.Build(parseResult);
+            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+                return ExitCodes.UsageError;
 
-            if (ctx.ConfigDirectory == null)
+            if (ctx!.ConfigDirectory == null)
             {
                 ctx.Formatter.WriteError("No .steward configuration directory found. Run 'steward init' first.");
                 return ExitCodes.UsageError;
             }
 
             // Cheap status checks
-            var status = ComputeStatus(ctx.Policy, ctx.FileSystem, ctx.RootPath, ctx.Files!);
+            var status = ComputeStatus(ctx.Policy, ctx.Config?.Profile, ctx.FileSystem, ctx.RootPath, ctx.Files!);
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
@@ -34,8 +35,25 @@ public static class StatusCommand
             else
             {
                 ctx.Formatter.WriteMessage($"Repository: {status.RepositoryName ?? "(unnamed)"}");
+                if (!string.IsNullOrWhiteSpace(status.RepositoryType) || !string.IsNullOrWhiteSpace(status.Profile))
+                {
+                    var details = new List<string>();
+                    if (!string.IsNullOrWhiteSpace(status.RepositoryType))
+                        details.Add($"type={status.RepositoryType}");
+                    if (!string.IsNullOrWhiteSpace(status.Profile))
+                        details.Add($"profile={status.Profile}");
+                    ctx.Formatter.WriteMessage($"Context: {string.Join(", ", details)}");
+                }
                 ctx.Formatter.WriteMessage($"Files: {status.FileCount}");
                 ctx.Formatter.WriteMessage("");
+
+                if (status.StartHere.Count > 0)
+                {
+                    ctx.Formatter.WriteMessage("Start Here:");
+                    foreach (var path in status.StartHere)
+                        ctx.Formatter.WriteMessage($"  - {path}");
+                    ctx.Formatter.WriteMessage("");
+                }
 
                 // Required artifacts
                 if (status.RequiredArtifacts.Count > 0)
@@ -75,6 +93,7 @@ public static class StatusCommand
 
     internal static RepositoryStatus ComputeStatus(
         RepositoryPolicy? policy,
+        string? profile,
         IFileSystem fileSystem,
         string rootPath,
         IReadOnlyList<DiscoveredFile> files)
@@ -126,9 +145,12 @@ public static class StatusCommand
         return new RepositoryStatus
         {
             RepositoryName = policy?.Repository?.Name,
+            RepositoryType = policy?.Repository?.Type,
+            Profile = profile,
             FileCount = files.Count,
             RequiredArtifacts = requiredArtifacts,
             MaintenanceArtifacts = maintenanceArtifacts,
+            StartHere = policy?.Governance?.StartHere ?? [],
             PresentCount = requiredArtifacts.Count(a => a.Present),
             RequiredCount = requiredArtifacts.Count,
             StaleCount = maintenanceArtifacts.Count(m => m.Stale)
@@ -138,9 +160,12 @@ public static class StatusCommand
     internal sealed class RepositoryStatus
     {
         public string? RepositoryName { get; init; }
+        public string? RepositoryType { get; init; }
+        public string? Profile { get; init; }
         public int FileCount { get; init; }
         public List<ArtifactStatus> RequiredArtifacts { get; init; } = [];
         public List<MaintenanceStatus> MaintenanceArtifacts { get; init; } = [];
+        public List<string> StartHere { get; init; } = [];
         public int PresentCount { get; init; }
         public int RequiredCount { get; init; }
         public int StaleCount { get; init; }

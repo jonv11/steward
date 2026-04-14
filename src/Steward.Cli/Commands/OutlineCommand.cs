@@ -11,7 +11,7 @@ public static class OutlineCommand
 {
     public static Command Create()
     {
-        var command = new Command("outline", "Show directory file tree");
+        var command = new Command("outline", "Show the repository file tree");
 
         var pathArgument = new Argument<string>("path")
         {
@@ -22,7 +22,7 @@ public static class OutlineCommand
 
         var depthOption = new Option<int>("--depth", "-d")
         {
-            Description = "Maximum depth to display",
+            Description = "Maximum depth to display (default: unlimited)",
             DefaultValueFactory = _ => int.MaxValue
         };
         command.Add(depthOption);

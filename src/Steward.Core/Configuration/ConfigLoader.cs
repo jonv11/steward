@@ -9,7 +9,6 @@ public sealed class ConfigLoader
 {
     private static readonly IDeserializer Deserializer = new DeserializerBuilder()
         .WithNamingConvention(UnderscoredNamingConvention.Instance)
-        .IgnoreUnmatchedProperties()
         .Build();
 
     private static readonly ISerializer Serializer = new SerializerBuilder()
@@ -57,14 +56,9 @@ public sealed class ConfigLoader
         if (!_fileSystem.FileExists(path)) return null;
 
         var yaml = _fileSystem.ReadAllText(path);
-        try
-        {
-            return Deserializer.Deserialize<StewardConfig>(yaml);
-        }
-        catch (YamlException ex)
-        {
-            throw new StewardConfigException($"Failed to parse '{path}': {ex.Message}", path, ex);
-        }
+        var config = Deserialize<StewardConfig>(yaml, path);
+        ValidateConfig(config, path);
+        return config;
     }
 
     public RepositoryPolicy? LoadPolicy(string configDirectory)
@@ -73,14 +67,7 @@ public sealed class ConfigLoader
         if (!_fileSystem.FileExists(path)) return null;
 
         var yaml = _fileSystem.ReadAllText(path);
-        try
-        {
-            return Deserializer.Deserialize<RepositoryPolicy>(yaml);
-        }
-        catch (YamlException ex)
-        {
-            throw new StewardConfigException($"Failed to parse '{path}': {ex.Message}", path, ex);
-        }
+        return Deserialize<RepositoryPolicy>(yaml, path);
     }
 
     public PathPolicyDocument? LoadPathPolicy(string configDirectory)
@@ -89,9 +76,17 @@ public sealed class ConfigLoader
         if (!_fileSystem.FileExists(path)) return null;
 
         var yaml = _fileSystem.ReadAllText(path);
+        return Deserialize<PathPolicyDocument>(yaml, path);
+    }
+
+    public static string SerializeConfig(StewardConfig config) => Serializer.Serialize(config);
+    public static string SerializePolicy(RepositoryPolicy policy) => Serializer.Serialize(policy);
+
+    private static T Deserialize<T>(string yaml, string path)
+    {
         try
         {
-            return Deserializer.Deserialize<PathPolicyDocument>(yaml);
+            return Deserializer.Deserialize<T>(yaml);
         }
         catch (YamlException ex)
         {
@@ -99,6 +94,17 @@ public sealed class ConfigLoader
         }
     }
 
-    public static string SerializeConfig(StewardConfig config) => Serializer.Serialize(config);
-    public static string SerializePolicy(RepositoryPolicy policy) => Serializer.Serialize(policy);
+    private static void ValidateConfig(StewardConfig config, string path)
+    {
+        if (string.IsNullOrWhiteSpace(config.Profile))
+            return;
+
+        if (ProfileDefaults.GetProfilePolicy(config.Profile) != null)
+            return;
+
+        var validProfiles = string.Join(", ", ProfileDefaults.GetValidProfileNames());
+        throw new StewardConfigException(
+            $"Invalid profile '{config.Profile}' in '{path}'. Valid profiles: {validProfiles}.",
+            path);
+    }
 }

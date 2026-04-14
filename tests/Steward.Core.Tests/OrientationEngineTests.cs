@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Steward.Core.Configuration;
 using Steward.Core.Discovery;
 using Steward.Core.Orientation;
 using Xunit;
@@ -68,6 +69,26 @@ public class OrientationEngineTests
     {
         var file = new DiscoveredFile("src/deep/app.cs", 500, false);
         OrientationEngine.Classify(file).Should().Be("source");
+    }
+
+    [Fact]
+    public void Classify_UsesPolicyRole_WhenConfigured()
+    {
+        var file = new DiscoveredFile("AGENT_GUIDE.txt", 10, false);
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new ArtifactDefinition
+                {
+                    Path = "AGENT_GUIDE.txt",
+                    Role = "authoritative",
+                    Required = false
+                }
+            ]
+        };
+
+        OrientationEngine.Classify(file, policy).Should().Be("authoritative");
     }
 
     [Fact]

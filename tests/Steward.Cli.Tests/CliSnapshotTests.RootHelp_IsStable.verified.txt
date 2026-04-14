@@ -1,0 +1,26 @@
+Description:
+  Repository Steward — a configurable repository stewardship CLI for humans and AI agents
+
+Usage:
+  steward [command] [options]
+
+Options:
+  -?, -h, --help                                Show help and usage information
+  --version                                     Show version information
+  -o, --output <Json|Text>                      Output format: text or json [default: Text]
+  -v, --verbosity <Debug|Normal|Quiet|Verbose>  Verbosity level: quiet, normal, verbose, or debug [default: Normal]
+  --no-color                                    Disable colored output
+  -c, --config                                  Path to .steward configuration directory
+
+Commands:
+  version            Print version and runtime information
+  orient             Show classified repository structure
+  outline <path>     Show the repository file tree [default: .]
+  init               Initialize .steward configuration
+  config             Configuration management
+  check              Validate repository against policy
+  md                 Markdown structural operations
+  search <query>     Search repository content and headings
+  maintain           Deterministic maintenance of governed artifacts
+  status             Show current repository state at a glance
+  explain <rule-id>  Explain a validation rule. Run without arguments to list all rules. []

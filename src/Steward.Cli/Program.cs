@@ -1,11 +1,12 @@
 using System.CommandLine;
+using Steward.Core;
 using Steward.Cli.Commands;
 
 namespace Steward.Cli;
 
 public static class Program
 {
-    public static async Task<int> Main(string[] args)
+    public static RootCommand CreateRootCommand()
     {
         var rootCommand = new RootCommand("Repository Steward — a configurable repository stewardship CLI for humans and AI agents");
 
@@ -23,6 +24,17 @@ public static class Program
         rootCommand.Add(StatusCommand.Create());
         rootCommand.Add(ExplainCommand.Create());
 
-        return await rootCommand.Parse(args).InvokeAsync(CancellationToken.None);
+        return rootCommand;
+    }
+
+    public static async Task<int> Main(string[] args)
+    {
+        var parseResult = CreateRootCommand().Parse(args);
+        var exitCode = await parseResult.InvokeAsync(CancellationToken.None);
+
+        if (parseResult.Errors.Count > 0 && exitCode != ExitCodes.Success)
+            return ExitCodes.UsageError;
+
+        return exitCode;
     }
 }

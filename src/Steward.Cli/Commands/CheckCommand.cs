@@ -9,20 +9,59 @@ namespace Steward.Cli.Commands;
 
 public static class CheckCommand
 {
+    internal static IValidationRule[] AllRules =>
+    [
+        new RequiredArtifactRule(),
+        new ForbiddenPathRule(),
+        new RequiredFrontmatterFieldRule(),
+        new SectionSizeRule(),
+        new ManagedRegionIntegrityRule(),
+        new ManagedScopeViolationRule(),
+        new StaleArtifactRule(),
+        new BrokenInternalLinkRule(),
+        new BrokenArtifactReferenceRule()
+    ];
+
     public static Command Create()
     {
         var command = new Command("check", "Validate repository against policy");
 
-        var scopeOption = new Option<string>("--scope", "-s")
+        var scopeOption = new Option<string?>("--scope", "-s")
         {
-            Description = "Validation scope: full, changed, staged, or paths",
-            DefaultValueFactory = _ => "full"
+            Description = "Validation scope: full, changed, staged (default: full)"
         };
+        var pathsOption = new Option<string[]?>("--paths")
+        {
+            Description = "Validate only the specified paths"
+        };
+        var fixOption = new Option<bool>("--fix")
+        {
+            Description = "Apply deterministic fixes for fixable rules"
+        };
+        var dryRunOption = new Option<bool>("--dry-run")
+        {
+            Description = "Show what --fix would change without applying"
+        };
+
         command.Add(scopeOption);
+        command.Add(pathsOption);
+        command.Add(fixOption);
+        command.Add(dryRunOption);
 
         command.SetAction((parseResult) =>
         {
-            var ctx = CommandSetup.Build(parseResult);
+            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+                return ExitCodes.UsageError;
+
+            var scopeValue = parseResult.GetValue(scopeOption);
+            var pathsValue = parseResult.GetValue(pathsOption);
+            var fixRequested = parseResult.GetValue(fixOption);
+            var dryRunRequested = parseResult.GetValue(dryRunOption);
+
+            // Resolve scope
+            IScopeResolver scopeResolver = ResolveScope(scopeValue, pathsValue);
+            var targetFiles = scopeResolver.Resolve(ctx!.Files!, ctx.RootPath);
+            var scopeLabel = scopeValue ?? (pathsValue is { Length: > 0 } ? "paths" : "full");
 
             // Create validation context
             var docCache = new DocumentCache(ctx.FileSystem, ctx.RootPath);
@@ -30,60 +69,123 @@ public static class CheckCommand
             {
                 Policy = ctx.Policy,
                 PathPolicy = ctx.PathPolicy,
-                TargetFiles = ctx.Files!,
+                TargetFiles = targetFiles,
                 FileSystem = ctx.FileSystem,
                 RepositoryRoot = ctx.RootPath,
                 DocumentCache = docCache
             };
 
             // Run validation
-            var rules = new IValidationRule[]
-            {
-                new RequiredArtifactRule(),
-                new ForbiddenPathRule(),
-                new RequiredFrontmatterFieldRule(),
-                new SectionSizeRule(),
-                new ManagedRegionIntegrityRule(),
-                new ManagedScopeViolationRule(),
-                new StaleArtifactRule(),
-                new BrokenInternalLinkRule()
-            };
-
+            var rules = AllRules;
             var engine = new ValidationEngine(rules);
             var result = engine.ValidateAsync(context).GetAwaiter().GetResult();
+
+            // Update the scope label in the result
+            result = result with
+            {
+                Summary = result.Summary with { Scope = scopeLabel }
+            };
+
+            var orderedDiagnostics = OrderDiagnostics(result.Diagnostics);
+
+            // Handle --fix / --dry-run
+            if (fixRequested || dryRunRequested)
+            {
+                var fixes = ComputeFixes(rules, context);
+                if (fixes.Count == 0)
+                {
+                    if (ctx.OutputFormat != OutputFormat.Json)
+                        ctx.Formatter.WriteMessage("No automatic fixes available.");
+                }
+                else
+                {
+                    foreach (var fix in fixes)
+                    {
+                        if (ctx.OutputFormat != OutputFormat.Json)
+                        {
+                            ctx.Formatter.WriteMessage($"[fix] {fix.RuleId}: {fix.Description}");
+                            ctx.Formatter.WriteMessage($"       {fix.FilePath}");
+                        }
+
+                        if (fixRequested && !dryRunRequested)
+                        {
+                            var dir = Path.GetDirectoryName(Path.Combine(ctx.RootPath, fix.FilePath));
+                            if (dir != null && !Directory.Exists(dir))
+                                Directory.CreateDirectory(dir);
+                            File.WriteAllText(Path.Combine(ctx.RootPath, fix.FilePath), fix.NewContent);
+                        }
+                    }
+
+                    if (dryRunRequested && ctx.OutputFormat != OutputFormat.Json)
+                        ctx.Formatter.WriteMessage($"\nDry run: {fixes.Count} fix(es) would be applied. Use --fix to apply.");
+                    else if (fixRequested && ctx.OutputFormat != OutputFormat.Json)
+                        ctx.Formatter.WriteMessage($"\nApplied {fixes.Count} fix(es).");
+                }
+            }
 
             // Output
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                ctx.Formatter.WriteObject(result);
+                ctx.Formatter.WriteObject(new CheckResponse
+                {
+                    Summary = new CheckSummaryResponse
+                    {
+                        Scope = result.Summary.Scope,
+                        FilesChecked = result.Summary.FilesChecked,
+                        Errors = result.Summary.Errors,
+                        Warnings = result.Summary.Warnings,
+                        Infos = result.Summary.Infos,
+                        Pass = result.Summary.Pass
+                    },
+                    Diagnostics =
+                    [
+                        .. orderedDiagnostics.Select(diag => new CheckDiagnosticResponse
+                        {
+                            RuleId = diag.RuleId,
+                            Severity = FormatSeverity(diag.Severity),
+                            Category = diag.Category,
+                            Path = diag.Path,
+                            Line = diag.Line,
+                            Message = SecretFilter.Redact(diag.Message),
+                            Remediation = diag.Remediation != null ? SecretFilter.Redact(diag.Remediation) : null,
+                            Source = diag.Source
+                        })
+                    ]
+                });
             }
             else
             {
-                foreach (var diag in result.Diagnostics)
+                if (orderedDiagnostics.Count == 0 && !fixRequested && !dryRunRequested)
                 {
-                    var severity = diag.Severity switch
+                    ctx.Formatter.WriteMessage("No issues found.");
+                }
+                else if (orderedDiagnostics.Count > 0)
+                {
+                    foreach (var diag in orderedDiagnostics)
                     {
-                        DiagnosticSeverity.Error => "ERROR",
-                        DiagnosticSeverity.Warning => "WARN ",
-                        DiagnosticSeverity.Info => "INFO ",
-                        _ => "     "
-                    };
+                        var location = diag.Path != null
+                            ? diag.Line.HasValue ? $"{diag.Path}:{diag.Line}" : diag.Path
+                            : "";
 
-                    var location = diag.Path != null
-                        ? diag.Line.HasValue ? $"{diag.Path}:{diag.Line}" : diag.Path
-                        : "";
+                        var message = SecretFilter.Redact(diag.Message);
+                        var locationPart = location.Length > 0 ? $" {location}:" : ":";
+                        ctx.Formatter.WriteMessage($"[{FormatSeverity(diag.Severity),-5}] {diag.RuleId}{locationPart} {message}");
 
-                    var message = SecretFilter.Redact(diag.Message);
-                    ctx.Formatter.WriteMessage($"[{severity}] {diag.RuleId} {location}: {message}");
-
-                    if (diag.Remediation != null)
-                        ctx.Formatter.WriteMessage($"         Fix: {diag.Remediation}");
+                        if (diag.Remediation != null)
+                            ctx.Formatter.WriteMessage($"         fix: {SecretFilter.Redact(diag.Remediation)}");
+                    }
                 }
 
+                // Completion summary
                 ctx.Formatter.WriteMessage("");
-                ctx.Formatter.WriteMessage($"Files checked: {result.Summary.FilesChecked}");
-                ctx.Formatter.WriteMessage($"Errors: {result.Summary.Errors}, Warnings: {result.Summary.Warnings}, Info: {result.Summary.Infos}");
-                ctx.Formatter.WriteMessage(result.Summary.Pass ? "PASS" : "FAIL");
+                ctx.Formatter.WriteMessage($"Files checked: {result.Summary.FilesChecked}  " +
+                    $"Errors: {result.Summary.Errors}  Warnings: {result.Summary.Warnings}  Info: {result.Summary.Infos}");
+                if (scopeLabel != "full")
+                    ctx.Formatter.WriteMessage($"Scope: {scopeLabel}");
+                ctx.Formatter.WriteMessage(result.Summary.Pass ? "Result: PASS" : "Result: FAIL");
+
+                // Completion policy summary
+                WriteCompletionSummary(ctx, result.Diagnostics);
             }
 
             return result.Summary.Pass ? ExitCodes.Success : ExitCodes.ValidationFailure;
@@ -91,4 +193,98 @@ public static class CheckCommand
 
         return command;
     }
+
+    internal static IScopeResolver ResolveScope(string? scopeValue, string[]? pathsValue)
+    {
+        if (pathsValue is { Length: > 0 })
+            return new PathsScopeResolver(pathsValue);
+
+        return scopeValue?.ToLowerInvariant() switch
+        {
+            "changed" => new ChangedScopeResolver(),
+            "staged" => new StagedScopeResolver(),
+            "full" or null => new FullScopeResolver(),
+            _ => new FullScopeResolver()
+        };
+    }
+
+    private static List<Fix> ComputeFixes(IValidationRule[] rules, ValidationContext context)
+    {
+        var fixes = new List<Fix>();
+        foreach (var rule in rules.OfType<IFixableRule>())
+        {
+            var ruleFixes = rule.ComputeFixesAsync(context).GetAwaiter().GetResult();
+            fixes.AddRange(ruleFixes);
+        }
+        return fixes;
+    }
+
+    private static void WriteCompletionSummary(CommandContext ctx, IReadOnlyList<Diagnostic> diagnostics)
+    {
+        var requiredMissing = diagnostics.Count(d => d.RuleId == "STWD-001");
+        var staleArtifacts = diagnostics.Count(d => d.RuleId == "STWD-007");
+        var brokenLinks = diagnostics.Count(d => d.RuleId == "STWD-008");
+        var brokenRefs = diagnostics.Count(d => d.RuleId == "STWD-009");
+
+        if (requiredMissing == 0 && staleArtifacts == 0 && brokenLinks == 0 && brokenRefs == 0)
+            return;
+
+        ctx.Formatter.WriteMessage("");
+        ctx.Formatter.WriteMessage("Completion:");
+        if (requiredMissing > 0)
+            ctx.Formatter.WriteMessage($"  - {requiredMissing} required artifact(s) missing");
+        if (staleArtifacts > 0)
+            ctx.Formatter.WriteMessage($"  - {staleArtifacts} maintained artifact(s) stale → run 'steward maintain --apply'");
+        if (brokenLinks > 0)
+            ctx.Formatter.WriteMessage($"  - {brokenLinks} broken internal link(s)");
+        if (brokenRefs > 0)
+            ctx.Formatter.WriteMessage($"  - {brokenRefs} broken artifact reference(s) in policy");
+    }
+
+    private static List<Diagnostic> OrderDiagnostics(IEnumerable<Diagnostic> diagnostics)
+    {
+        return diagnostics
+            .OrderByDescending(static diag => diag.Severity)
+            .ThenBy(static diag => diag.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static diag => diag.Line ?? 0)
+            .ThenBy(static diag => diag.RuleId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static diag => diag.Message, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    internal static string FormatSeverity(DiagnosticSeverity severity) => severity switch
+    {
+        DiagnosticSeverity.Error => "error",
+        DiagnosticSeverity.Warning => "warn",
+        DiagnosticSeverity.Info => "info",
+        _ => "unknown"
+    };
+}
+
+internal sealed class CheckResponse
+{
+    public required CheckSummaryResponse Summary { get; init; }
+    public required List<CheckDiagnosticResponse> Diagnostics { get; init; }
+}
+
+internal sealed class CheckSummaryResponse
+{
+    public required string Scope { get; init; }
+    public required int FilesChecked { get; init; }
+    public required int Errors { get; init; }
+    public required int Warnings { get; init; }
+    public required int Infos { get; init; }
+    public required bool Pass { get; init; }
+}
+
+internal sealed class CheckDiagnosticResponse
+{
+    public required string RuleId { get; init; }
+    public required string Severity { get; init; }
+    public required string Category { get; init; }
+    public string? Path { get; init; }
+    public int? Line { get; init; }
+    public required string Message { get; init; }
+    public string? Remediation { get; init; }
+    public string? Source { get; init; }
 }

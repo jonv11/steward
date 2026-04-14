@@ -26,5 +26,6 @@ public class GlobalOptionsTests
         var (_, output, _) = CliTestHelper.InvokeCapture("--help");
 
         output.Should().Contain("version");
+        output.Should().Contain("outline");
     }
 }

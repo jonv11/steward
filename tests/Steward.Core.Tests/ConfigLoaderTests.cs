@@ -63,7 +63,7 @@ public class ConfigLoaderTests
     }
 
     [Fact]
-    public void LoadConfig_UnknownFields_DoesNotThrow()
+    public void LoadConfig_UnknownFields_Throws()
     {
         var fs = new InMemoryFileSystem()
             .AddDirectory("root/.steward")
@@ -72,7 +72,21 @@ public class ConfigLoaderTests
         var loader = new ConfigLoader(fs);
         var action = () => loader.LoadConfig("root/.steward");
 
-        action.Should().NotThrow();
+        action.Should().Throw<StewardConfigException>();
+    }
+
+    [Fact]
+    public void LoadConfig_InvalidProfile_Throws()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddDirectory("root/.steward")
+            .AddFile("root/.steward/config.yaml", "profile: default\n");
+
+        var loader = new ConfigLoader(fs);
+        var action = () => loader.LoadConfig("root/.steward");
+
+        action.Should().Throw<StewardConfigException>()
+            .WithMessage("*Invalid profile*");
     }
 
     [Fact]

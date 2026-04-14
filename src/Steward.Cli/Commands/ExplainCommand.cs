@@ -3,7 +3,6 @@ using Steward.Core;
 using Steward.Core.Formatting;
 using Steward.Core.Validation;
 using Steward.Core.Validation.Rules;
-using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -23,11 +22,12 @@ public static class ExplainCommand
 
     public static Command Create()
     {
-        var command = new Command("explain", "Explain a validation rule");
+        var command = new Command("explain", "Explain a validation rule. Run without arguments to list all rules.");
 
-        var ruleArg = new Argument<string>("rule-id")
+        var ruleArg = new Argument<string?>("rule-id")
         {
-            Description = "The rule ID to explain (e.g., STWD-001)"
+            Description = "Rule ID to explain (e.g., STWD-001). Omit to list all rules.",
+            DefaultValueFactory = _ => null
         };
         command.Add(ruleArg);
 
@@ -37,7 +37,7 @@ public static class ExplainCommand
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
             var ruleId = parseResult.GetValue(ruleArg);
 
-            var formatter = CreateFormatter(output, noColor);
+            var formatter = CommandSetup.CreateFormatter(output, noColor);
 
             if (string.IsNullOrWhiteSpace(ruleId))
             {
@@ -121,12 +121,4 @@ public static class ExplainCommand
         };
     }
 
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
-        };
-    }
 }

@@ -2,7 +2,6 @@ using System.CommandLine;
 using Steward.Core;
 using Steward.Core.Formatting;
 using Steward.Core.Markdown;
-using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -221,7 +220,7 @@ public static class MdEditCommand
     {
         var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
         var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-        var formatter = CreateFormatter(output, noColor);
+        var formatter = CommandSetup.CreateFormatter(output, noColor);
 
         var fullPath = Path.GetFullPath(file);
         if (!File.Exists(fullPath))
@@ -271,12 +270,4 @@ public static class MdEditCommand
         return ExitCodes.Success;
     }
 
-    private static IOutputFormatter CreateFormatter(OutputFormat format, bool noColor)
-    {
-        return format switch
-        {
-            OutputFormat.Json => new JsonOutputFormatter(Console.Out),
-            _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
-        };
-    }
 }

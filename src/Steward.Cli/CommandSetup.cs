@@ -24,16 +24,14 @@ public static class CommandSetup
 
     /// <summary>
     /// Builds a CommandContext with config, policy, and discovered files.
+    /// Config file settings (output format, no-color, discovery excludes) are applied as defaults;
+    /// explicit CLI flags always take precedence.
     /// </summary>
     public static CommandContext Build(ParseResult parseResult, bool discoverFiles = true)
     {
-        var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
-        var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-        var configPath = parseResult.GetValue(GlobalOptionsSetup.ConfigOption);
-
-        var formatter = CreateFormatter(output, noColor);
         var fileSystem = new PhysicalFileSystem();
         var rootPath = Directory.GetCurrentDirectory();
+        var configPath = parseResult.GetValue(GlobalOptionsSetup.ConfigOption);
 
         var configLoader = new ConfigLoader(fileSystem);
         var configDir = configLoader.FindConfigDirectory(rootPath, configPath);
@@ -49,10 +47,19 @@ public static class CommandSetup
             pathPolicy = configLoader.LoadPathPolicy(configDir);
         }
 
+        // Resolve effective output settings: CLI flag > config file > built-in default.
+        var output = ResolveOutputFormat(parseResult, config);
+        var verbosity = ResolveVerbosity(parseResult, config);
+        var noColor = ResolveNoColor(parseResult, config);
+        var effectiveExcludes = config?.Discovery?.Exclude ?? [];
+
+        var formatter = CreateFormatter(output, noColor);
+
         IReadOnlyList<DiscoveredFile>? files = null;
         if (discoverFiles)
         {
-            var ignoreFilter = GitIgnoreFilter.Load(rootPath, fileSystem);
+            // Apply discovery excludes from config in addition to .gitignore rules.
+            var ignoreFilter = GitIgnoreFilter.Load(rootPath, fileSystem, effectiveExcludes);
             var discoveryService = new FileDiscoveryService(fileSystem, ignoreFilter);
             files = discoveryService.Discover(rootPath);
         }
@@ -63,11 +70,80 @@ public static class CommandSetup
             FileSystem = fileSystem,
             Formatter = formatter,
             OutputFormat = output,
+            Verbosity = verbosity,
+            NoColor = noColor,
             ConfigDirectory = configDir,
             Config = config,
             Policy = policy,
             PathPolicy = pathPolicy,
-            Files = files
+            Files = files,
+            EffectiveDiscoveryExcludes = effectiveExcludes
         };
+    }
+
+    public static bool TryBuild(ParseResult parseResult, out CommandContext? context, bool discoverFiles = true)
+    {
+        try
+        {
+            context = Build(parseResult, discoverFiles);
+            return true;
+        }
+        catch (StewardConfigException ex)
+        {
+            context = null;
+            var formatter = CreateFormatter(parseResult.GetValue(GlobalOptionsSetup.OutputOption),
+                parseResult.GetValue(GlobalOptionsSetup.NoColorOption));
+            formatter.WriteError($"Configuration error: {ex.Message}");
+            formatter.WriteError("Run 'steward config validate' for details.");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Resolves the effective output format: explicit CLI flag overrides config file default.
+    /// In System.CommandLine beta5, GetResult returns a non-null result even for options that
+    /// were not explicitly provided (Implicit = true). We check Implicit to distinguish.
+    /// </summary>
+    private static OutputFormat ResolveOutputFormat(ParseResult parseResult, StewardConfig? config)
+    {
+        // If the user explicitly passed --output on the command line, honor it.
+        var optResult = parseResult.GetResult(GlobalOptionsSetup.OutputOption);
+        if (optResult is { Implicit: false })
+            return parseResult.GetValue(GlobalOptionsSetup.OutputOption);
+
+        // Otherwise fall back to config file setting, then built-in default.
+        if (config?.Output?.Format != null &&
+            Enum.TryParse<OutputFormat>(config.Output.Format, ignoreCase: true, out var fromConfig))
+            return fromConfig;
+
+        return OutputFormat.Text;
+    }
+
+    /// <summary>
+    /// Resolves the effective verbosity: explicit CLI flag overrides config file default.
+    /// </summary>
+    private static Verbosity ResolveVerbosity(ParseResult parseResult, StewardConfig? config)
+    {
+        var optResult = parseResult.GetResult(GlobalOptionsSetup.VerbosityOption);
+        if (optResult is { Implicit: false })
+            return parseResult.GetValue(GlobalOptionsSetup.VerbosityOption);
+
+        if (config?.Output?.Verbosity != null &&
+            Enum.TryParse<Verbosity>(config.Output.Verbosity, ignoreCase: true, out var fromConfig))
+            return fromConfig;
+
+        return Verbosity.Normal;
+    }
+
+    /// <summary>
+    /// Resolves the effective no-color setting: explicit CLI flag overrides config file default.
+    /// </summary>
+    private static bool ResolveNoColor(ParseResult parseResult, StewardConfig? config)
+    {
+        var optResult = parseResult.GetResult(GlobalOptionsSetup.NoColorOption);
+        if (optResult is { Implicit: false })
+            return parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+
+        return config?.Output?.NoColor ?? false;
     }
 }

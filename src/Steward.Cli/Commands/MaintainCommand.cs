@@ -27,11 +27,13 @@ public static class MaintainCommand
 
         command.SetAction(parseResult =>
         {
+            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+                return ExitCodes.UsageError;
+
             var scope = parseResult.GetValue(scopeOption);
             var apply = parseResult.GetValue(applyOption);
-            var ctx = CommandSetup.Build(parseResult);
 
-            if (ctx.ConfigDirectory == null)
+            if (ctx!.ConfigDirectory == null)
             {
                 ctx.Formatter.WriteError("No .steward configuration directory found. Run 'steward init' first.");
                 return ExitCodes.UsageError;

@@ -40,6 +40,12 @@ Central navigation for all planning and decision artifacts.
 | [Implementation Instructions](planning/implementation-instructions.md) | Per-milestone execution guide |
 | [Curation Notes](planning/curation-notes.md) | What was merged, superseded, or deferred |
 
+## Audits
+
+| Document | Purpose |
+|----------|---------|
+| [Repository Audit — 2026-04-14](audits/repository-audit-2026-04-14.md) | Requirement-driven release audit and contract-alignment review |
+
 ## Source Materials
 
 | Document | Role |
