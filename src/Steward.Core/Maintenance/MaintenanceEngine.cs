@@ -64,6 +64,7 @@ public sealed class MaintenanceEngine
     [
         new StructureDocumentMaintainer(),
         new IndexMaintainer(),
+        new DirectoryIndexMaintainer(),
         new ManagedSectionMaintainer(),
         new FrontmatterAutoMaintainer(),
         new ManifestMaintainer()
