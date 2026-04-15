@@ -119,4 +119,82 @@ public class ExplainCommandTests
         output.Should().Contain("STWD-001");
         // Without a valid steward dir, filesEvaluated may not appear — that's OK
     }
+
+    [Fact]
+    public void ExplainPath_ResolveEffectivePolicy_ReturnsAllLayers()
+    {
+        var policy = new Steward.Core.Configuration.RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new Steward.Core.Configuration.ArtifactDefinition
+                {
+                    Path = "docs/index.md",
+                    Role = "index",
+                    Description = "Main index",
+                    Required = true,
+                    IndexOf = "docs/decisions"
+                }
+            ],
+            Governance = new Steward.Core.Configuration.GovernanceConfig
+            {
+                Frontmatter = new Steward.Core.Configuration.FrontmatterConfig
+                {
+                    RequiredFields = ["title"]
+                }
+            },
+            Validation = new Steward.Core.Configuration.ValidationConfig
+            {
+                DisabledRules = ["STWD-004"],
+                PathOverrides =
+                [
+                    new Steward.Core.Configuration.PathOverride
+                    {
+                        Pattern = "docs/**",
+                        DisabledRules = ["STWD-002"]
+                    }
+                ],
+                FrontmatterRequirements =
+                [
+                    new Steward.Core.Configuration.FrontmatterRequirement
+                    {
+                        Pattern = "docs/**",
+                        RequiredFields = ["status"],
+                        AllowedValues = new Dictionary<string, List<string>>
+                        {
+                            ["status"] = ["draft", "accepted"]
+                        }
+                    }
+                ]
+            }
+        };
+
+        var ctx = new CommandContext
+        {
+            RootPath = "/repo",
+            FileSystem = new Steward.TestFixtures.InMemoryFileSystem(),
+            Formatter = new Steward.Cli.Formatting.TextOutputFormatter(TextWriter.Null, false),
+            OutputFormat = Steward.Core.OutputFormat.Text,
+            Verbosity = Steward.Core.Verbosity.Normal,
+            NoColor = true,
+            Policy = policy,
+            PathPolicy = null,
+            Files = [new Steward.Core.Discovery.DiscoveredFile("docs/index.md", 100, false)]
+        };
+
+        var info = ExplainCommand.ResolveEffectivePolicy("docs/index.md", ctx);
+
+        info.Path.Should().Be("docs/index.md");
+        info.Classification.Should().NotBeNullOrEmpty();
+        info.Artifact.Should().NotBeNull();
+        info.Artifact!.Role.Should().Be("index");
+        info.Artifact.IndexOf.Should().Be("docs/decisions");
+        info.SuppressedRules.Should().Contain("STWD-004");
+        info.SuppressedRules.Should().Contain("STWD-002");
+        info.RequiredFrontmatterFields.Should().Contain("title");
+        info.RequiredFrontmatterFields.Should().Contain("status");
+        info.AllowedValues.Should().ContainKey("status");
+        info.ApplicableRules.Should().NotContain("STWD-004");
+        info.ApplicableRules.Should().NotContain("STWD-002");
+    }
 }

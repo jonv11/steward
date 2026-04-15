@@ -1,6 +1,10 @@
 using System.CommandLine;
+using DotNet.Globbing;
 using Steward.Core;
+using Steward.Core.Configuration;
+using Steward.Core.Discovery;
 using Steward.Core.Formatting;
+using Steward.Core.Orientation;
 using Steward.Core.Validation;
 namespace Steward.Cli.Commands;
 
@@ -84,6 +88,9 @@ public static class ExplainCommand
             return ExitCodes.Success;
         });
 
+        // Add `explain path <path>` subcommand
+        command.Add(CreatePathSubcommand());
+
         return command;
     }
 
@@ -155,4 +162,210 @@ public static class ExplainCommand
         };
     }
 
+    private static Command CreatePathSubcommand()
+    {
+        var pathCmd = new Command("path", "Show effective governance for a specific file path.");
+
+        var pathArg = new Argument<string>("file-path")
+        {
+            Description = "Relative path to the file to explain (e.g., docs/planning/milestone-plan.md)."
+        };
+        pathCmd.Add(pathArg);
+
+        pathCmd.SetAction(parseResult =>
+        {
+            var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
+            var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+            var filePath = parseResult.GetValue(pathArg)!.Replace('\\', '/');
+
+            var formatter = CommandSetup.CreateFormatter(output, noColor);
+
+            if (!CommandSetup.TryBuild(parseResult, out var ctx) || ctx == null)
+            {
+                formatter.WriteError("Could not load steward configuration. Run from a steward-managed repository.");
+                return ExitCodes.InternalError;
+            }
+
+            var info = ResolveEffectivePolicy(filePath, ctx);
+
+            if (output == OutputFormat.Json)
+            {
+                formatter.WriteObject(info);
+            }
+            else
+            {
+                formatter.WriteMessage($"Path: {info.Path}");
+                formatter.WriteMessage($"Classification: {info.Classification}");
+                formatter.WriteMessage($"Path-policy category: {info.PathPolicyCategory}");
+                if (info.MatchedPattern != null)
+                    formatter.WriteMessage($"Matched pattern: {info.MatchedPattern}");
+
+                if (info.Artifact != null)
+                {
+                    formatter.WriteMessage("");
+                    formatter.WriteMessage("Artifact:");
+                    if (info.Artifact.Role != null)
+                        formatter.WriteMessage($"  Role: {info.Artifact.Role}");
+                    if (info.Artifact.Description != null)
+                        formatter.WriteMessage($"  Description: {info.Artifact.Description}");
+                    formatter.WriteMessage($"  Required: {info.Artifact.Required}");
+                    if (info.Artifact.IndexOf != null)
+                        formatter.WriteMessage($"  Index of: {info.Artifact.IndexOf}");
+                }
+
+                if (info.SuppressedRules.Count > 0)
+                {
+                    formatter.WriteMessage("");
+                    formatter.WriteMessage($"Suppressed rules: {string.Join(", ", info.SuppressedRules)}");
+                }
+
+                if (info.RequiredFrontmatterFields.Count > 0)
+                {
+                    formatter.WriteMessage("");
+                    formatter.WriteMessage($"Required frontmatter: {string.Join(", ", info.RequiredFrontmatterFields)}");
+                }
+
+                if (info.AllowedValues.Count > 0)
+                {
+                    foreach (var (field, values) in info.AllowedValues)
+                    {
+                        formatter.WriteMessage($"  {field} allowed: {string.Join(", ", values)}");
+                    }
+                }
+
+                if (info.ApplicableRules.Count > 0)
+                {
+                    formatter.WriteMessage("");
+                    formatter.WriteMessage("Applicable rules:");
+                    foreach (var ruleId in info.ApplicableRules)
+                    {
+                        formatter.WriteMessage($"  {ruleId}");
+                    }
+                }
+            }
+
+            return ExitCodes.Success;
+        });
+
+        return pathCmd;
+    }
+
+    internal static EffectivePolicyInfo ResolveEffectivePolicy(string relativePath, CommandContext ctx)
+    {
+        // 1. Orientation classification
+        var discoveredFile = ctx.Files?.FirstOrDefault(f =>
+            string.Equals(f.RelativePath.Replace('\\', '/'), relativePath, StringComparison.OrdinalIgnoreCase));
+        var classification = discoveredFile != null
+            ? OrientationEngine.Classify(discoveredFile, ctx.Policy)
+            : "unknown";
+
+        // 2. Path-policy category
+        var pathEngine = new PathPolicyEngine(ctx.PathPolicy);
+        var pathEval = pathEngine.Evaluate(relativePath);
+
+        // 3. Artifact match
+        ArtifactSummary? artifactSummary = null;
+        if (ctx.Policy?.Artifacts != null)
+        {
+            var matched = ctx.Policy.Artifacts.FirstOrDefault(a =>
+                !string.IsNullOrWhiteSpace(a.Path) &&
+                string.Equals(a.Path!.Replace('\\', '/').TrimEnd('/'), relativePath, StringComparison.OrdinalIgnoreCase));
+            if (matched != null)
+            {
+                artifactSummary = new ArtifactSummary
+                {
+                    Role = matched.Role,
+                    Description = matched.Description,
+                    Required = matched.Required,
+                    IndexOf = matched.IndexOf
+                };
+            }
+        }
+
+        // 4. Suppressed rules
+        var suppressedRules = new List<string>();
+        if (ctx.Policy?.Validation?.PathOverrides != null)
+        {
+            foreach (var ov in ctx.Policy.Validation.PathOverrides)
+            {
+                if (string.IsNullOrWhiteSpace(ov.Pattern) || ov.DisabledRules == null)
+                    continue;
+                var glob = Glob.Parse(ov.Pattern);
+                if (glob.IsMatch(relativePath))
+                    suppressedRules.AddRange(ov.DisabledRules);
+            }
+        }
+        if (ctx.Policy?.Validation?.DisabledRules != null)
+            suppressedRules.AddRange(ctx.Policy.Validation.DisabledRules);
+        suppressedRules = suppressedRules.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        // 5. Effective frontmatter requirements
+        var requiredFields = new List<string>(ctx.Policy?.Governance?.Frontmatter?.RequiredFields ?? []);
+        var allowedValues = new Dictionary<string, List<string>>();
+
+        if (ctx.Policy?.Validation?.FrontmatterRequirements != null)
+        {
+            foreach (var req in ctx.Policy.Validation.FrontmatterRequirements)
+            {
+                if (string.IsNullOrWhiteSpace(req.Pattern)) continue;
+                var glob = Glob.Parse(req.Pattern);
+                if (!glob.IsMatch(relativePath)) continue;
+
+                if (req.RequiredFields != null)
+                {
+                    foreach (var f in req.RequiredFields)
+                    {
+                        if (!requiredFields.Contains(f, StringComparer.OrdinalIgnoreCase))
+                            requiredFields.Add(f);
+                    }
+                }
+                if (req.AllowedValues != null)
+                {
+                    foreach (var (field, values) in req.AllowedValues)
+                        allowedValues[field] = values;
+                }
+            }
+        }
+
+        // 6. Applicable rules (not suppressed)
+        var suppressedSet = new HashSet<string>(suppressedRules, StringComparer.OrdinalIgnoreCase);
+        var applicableRules = AllRules
+            .Where(r => !suppressedSet.Contains(r.RuleId))
+            .Select(r => r.RuleId)
+            .ToList();
+
+        return new EffectivePolicyInfo
+        {
+            Path = relativePath,
+            Classification = classification,
+            PathPolicyCategory = pathEval.Category,
+            MatchedPattern = pathEval.MatchedPattern,
+            Artifact = artifactSummary,
+            SuppressedRules = suppressedRules,
+            RequiredFrontmatterFields = requiredFields,
+            AllowedValues = allowedValues,
+            ApplicableRules = applicableRules
+        };
+    }
+
+    internal sealed class EffectivePolicyInfo
+    {
+        public string Path { get; set; } = "";
+        public string Classification { get; set; } = "unknown";
+        public string PathPolicyCategory { get; set; } = "unclassified";
+        public string? MatchedPattern { get; set; }
+        public ArtifactSummary? Artifact { get; set; }
+        public List<string> SuppressedRules { get; set; } = [];
+        public List<string> RequiredFrontmatterFields { get; set; } = [];
+        public Dictionary<string, List<string>> AllowedValues { get; set; } = [];
+        public List<string> ApplicableRules { get; set; } = [];
+    }
+
+    internal sealed class ArtifactSummary
+    {
+        public string? Role { get; set; }
+        public string? Description { get; set; }
+        public bool Required { get; set; }
+        public string? IndexOf { get; set; }
+    }
 }
