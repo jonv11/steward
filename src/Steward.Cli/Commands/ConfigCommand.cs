@@ -1,4 +1,5 @@
 using System.CommandLine;
+using DotNet.Globbing;
 using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Configuration;
@@ -14,6 +15,7 @@ public static class ConfigCommand
 
         command.Add(CreateValidateCommand());
         command.Add(CreateShowCommand());
+        command.Add(CreateDoctorCommand());
 
         return command;
     }
@@ -182,6 +184,152 @@ public static class ConfigCommand
     {
         return fileSystem.FileExists(path) ? fileSystem.ReadAllText(path) : null;
     }
+
+    private static Command CreateDoctorCommand()
+    {
+        var command = new Command("doctor", "Detect valid but ineffective configuration");
+
+        command.SetAction(parseResult =>
+        {
+            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+                return ExitCodes.UsageError;
+
+            if (ctx!.ConfigDirectory == null)
+            {
+                ctx.Formatter.WriteError("No .steward/ directory found. Run 'steward init' first.");
+                return ExitCodes.UsageError;
+            }
+
+            var findings = RunDoctor(ctx);
+
+            if (ctx.OutputFormat == OutputFormat.Json)
+            {
+                ctx.Formatter.WriteObject(new
+                {
+                    findings = findings.Select(f => new
+                    {
+                        category = f.Category,
+                        message = f.Message,
+                        remediation = f.Remediation
+                    }).ToArray()
+                });
+            }
+            else
+            {
+                if (findings.Count == 0)
+                {
+                    ctx.Formatter.WriteMessage("No configuration issues found.");
+                }
+                else
+                {
+                    ctx.Formatter.WriteMessage($"Found {findings.Count} configuration issue(s):");
+                    ctx.Formatter.WriteMessage("");
+                    foreach (var f in findings)
+                    {
+                        ctx.Formatter.WriteMessage($"  [{f.Category}] {f.Message}");
+                        ctx.Formatter.WriteMessage($"    Remediation: {f.Remediation}");
+                    }
+                }
+            }
+
+            return findings.Count > 0 ? ExitCodes.ValidationFailure : ExitCodes.Success;
+        });
+
+        return command;
+    }
+
+    internal static List<DoctorFinding> RunDoctor(CommandContext ctx)
+    {
+        var findings = new List<DoctorFinding>();
+        var existingPaths = new HashSet<string>(
+            (ctx.Files ?? []).Select(f => f.RelativePath.Replace('\\', '/')),
+            StringComparer.OrdinalIgnoreCase);
+
+        // 1. Dead start_here entries
+        if (ctx.Policy?.Governance?.StartHere != null)
+        {
+            foreach (var entry in ctx.Policy.Governance.StartHere)
+            {
+                if (!existingPaths.Contains(entry.Replace('\\', '/')))
+                {
+                    findings.Add(new DoctorFinding(
+                        "dead-start-here",
+                        $"start_here entry '{entry}' does not match any discovered file.",
+                        $"Remove '{entry}' from governance.start_here or create the file."));
+                }
+            }
+        }
+
+        // 2. Artifact declarations matching no existing file
+        if (ctx.Policy?.Artifacts != null)
+        {
+            foreach (var artifact in ctx.Policy.Artifacts)
+            {
+                if (string.IsNullOrWhiteSpace(artifact.Path)) continue;
+                var artifactPath = artifact.Path!.Replace('\\', '/').TrimEnd('/');
+                if (!existingPaths.Contains(artifactPath))
+                {
+                    findings.Add(new DoctorFinding(
+                        "missing-artifact",
+                        $"Artifact declaration '{artifactPath}' does not match any discovered file.",
+                        $"Create the file at '{artifactPath}' or remove the artifact from policy.yaml."));
+                }
+            }
+        }
+
+        // 3. Path-policy rulesets matching no files
+        if (ctx.PathPolicy?.Rulesets != null)
+        {
+            foreach (var ruleset in ctx.PathPolicy.Rulesets)
+            {
+                if (ruleset.Rules == null) continue;
+                foreach (var rule in ruleset.Rules)
+                {
+                    if (string.IsNullOrWhiteSpace(rule.Pattern)) continue;
+
+                    bool anyMatch;
+                    if (rule.Exact)
+                    {
+                        anyMatch = existingPaths.Contains(rule.Pattern.Replace('\\', '/'));
+                    }
+                    else
+                    {
+                        var glob = Glob.Parse(rule.Pattern);
+                        anyMatch = existingPaths.Any(p => glob.IsMatch(p));
+                    }
+
+                    if (!anyMatch)
+                    {
+                        findings.Add(new DoctorFinding(
+                            "unmatched-path-rule",
+                            $"Path-policy rule '{rule.Pattern}' matches no discovered files.",
+                            $"Update the pattern or remove the rule from path-policy.yaml."));
+                    }
+                }
+            }
+        }
+
+        // 4. Maintenance sources matching nothing
+        if (ctx.Policy?.Maintenance?.Artifacts != null)
+        {
+            foreach (var maint in ctx.Policy.Maintenance.Artifacts)
+            {
+                if (string.IsNullOrWhiteSpace(maint.Source)) continue;
+                var glob = Glob.Parse(maint.Source);
+                if (!existingPaths.Any(p => glob.IsMatch(p)))
+                {
+                    findings.Add(new DoctorFinding(
+                        "unmatched-maintenance-source",
+                        $"Maintenance source '{maint.Source}' for '{maint.Id ?? maint.Path}' matches no discovered files.",
+                        $"Update the source pattern or remove the maintenance artifact."));
+                }
+            }
+        }
+
+        return findings;
+    }
+
+    internal sealed record DoctorFinding(string Category, string Message, string Remediation);
 
     private static void WriteRawSection(IOutputFormatter formatter, string fileName, string? content)
     {

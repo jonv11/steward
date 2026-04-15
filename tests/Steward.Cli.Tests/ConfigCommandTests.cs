@@ -1,5 +1,8 @@
 using FluentAssertions;
+using Steward.Cli.Commands;
 using Steward.Cli.Tests.Helpers;
+using Steward.Core.Configuration;
+using Steward.Core.Discovery;
 using Xunit;
 
 namespace Steward.Cli.Tests;
@@ -86,5 +89,98 @@ public class ConfigCommandTests : IDisposable
 
         exitCode.Should().Be(2);
         error.Should().Contain("Run 'steward config validate' for details.");
+    }
+
+    [Fact]
+    public void ConfigDoctor_DeadStartHere_ReportsIssue()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Governance = new GovernanceConfig
+            {
+                StartHere = ["docs/getting-started.md"]
+            }
+        };
+
+        var ctx = CreateDoctorContext(policy, pathPolicy: null,
+            files: [new DiscoveredFile("README.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().ContainSingle();
+        findings[0].Category.Should().Be("dead-start-here");
+    }
+
+    [Fact]
+    public void ConfigDoctor_MissingArtifact_ReportsIssue()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Artifacts = [new ArtifactDefinition { Path = "docs/guide.md", Required = true }]
+        };
+
+        var ctx = CreateDoctorContext(policy, pathPolicy: null,
+            files: [new DiscoveredFile("README.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().ContainSingle();
+        findings[0].Category.Should().Be("missing-artifact");
+    }
+
+    [Fact]
+    public void ConfigDoctor_UnmatchedPathRule_ReportsIssue()
+    {
+        var pathPolicy = new PathPolicyDocument
+        {
+            Rulesets = [new PathRuleSet
+            {
+                Rules = [new PathRule { Pattern = "archive/**", Category = "deprecated" }]
+            }]
+        };
+
+        var ctx = CreateDoctorContext(policy: null, pathPolicy: pathPolicy,
+            files: [new DiscoveredFile("docs/readme.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().ContainSingle();
+        findings[0].Category.Should().Be("unmatched-path-rule");
+    }
+
+    [Fact]
+    public void ConfigDoctor_NoIssues_ReturnsEmpty()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Artifacts = [new ArtifactDefinition { Path = "README.md" }],
+            Governance = new GovernanceConfig { StartHere = ["README.md"] }
+        };
+
+        var ctx = CreateDoctorContext(policy, pathPolicy: null,
+            files: [new DiscoveredFile("README.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().BeEmpty();
+    }
+
+    private static CommandContext CreateDoctorContext(
+        RepositoryPolicy? policy,
+        PathPolicyDocument? pathPolicy,
+        IReadOnlyList<DiscoveredFile> files)
+    {
+        return new CommandContext
+        {
+            RootPath = "/repo",
+            FileSystem = new Steward.TestFixtures.InMemoryFileSystem(),
+            Formatter = new Steward.Cli.Formatting.TextOutputFormatter(TextWriter.Null, false),
+            OutputFormat = Steward.Core.OutputFormat.Text,
+            Verbosity = Steward.Core.Verbosity.Normal,
+            NoColor = true,
+            Policy = policy,
+            PathPolicy = pathPolicy,
+            Files = files
+        };
     }
 }
