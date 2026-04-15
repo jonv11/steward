@@ -196,6 +196,25 @@ public static class CheckCommand
                     }
                 }
 
+                // Staged-scope completeness check
+                if (string.Equals(scopeLabel, "staged", StringComparison.OrdinalIgnoreCase))
+                {
+                    var stagedPaths = new HashSet<string>(
+                        targetFiles.Select(f => f.RelativePath.Replace('\\', '/')),
+                        StringComparer.OrdinalIgnoreCase);
+
+                    var incomplete = ComputeStagedCompleteness(ctx.Policy, stagedPaths);
+                    if (incomplete.Count > 0)
+                    {
+                        ctx.Formatter.WriteMessage("");
+                        ctx.Formatter.WriteMessage("Staging completeness:");
+                        foreach (var (artifactId, artifactPath) in incomplete)
+                        {
+                            ctx.Formatter.WriteMessage($"  [info] Maintained artifact '{artifactId}' ({artifactPath}) has staged sources but is not itself staged.");
+                        }
+                    }
+                }
+
                 // Completion summary
                 ctx.Formatter.WriteMessage("");
                 ctx.Formatter.WriteMessage($"Files checked: {result.Summary.FilesChecked}  " +
@@ -326,6 +345,37 @@ public static class CheckCommand
         }
 
         return impacts;
+    }
+
+    internal static List<(string ArtifactId, string ArtifactPath)> ComputeStagedCompleteness(
+        Core.Configuration.RepositoryPolicy? policy, HashSet<string> stagedPaths)
+    {
+        var incomplete = new List<(string, string)>();
+
+        var maintenanceArtifacts = policy?.Maintenance?.Artifacts;
+        if (maintenanceArtifacts is null || maintenanceArtifacts.Count == 0)
+            return incomplete;
+
+        foreach (var artifact in maintenanceArtifacts)
+        {
+            if (string.IsNullOrWhiteSpace(artifact.Source) || string.IsNullOrWhiteSpace(artifact.Id))
+                continue;
+
+            var source = artifact.Source.Replace('\\', '/').TrimEnd('/');
+            var artifactPath = (artifact.Path ?? "").Replace('\\', '/');
+
+            // Check if any staged path is under this source
+            var hasSourceStaged = stagedPaths.Any(p =>
+                p.StartsWith(source + "/", StringComparison.OrdinalIgnoreCase) ||
+                p.Equals(source, StringComparison.OrdinalIgnoreCase));
+
+            if (hasSourceStaged && !string.IsNullOrWhiteSpace(artifactPath) && !stagedPaths.Contains(artifactPath))
+            {
+                incomplete.Add((artifact.Id, artifactPath));
+            }
+        }
+
+        return incomplete;
     }
 }
 
