@@ -146,4 +146,167 @@ public class FrontmatterValidationRuleTests
 
         diagnostics.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Evaluate_ScopedRequirements_ApplyOnlyToMatchingPaths()
+    {
+        var fs = new InMemoryFileSystem();
+        fs.AddFile("root/docs/decisions/rfcs/RFC-001.md", "---\ntitle: RFC\n---\n# RFC\n");
+        fs.AddFile("root/docs/readme.md", "---\ntitle: Readme\n---\n# Readme\n");
+
+        var policy = new RepositoryPolicy
+        {
+            Validation = new ValidationConfig
+            {
+                FrontmatterRequirements =
+                [
+                    new FrontmatterRequirement
+                    {
+                        Pattern = "docs/decisions/**/*.md",
+                        RequiredFields = ["status"]
+                    }
+                ]
+            }
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles =
+            [
+                new DiscoveredFile("docs/decisions/rfcs/RFC-001.md", 30, false),
+                new DiscoveredFile("docs/readme.md", 20, false)
+            ],
+            FileSystem = fs,
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredFrontmatterFieldRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().HaveCount(1);
+        diagnostics[0].Path.Should().Be("docs/decisions/rfcs/RFC-001.md");
+        diagnostics[0].Message.Should().Contain("status");
+    }
+
+    [Fact]
+    public async Task Evaluate_ScopedRequirements_MergeWithGlobal()
+    {
+        var fs = new InMemoryFileSystem();
+        fs.AddFile("root/docs/decisions/adr.md", "---\ntitle: ADR\n---\n# ADR\n");
+
+        var policy = new RepositoryPolicy
+        {
+            Validation = new ValidationConfig
+            {
+                RequiredFrontmatterFields = ["title"],
+                FrontmatterRequirements =
+                [
+                    new FrontmatterRequirement
+                    {
+                        Pattern = "docs/decisions/**/*.md",
+                        RequiredFields = ["status"]
+                    }
+                ]
+            }
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [new DiscoveredFile("docs/decisions/adr.md", 30, false)],
+            FileSystem = fs,
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredFrontmatterFieldRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        // title is present, but status is missing
+        diagnostics.Should().HaveCount(1);
+        diagnostics[0].Message.Should().Contain("status");
+    }
+
+    [Fact]
+    public async Task Evaluate_ScopedAllowedValues_ReportsInvalidValue()
+    {
+        var fs = new InMemoryFileSystem();
+        fs.AddFile("root/docs/rfcs/RFC-001.md", "---\nstatus: Invalid\n---\n# RFC\n");
+
+        var policy = new RepositoryPolicy
+        {
+            Validation = new ValidationConfig
+            {
+                FrontmatterRequirements =
+                [
+                    new FrontmatterRequirement
+                    {
+                        Pattern = "docs/rfcs/**/*.md",
+                        RequiredFields = ["status"],
+                        AllowedValues = new Dictionary<string, List<string>>
+                        {
+                            ["status"] = ["Draft", "Accepted", "Rejected"]
+                        }
+                    }
+                ]
+            }
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [new DiscoveredFile("docs/rfcs/RFC-001.md", 30, false)],
+            FileSystem = fs,
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredFrontmatterFieldRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().HaveCount(1);
+        diagnostics[0].Message.Should().Contain("not in the allowed set");
+    }
+
+    [Fact]
+    public async Task Evaluate_ScopedAllowedValues_AcceptsValidValue()
+    {
+        var fs = new InMemoryFileSystem();
+        fs.AddFile("root/docs/rfcs/RFC-001.md", "---\nstatus: Draft\n---\n# RFC\n");
+
+        var policy = new RepositoryPolicy
+        {
+            Validation = new ValidationConfig
+            {
+                FrontmatterRequirements =
+                [
+                    new FrontmatterRequirement
+                    {
+                        Pattern = "docs/rfcs/**/*.md",
+                        RequiredFields = ["status"],
+                        AllowedValues = new Dictionary<string, List<string>>
+                        {
+                            ["status"] = ["Draft", "Accepted", "Rejected"]
+                        }
+                    }
+                ]
+            }
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [new DiscoveredFile("docs/rfcs/RFC-001.md", 30, false)],
+            FileSystem = fs,
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredFrontmatterFieldRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().BeEmpty();
+    }
 }
