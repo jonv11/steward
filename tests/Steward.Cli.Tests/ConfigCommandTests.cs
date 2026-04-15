@@ -54,6 +54,77 @@ public class ConfigCommandTests : IDisposable
     }
 
     [Fact]
+    public void ConfigValidate_UnknownRuleId_ReturnsUsageError()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            validation:
+              disabled_rules:
+                - STWD-999
+            """);
+
+        var (exitCode, _, error) = CliTestHelper.InvokeCapture("config", "validate");
+
+        exitCode.Should().Be(2);
+        error.Should().Contain("Unknown rule id");
+        error.Should().Contain("STWD-999");
+    }
+
+    [Fact]
+    public void ConfigValidate_InvalidMaintenanceType_ReturnsUsageError()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            maintenance:
+              artifacts:
+                - id: demo
+                  path: STRUCTURE.md
+                  type: not-a-maintainer
+            """);
+
+        var (exitCode, _, error) = CliTestHelper.InvokeCapture("config", "validate");
+
+        exitCode.Should().Be(2);
+        error.Should().Contain("Invalid maintenance artifact type");
+        error.Should().Contain("not-a-maintainer");
+    }
+
+    [Fact]
+    public void ConfigValidate_UnknownDependsOn_ReturnsUsageError()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            maintenance:
+              artifacts:
+                - id: structure
+                  path: STRUCTURE.md
+                  type: structure-document
+                  depends_on:
+                    - missing-artifact
+            """);
+
+        var (exitCode, _, error) = CliTestHelper.InvokeCapture("config", "validate");
+
+        exitCode.Should().Be(2);
+        error.Should().Contain("depends_on");
+        error.Should().Contain("missing-artifact");
+    }
+
+    [Fact]
+    public void ConfigValidate_InvalidPathPolicyRegex_ReturnsUsageError()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "path-policy.yaml"), """
+            rulesets:
+              - name: naming
+                rules:
+                  - pattern: "docs/*.md"
+                    must_match: "["
+            """);
+
+        var (exitCode, _, error) = CliTestHelper.InvokeCapture("config", "validate");
+
+        exitCode.Should().Be(2);
+        error.Should().Contain("must_match regex");
+    }
+
+    [Fact]
     public void ConfigShow_Effective_IncludesResolvedRuntimeAndRawFiles()
     {
         File.WriteAllText(Path.Combine(_tempDir, ".steward", "config.yaml"), """

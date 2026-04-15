@@ -129,7 +129,7 @@ public static class CheckCommand
                 return result.Summary.Pass ? ExitCodes.Success : ExitCodes.ValidationFailure;
 
             // Compute completion data for output
-            var completionData = ComputeCompletionData(result.Diagnostics);
+            var completionData = ComputeCompletionData(ctx.Policy, result.Diagnostics);
 
             // Output
             if (ctx.OutputFormat == OutputFormat.Json)
@@ -260,33 +260,70 @@ public static class CheckCommand
 
     private static void WriteCompletionSummary(CommandContext ctx, IReadOnlyList<Diagnostic> diagnostics)
     {
-        var data = ComputeCompletionData(diagnostics);
-        if (data.RequiredArtifactsMissing == 0 && data.StaleArtifacts == 0 &&
-            data.BrokenLinks == 0 && data.BrokenReferences == 0)
+        var data = ComputeCompletionData(ctx.Policy, diagnostics);
+        var activeRules = data.Rules.Where(static rule => rule.Count > 0).ToList();
+        if (activeRules.Count == 0)
             return;
 
         ctx.Formatter.WriteMessage("");
         ctx.Formatter.WriteMessage("Completion:");
-        if (data.RequiredArtifactsMissing > 0)
-            ctx.Formatter.WriteMessage($"  - {data.RequiredArtifactsMissing} required artifact(s) missing");
-        if (data.StaleArtifacts > 0)
-            ctx.Formatter.WriteMessage($"  - {data.StaleArtifacts} maintained artifact(s) stale → run 'steward maintain --apply'");
-        if (data.BrokenLinks > 0)
-            ctx.Formatter.WriteMessage($"  - {data.BrokenLinks} broken internal link(s)");
-        if (data.BrokenReferences > 0)
-            ctx.Formatter.WriteMessage($"  - {data.BrokenReferences} broken artifact reference(s) in policy");
+        foreach (var rule in activeRules)
+            ctx.Formatter.WriteMessage($"  - {rule.Count} {rule.Description}");
     }
 
-    private static CheckCompletionResponse ComputeCompletionData(IReadOnlyList<Diagnostic> diagnostics)
+    private static CheckCompletionResponse ComputeCompletionData(
+        Core.Configuration.RepositoryPolicy? policy,
+        IReadOnlyList<Diagnostic> diagnostics)
     {
         return new CheckCompletionResponse
         {
             RequiredArtifactsMissing = diagnostics.Count(d => d.RuleId == "STWD-001"),
             StaleArtifacts = diagnostics.Count(d => d.RuleId == "STWD-007"),
             BrokenLinks = diagnostics.Count(d => d.RuleId == "STWD-008"),
-            BrokenReferences = diagnostics.Count(d => d.RuleId == "STWD-009")
+            BrokenReferences = diagnostics.Count(d => d.RuleId == "STWD-009"),
+            Rules =
+            [
+                .. GetCompletionRules(policy).Select(rule => new CheckCompletionRuleResponse
+                {
+                    RuleId = rule.RuleId,
+                    Description = rule.Description,
+                    Count = diagnostics.Count(d => string.Equals(d.RuleId, rule.RuleId, StringComparison.OrdinalIgnoreCase))
+                })
+            ]
         };
     }
+
+    private static IReadOnlyList<CompletionRuleDescriptor> GetCompletionRules(Core.Configuration.RepositoryPolicy? policy)
+    {
+        var configured = policy?.Governance?.CompletionPolicy?.Rules?
+            .Where(static rule => !string.IsNullOrWhiteSpace(rule.Id))
+            .Select(rule => new CompletionRuleDescriptor(
+                rule.Id!,
+                string.IsNullOrWhiteSpace(rule.Description)
+                    ? GetDefaultCompletionDescription(rule.Id!)
+                    : rule.Description!))
+            .ToList();
+
+        if (configured is { Count: > 0 })
+            return configured;
+
+        return
+        [
+            new("STWD-001", GetDefaultCompletionDescription("STWD-001")),
+            new("STWD-007", GetDefaultCompletionDescription("STWD-007")),
+            new("STWD-008", GetDefaultCompletionDescription("STWD-008")),
+            new("STWD-009", GetDefaultCompletionDescription("STWD-009"))
+        ];
+    }
+
+    private static string GetDefaultCompletionDescription(string ruleId) => ruleId.ToUpperInvariant() switch
+    {
+        "STWD-001" => "required artifact(s) missing",
+        "STWD-007" => "maintained artifact(s) stale -> run 'steward maintain --apply'",
+        "STWD-008" => "broken internal link(s)",
+        "STWD-009" => "broken artifact reference(s) in policy",
+        _ => $"diagnostic(s) for {ruleId}"
+    };
 
     private static List<Diagnostic> OrderDiagnostics(IEnumerable<Diagnostic> diagnostics)
     {
@@ -402,6 +439,14 @@ internal sealed class CheckCompletionResponse
     public int StaleArtifacts { get; init; }
     public int BrokenLinks { get; init; }
     public int BrokenReferences { get; init; }
+    public List<CheckCompletionRuleResponse> Rules { get; init; } = [];
+}
+
+internal sealed class CheckCompletionRuleResponse
+{
+    public required string RuleId { get; init; }
+    public required string Description { get; init; }
+    public required int Count { get; init; }
 }
 
 internal sealed class CheckDiagnosticResponse
@@ -415,3 +460,5 @@ internal sealed class CheckDiagnosticResponse
     public string? Remediation { get; init; }
     public string? Source { get; init; }
 }
+
+internal sealed record CompletionRuleDescriptor(string RuleId, string Description);

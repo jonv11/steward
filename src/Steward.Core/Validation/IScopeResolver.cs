@@ -101,6 +101,7 @@ internal static class GitDiffHelper
             var psi = new System.Diagnostics.ProcessStartInfo("git", arguments)
             {
                 WorkingDirectory = workingDirectory,
+                RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -110,13 +111,31 @@ internal static class GitDiffHelper
             using var process = System.Diagnostics.Process.Start(psi);
             if (process == null) return null;
 
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit(10_000);
+            process.StandardInput.Close();
+
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
+
+            if (!process.WaitForExit(10_000))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    // Best effort only.
+                }
+
+                return null;
+            }
+
+            System.Threading.Tasks.Task.WaitAll([outputTask, errorTask], 10_000);
 
             if (process.ExitCode != 0)
                 return null;
 
-            return output
+            return outputTask.Result
                 .Split('\n', StringSplitOptions.RemoveEmptyEntries)
                 .Select(p => p.Trim().Replace('\\', '/'))
                 .Where(p => p.Length > 0)

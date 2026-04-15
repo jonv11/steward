@@ -77,6 +77,33 @@ public static class StatusCommand
                     ctx.Formatter.WriteMessage("");
                 }
 
+                if (status.RecommendedArtifacts.Count > 0)
+                {
+                    ctx.Formatter.WriteMessage("Recommended Artifacts:");
+                    foreach (var a in status.RecommendedArtifacts)
+                    {
+                        var icon = a.Present ? "OK" : "MISSING";
+                        ctx.Formatter.WriteMessage($"  [{icon}] {a.Path} ({a.Role})");
+                    }
+                    ctx.Formatter.WriteMessage("");
+                }
+
+                if (status.StateDocuments.Count > 0)
+                {
+                    ctx.Formatter.WriteMessage("State Documents:");
+                    foreach (var stateDoc in status.StateDocuments)
+                    {
+                        var icon = stateDoc.Present
+                            ? stateDoc.Stale ? "STALE" : "OK"
+                            : "MISSING";
+                        var freshness = stateDoc.FreshnessMaxAgeDays.HasValue
+                            ? $", freshness={stateDoc.FreshnessMaxAgeDays.Value}d"
+                            : string.Empty;
+                        ctx.Formatter.WriteMessage($"  [{icon}] {stateDoc.Path} ({stateDoc.Role}{freshness})");
+                    }
+                    ctx.Formatter.WriteMessage("");
+                }
+
                 // Maintenance status
                 if (status.MaintenanceArtifacts.Count > 0)
                 {
@@ -91,6 +118,10 @@ public static class StatusCommand
 
                 // Completeness
                 ctx.Formatter.WriteMessage($"Completeness: {status.PresentCount}/{status.RequiredCount} required artifacts present");
+                if (status.RecommendedCount > 0)
+                    ctx.Formatter.WriteMessage($"Recommended artifacts: {status.RecommendedPresentCount}/{status.RecommendedCount} present");
+                if (status.StateDocuments.Count > 0)
+                    ctx.Formatter.WriteMessage($"State documents: {status.StateDocuments.Count(static doc => doc.Present)}/{status.StateDocuments.Count} present");
                 if (status.StaleCount > 0)
                     ctx.Formatter.WriteMessage($"Stale artifacts: {status.StaleCount}");
 
@@ -123,24 +154,36 @@ public static class StatusCommand
         string rootPath,
         IReadOnlyList<DiscoveredFile> files)
     {
-        var existingPaths = new HashSet<string>(
-            files.Select(f => f.RelativePath),
-            StringComparer.OrdinalIgnoreCase);
-
-        // Required artifacts
-        var requiredArtifacts = new List<ArtifactStatus>();
+        var artifactStatuses = new List<ArtifactStatus>();
+        var stateDocuments = new List<StateDocumentStatus>();
         if (policy?.Artifacts != null)
         {
-            foreach (var artifact in policy.Artifacts.Where(a => a.Required))
+            foreach (var artifact in policy.Artifacts.Where(static artifact => !string.IsNullOrWhiteSpace(artifact.Path)))
             {
-                requiredArtifacts.Add(new ArtifactStatus
+                var status = BuildArtifactStatus(artifact, fileSystem, rootPath, files);
+                artifactStatuses.Add(status);
+
+                if (IsStateDocumentRole(artifact.Role))
                 {
-                    Path = artifact.Path ?? "",
-                    Role = artifact.Role ?? "",
-                    Present = artifact.Path != null && existingPaths.Contains(artifact.Path)
-                });
+                    stateDocuments.Add(new StateDocumentStatus
+                    {
+                        Path = status.Path,
+                        Role = status.Role,
+                        Importance = status.Importance,
+                        Present = status.Present,
+                        FreshnessMaxAgeDays = ResolveFreshnessDays(artifact),
+                        Stale = status.Present && IsFreshnessStale(artifact, fileSystem, rootPath)
+                    });
+                }
             }
         }
+
+        var requiredArtifacts = artifactStatuses
+            .Where(static artifact => string.Equals(artifact.Importance, "required", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        var recommendedArtifacts = artifactStatuses
+            .Where(static artifact => string.Equals(artifact.Importance, "recommended", StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
         // Maintenance status (cheap check)
         var maintenanceArtifacts = new List<MaintenanceStatus>();
@@ -174,10 +217,14 @@ public static class StatusCommand
             Profile = profile,
             FileCount = files.Count,
             RequiredArtifacts = requiredArtifacts,
+            RecommendedArtifacts = recommendedArtifacts,
+            StateDocuments = stateDocuments,
             MaintenanceArtifacts = maintenanceArtifacts,
             StartHere = policy?.Governance?.StartHere ?? [],
             PresentCount = requiredArtifacts.Count(a => a.Present),
             RequiredCount = requiredArtifacts.Count,
+            RecommendedPresentCount = recommendedArtifacts.Count(a => a.Present),
+            RecommendedCount = recommendedArtifacts.Count,
             StaleCount = maintenanceArtifacts.Count(m => m.Stale)
         };
     }
@@ -189,10 +236,14 @@ public static class StatusCommand
         public string? Profile { get; init; }
         public int FileCount { get; init; }
         public List<ArtifactStatus> RequiredArtifacts { get; init; } = [];
+        public List<ArtifactStatus> RecommendedArtifacts { get; init; } = [];
+        public List<StateDocumentStatus> StateDocuments { get; init; } = [];
         public List<MaintenanceStatus> MaintenanceArtifacts { get; init; } = [];
         public List<string> StartHere { get; init; } = [];
         public int PresentCount { get; init; }
         public int RequiredCount { get; init; }
+        public int RecommendedPresentCount { get; init; }
+        public int RecommendedCount { get; init; }
         public int StaleCount { get; init; }
     }
 
@@ -200,7 +251,18 @@ public static class StatusCommand
     {
         public required string Path { get; init; }
         public required string Role { get; init; }
+        public required string Importance { get; init; }
         public required bool Present { get; init; }
+    }
+
+    internal sealed class StateDocumentStatus
+    {
+        public required string Path { get; init; }
+        public required string Role { get; init; }
+        public required string Importance { get; init; }
+        public required bool Present { get; init; }
+        public int? FreshnessMaxAgeDays { get; init; }
+        public bool Stale { get; init; }
     }
 
     internal sealed class MaintenanceStatus
@@ -351,5 +413,120 @@ public static class StatusCommand
         public int GovernedCount { get; init; }
         public double Percentage { get; init; }
         public List<string> Ungoverned { get; init; } = [];
+    }
+
+    private static ArtifactStatus BuildArtifactStatus(
+        ArtifactDefinition artifact,
+        IFileSystem fileSystem,
+        string rootPath,
+        IReadOnlyList<DiscoveredFile> files)
+    {
+        return new ArtifactStatus
+        {
+            Path = artifact.Path ?? "",
+            Role = artifact.Role ?? "",
+            Importance = ResolveImportance(artifact),
+            Present = IsArtifactPresent(artifact, fileSystem, rootPath, files)
+        };
+    }
+
+    private static bool IsArtifactPresent(
+        ArtifactDefinition artifact,
+        IFileSystem fileSystem,
+        string rootPath,
+        IReadOnlyList<DiscoveredFile> files)
+    {
+        if (string.IsNullOrWhiteSpace(artifact.Path))
+            return false;
+
+        var normalizedPath = artifact.Path.Replace('\\', '/').TrimEnd('/');
+        if (artifact.Path.EndsWith('/'))
+        {
+            return files.Any(file =>
+                file.RelativePath.StartsWith(normalizedPath + "/", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(file.RelativePath, normalizedPath, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (files.Any(file => string.Equals(file.RelativePath, normalizedPath, StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        return fileSystem.FileExists(Path.Combine(rootPath, normalizedPath));
+    }
+
+    private static bool IsStateDocumentRole(string? role)
+    {
+        return string.Equals(role, "state-document", StringComparison.OrdinalIgnoreCase) ||
+            WellKnownRoles.IsStateDocumentRole(role);
+    }
+
+    private static int? ResolveFreshnessDays(ArtifactDefinition artifact)
+    {
+        if (artifact.Freshness?.MaxAgeDays > 0)
+            return artifact.Freshness.MaxAgeDays;
+
+        return RoleDefaults.GetDefaultFreshnessDays(artifact.Role);
+    }
+
+    private static string ResolveImportance(ArtifactDefinition artifact)
+    {
+        if (!string.IsNullOrWhiteSpace(artifact.Importance))
+            return artifact.Importance.ToLowerInvariant();
+
+        if (artifact.Required)
+            return "required";
+
+        return RoleDefaults.GetDefaultImportance(artifact.Role) ?? "optional";
+    }
+
+    private static bool IsFreshnessStale(ArtifactDefinition artifact, IFileSystem fileSystem, string rootPath)
+    {
+        var maxAgeDays = ResolveFreshnessDays(artifact);
+        if (maxAgeDays is null or <= 0 || string.IsNullOrWhiteSpace(artifact.Path))
+            return false;
+
+        var fullPath = Path.Combine(rootPath, artifact.Path.Replace('\\', '/'));
+        if (!fileSystem.FileExists(fullPath))
+            return false;
+
+        var lastModified = TryGetFrontmatterDate(fileSystem, fullPath) ?? fileSystem.GetLastWriteTimeUtc(fullPath);
+        return (DateTime.UtcNow - lastModified).TotalDays > maxAgeDays.Value;
+    }
+
+    private static DateTime? TryGetFrontmatterDate(IFileSystem fileSystem, string fullPath)
+    {
+        try
+        {
+            var content = fileSystem.ReadAllText(fullPath);
+            if (!content.StartsWith("---", StringComparison.Ordinal))
+                return null;
+
+            var endIdx = content.IndexOf("---", 3, StringComparison.Ordinal);
+            if (endIdx < 0)
+                return null;
+
+            var yaml = content[3..endIdx];
+            foreach (var line in yaml.Split('\n'))
+            {
+                var trimmed = line.Trim();
+                if (!trimmed.StartsWith("last_updated:", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var value = trimmed["last_updated:".Length..].Trim().Trim('"', '\'');
+                if (DateTime.TryParse(
+                    value,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal,
+                    out var parsed))
+                {
+                    return parsed;
+                }
+            }
+        }
+        catch
+        {
+            // Best-effort status display only.
+        }
+
+        return null;
     }
 }

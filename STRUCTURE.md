@@ -26,7 +26,7 @@
 │   │   ├── delivery-strategy.md
 │   │   ├── implementation-instructions.md
 │   │   ├── milestone-plan.md
-│   │   ├── post-v1-milestone-plan.md
+│   │   ├── pre-1-0-readiness-plan.md
 │   │   └── rfc-007-governance-enhancements-backlog.md
 │   ├── planning-index.md
 │   └── requirements/

@@ -2,6 +2,8 @@
 
 A configurable repository stewardship CLI for humans and AI agents. Steward helps maintain documentation structure, enforce governance policies, and keep repository artifacts in sync — all driven by declarative YAML configuration.
 
+Current repository baseline: **`0.10.0`**. Steward is still on a pre-`1.0.0` line in this repository; public stable-release messaging and publication are intentionally not assumed yet.
+
 ## Features
 
 - **Repository orientation** — Auto-classify and outline repository structure
@@ -14,12 +16,6 @@ A configurable repository stewardship CLI for humans and AI agents. Steward help
 
 ## Installation
 
-### As a .NET tool
-
-```bash
-dotnet tool install --global Steward.Cli
-```
-
 ### From source
 
 ```bash
@@ -27,6 +23,17 @@ git clone https://github.com/jonv11/steward.git
 cd steward
 dotnet build
 ```
+
+### Build and install the current local package
+
+```bash
+dotnet pack src/Steward.Cli -c Release
+dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.Cli --version 0.10.0
+```
+
+### Public feed install
+
+Use a public-feed install only when the project intentionally publishes a release package. This repository does not treat public publication as an already-completed fact.
 
 ## Quick Start
 
@@ -239,7 +246,7 @@ Settings are resolved in this order (highest to lowest):
 2. `config.yaml` setting (e.g. `output.format: json`)
 3. Built-in default (e.g. text output)
 
-`steward config validate` checks YAML syntax and field names. `steward config show --effective` prints the resolved runtime defaults. `steward config doctor` detects silent problems like `start_here` entries that point to files that do not exist.
+`steward config validate` checks YAML syntax and semantic references such as rule ids, maintainer types, glob patterns, and `depends_on` links. `steward config show --effective` prints the resolved runtime defaults. `steward config doctor` detects silent problems like `start_here` entries that point to files that do not exist.
 
 ### Built-in profiles
 

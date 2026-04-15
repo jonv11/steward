@@ -106,4 +106,26 @@ public class CheckCommandTests : IDisposable
         // System.CommandLine rejects invalid scope values (AcceptOnlyFromAmong); exit code 2.
         exitCode.Should().Be(2);
     }
+
+    [Fact]
+    public void Check_CompletionSummary_UsesConfiguredCompletionPolicy()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            governance:
+              completion_policy:
+                rules:
+                  - id: STWD-001
+                    description: required artifact(s) missing before release
+            artifacts:
+              - path: README.md
+                role: readme
+                required: true
+            """);
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check");
+
+        exitCode.Should().Be(1);
+        output.Should().Contain("Completion:");
+        output.Should().Contain("required artifact(s) missing before release");
+    }
 }

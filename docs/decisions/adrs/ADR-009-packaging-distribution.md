@@ -13,17 +13,16 @@ The CLI must be distributable as a multi-platform tool, usable without host-spec
 
 ### Primary distribution: dotnet tool
 
-The CLI is packaged as a **.NET global tool** and optionally as a **local tool**.
+The CLI is packaged as a **.NET tool** and may be installed either from a locally built package or, later, from an intentional public feed publication.
 
 ```bash
-# Global install
-dotnet tool install --global Steward.Cli
+# Build the current pre-1.0 package locally
+dotnet pack src/Steward.Cli -c Release
 
-# Local install (per-repo)
-dotnet tool install Steward.Cli
+# Install from the local package source
+dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.Cli --version 0.10.0
 
-# Run after local install
-dotnet steward check
+# When a public release is intentionally published, the same package id is used.
 ```
 
 ### Secondary distribution: self-contained single-file
@@ -51,7 +50,7 @@ dotnet publish src/Steward.Cli -c Release -r osx-arm64 --self-contained -p:Publi
 
 - Package ID: `Steward.Cli`
 - Tool command name: `steward`
-- Published to NuGet.org (when ready for public distribution).
+- Public publication is optional and must be an explicit release action; active repo docs must not imply that publication already happened.
 
 ### Project configuration
 
@@ -70,14 +69,14 @@ dotnet publish src/Steward.Cli -c Release -r osx-arm64 --self-contained -p:Publi
 
 ### Versioning
 
-Semantic versioning throughout. Assembly version, NuGet package version, and `steward version` output all match.
+Versioning is governed by [ADR-013](ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
-Version is set via `<Version>` property in the project file or CI-provided MSBuild property.
+The source of truth is `Directory.Build.props`. Assembly version, NuGet package version, and `steward version` output must derive from that shared property set.
 
 ## Alternatives considered
 
 1. **Container (Docker) distribution only:** Rejected—adds overhead and doesn't work well for local interactive use.
-2. **Homebrew/Scoop/apt packages:** Deferred beyond v1.0.0. Can be added once the tool matures.
+2. **Homebrew/Scoop/apt packages:** Deferred to a later pre-1.0 or stable milestone once the tool matures and release operations are in place.
 3. **Native AOT compilation:** Deferred—System.CommandLine and reflection-based YAML parsing may have AOT limitations in .NET 10. Revisit in a future version.
 
 ## Consequences

@@ -7,6 +7,16 @@ namespace Steward.Core.Maintenance;
 /// </summary>
 public sealed class MaintenanceEngine
 {
+    private static readonly string[] SupportedArtifactTypes =
+    [
+        "structure-document",
+        "index",
+        "directory-index",
+        "managed-section",
+        "frontmatter-auto",
+        "manifest"
+    ];
+
     private readonly Dictionary<string, IArtifactMaintainer> _maintainers;
 
     public MaintenanceEngine(IEnumerable<IArtifactMaintainer> maintainers)
@@ -15,6 +25,8 @@ public sealed class MaintenanceEngine
     }
 
     public MaintenanceEngine() : this(DefaultMaintainers()) { }
+
+    public static IReadOnlyCollection<string> GetSupportedArtifactTypes() => SupportedArtifactTypes;
 
     public MaintenancePlan Evaluate(RepositoryPolicy? policy, MaintenanceContext context, string? scope = null)
     {

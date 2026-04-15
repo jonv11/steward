@@ -9,7 +9,7 @@
 - This proposal (master analysis and canonical inventory)
 - [ADR-011](../decisions/adrs/ADR-011-domain-stewardship-through-generic-configuration.md) — Domain-specific stewardship through generic configuration
 - [ADR-012](../decisions/adrs/ADR-012-artifact-type-schema-direction.md) — Artifact type schema system direction
-- [Post-v1 milestone plan update](../planning/post-v1-milestone-plan.md) — Extended with v1.6.0
+- [Pre-1.0 readiness plan update](../planning/pre-1-0-readiness-plan.md) — Active remaining-work tracker on the `0.x` line
 
 ---
 
@@ -251,19 +251,19 @@ Items where something relevant exists but the use-case is only partially satisfi
 
 ### 5.3 planned_existing
 
-Items already meaningfully planned in RFC-007 backlog (G7-01 through G7-20) or post-v1 milestone plan.
+Items already meaningfully planned in the RFC-007 ledger or later pre-1.0 milestone plan.
 
 | ID | Title | Planned item | Milestone |
 |----|-------|-------------|-----------|
-| UC-02 | Adopt/bootstrap analysis | G7-20: Bootstrap-by-analysis (`init --analyze`) | v1.5.0 |
-| UC-03 | Config doctor | G7-07: Configuration doctor | v1.2.0 |
-| UC-08 | Per-path rule suppression | G7-01: `validation.path_overrides` | v1.1.0 |
-| UC-09 | Naming/slug enforcement | G7-03: `must_match` regex in path-policy | v1.1.0 |
-| UC-11 | Safe rename/move | G7-19: `steward refactor move` | v1.5.0 |
-| UC-20 | Duplicate/missing section detection | Subsumable by section-aware validation when artifact type schemas (UC-13) exist; related to G7-08 index completeness pattern | v1.2.0+ |
-| UC-24 | Orphan detection | G7-14: Orphaned-but-valid document detection | v1.4.0 |
-| UC-28 | Configurable index columns | G7-10: Directory-index generator (includes format options) | v1.3.0 |
-| UC-29 | Index completeness validation | G7-08: Index-completeness rule (STWD-010) | v1.2.0 |
+| UC-02 | Adopt/bootstrap analysis | G7-20: Bootstrap-by-analysis (`init --analyze`) | v0.10.0 |
+| UC-03 | Config doctor | G7-07: Configuration doctor | v0.10.0 |
+| UC-08 | Per-path rule suppression | G7-01: `validation.path_overrides` | v0.10.0 |
+| UC-09 | Naming/slug enforcement | G7-03: `must_match` regex in path-policy | v0.10.0 |
+| UC-11 | Safe rename/move | G7-19: `steward refactor move` | v0.10.0 |
+| UC-20 | Duplicate/missing section detection | Subsumable by section-aware validation when artifact type schemas (UC-13) exist; related to G7-08 index completeness pattern | later pre-1.0 |
+| UC-24 | Orphan detection | G7-14: Orphaned-but-valid document detection | v0.10.0 |
+| UC-28 | Configurable index columns | G7-10: Directory-index generator (includes format options) | v0.10.0 |
+| UC-29 | Index completeness validation | G7-08: Index-completeness rule (STWD-011) | v0.10.0 |
 | UC-33 | Relationship tracing | G7-18: `steward refs <path>` | v1.5.0 |
 
 ### 5.4 possible_with_configuration
@@ -369,13 +369,13 @@ Once G7-01 through G7-20 are delivered AND the artifact type schema system exist
 
 ## 7. Recommended Product Direction
 
-### Near-term (v1.1.0–v1.5.0): Execute the existing RFC-007 backlog
+### Near-term (`v0.10.0` completed, `v0.11.0+` hardening next): Treat RFC-007 as delivered baseline
 
-No changes needed to the accepted post-v1 milestone plan. The 20 G7 items are correctly prioritized and address the most pressing governance gaps.
+The RFC-007 work is now substantively present in the codebase and should be treated as part of the delivered pre-1.0 baseline, not as a deferred post-stable backlog.
 
-### Medium-term (v1.6.0): Deliver the artifact type schema system
+### Medium-term (later pre-1.0 milestone): Deliver the artifact type schema system
 
-This is the **new milestone** emerging from this analysis. It should follow v1.5.0 and deliver:
+This remains the most important larger follow-on milestone emerging from this analysis. It should follow the stable-release hardening work on the pre-1.0 line and deliver:
 - Artifact type definitions in policy.yaml
 - Per-type frontmatter field requirements with value constraints
 - Controlled vocabulary (enum) validation
@@ -418,9 +418,9 @@ Two decisions are auto-accepted as ADRs based on clear product direction, existi
 
 ## 9. Planning Impact
 
-### New milestone: v1.6.0 — Artifact Type Schemas and Domain Configuration
+### Later pre-1.0 milestone: Artifact Type Schemas and Domain Configuration
 
-Added to [post-v1 milestone plan](../planning/post-v1-milestone-plan.md).
+Tracked in the active [milestone plan](../planning/milestone-plan.md) and [pre-1.0 readiness plan](../planning/pre-1-0-readiness-plan.md).
 
 ### Updated planning index
 

@@ -1,9 +1,10 @@
 # Repository Steward — Product Requirements Document
 
 - **Document ID:** PRD-0001
-- **Version:** 1.0.0
+- **Version:** 0.10.0
 - **Status:** Accepted
 - **Source:** Derived from MRD-0001 (repository-steward-master-requirements.md)
+- **Last updated:** 2026-04-15
 
 ---
 
@@ -58,7 +59,7 @@ Existing tools address fragments of this problem (linters, formatters, doc gener
 
 1. **IDE plugin or GUI.** The product is CLI-only. IDE integration may come later via protocol (e.g., LSP), not as a primary surface.
 2. **General-purpose linter.** The CLI does not lint source code syntax or style. It governs repository-level structure, artifacts, and content.
-3. **Git hosting integration in v1.0.0.** PR-workflow integration (GitHub, GitLab, etc.) is deferred. The CLI operates on the local working tree and git state.
+3. **Git hosting integration in the current core.** PR-workflow integration (GitHub, GitLab, etc.) is deferred for a later pre-1.0 milestone. The CLI operates on the local working tree and git state.
 4. **Content generation via LLM.** The CLI performs deterministic operations. It does not generate prose or invoke AI models.
 5. **Package manager.** The CLI does not manage code dependencies.
 6. **Replacing existing build/CI tools.** It complements pipelines, not replaces them.
@@ -368,7 +369,7 @@ Requirements are grouped by capability area. Full traceability to MRD-0001 requi
 
 All product-level open questions have been resolved through accepted RFCs. See [Decision Index](../decisions/decision-index.md).
 
-Remaining forward-looking items explicitly deferred beyond v1.0.0:
+Remaining forward-looking items intentionally scheduled later on the pre-1.0 line:
 - REQ-ADDR-002/003: Typed URI-like resource address model
 - REQ-MD-012: Split/extract workflows
 - REQ-SEARCH-012: Canonical resource addresses in search results

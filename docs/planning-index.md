@@ -1,71 +1,55 @@
 # Repository Steward — Planning Index
 
-Central navigation for all planning and decision artifacts.
+Central navigation for the active product, planning, readiness, and decision artifacts.
 
-## Requirements and Product
+## Requirements And Product
 
 | Document | Purpose |
 |----------|---------|
-| [PRD](requirements/PRD.md) | Canonical Product Requirements Document |
+| [PRD](requirements/PRD.md) | Canonical product requirements document |
 | [Assumptions, Constraints, and Dependencies](requirements/assumptions-constraints.md) | Explicit assumptions, constraints, dependencies, and risks |
-| [Requirements Traceability](requirements/requirements-traceability.md) | Mapping from master requirements to milestones |
+| [Requirements Traceability](requirements/requirements-traceability.md) | Requirement-to-milestone and status mapping for the current pre-1.0 roadmap |
 
 ## Current State
 
 | Document | Purpose |
 |----------|---------|
-| [Implementation Status](implementation-status.md) | Current implementation snapshot, release readiness, and active gaps |
+| [Implementation Status](implementation-status.md) | Current `0.10.0` baseline, delivered scope, and remaining pre-stable gaps |
+| [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) | Categorized remaining work before the first stable shipment |
 
 ## Decisions
 
 | Document | Purpose |
 |----------|---------|
-| [Decision Index](decisions/decision-index.md) | Index of all RFCs and ADRs |
-| [RFC-001 CLI Command Structure](decisions/rfcs/RFC-001-cli-command-structure.md) | Command hierarchy, naming, global options |
-| [RFC-002 Configuration Model](decisions/rfcs/RFC-002-configuration-model.md) | Config format, layering, profiles, policy |
-| [RFC-003 Validation and Diagnostics](decisions/rfcs/RFC-003-validation-and-diagnostics.md) | Check behavior, diagnostics, exit codes |
-| [RFC-004 Markdown Structural Model](decisions/rfcs/RFC-004-markdown-structural-model.md) | Selectors, edit ops, managed regions |
-| [RFC-005 Orientation, Search, and Outline](decisions/rfcs/RFC-005-orientation-search-outline.md) | Surface boundaries and responsibilities |
-| [RFC-006 Maintenance and Memory](decisions/rfcs/RFC-006-maintenance-and-memory.md) | Maintenance flows, memory artifacts |
-| [RFC-007 Maintainer Governance and Stewardship Enhancements](decisions/rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements-draft.md) | Policy expressiveness, governance inspection, stewardship workflows **(Accepted)** |
-| [ADR-001 .NET 10 CLI Architecture](decisions/adrs/ADR-001-dotnet10-cli-architecture.md) | Runtime, CLI framework, project shape |
-| [ADR-002 Project Structure](decisions/adrs/ADR-002-project-structure.md) | Solution layout and assembly boundaries |
-| [ADR-003 Configuration Format](decisions/adrs/ADR-003-configuration-format-yaml.md) | YAML choice and library |
-| [ADR-004 Markdown Parser](decisions/adrs/ADR-004-markdown-parser-markdig.md) | Markdig choice and structural model |
-| [ADR-005 Validation Engine Design](decisions/adrs/ADR-005-validation-engine-design.md) | Rule-based engine architecture |
-| [ADR-006 Output Formatting](decisions/adrs/ADR-006-output-formatting-strategy.md) | Human and machine output strategy |
-| [ADR-007 Test Strategy](decisions/adrs/ADR-007-test-strategy.md) | Frameworks, coverage, test types |
-| [ADR-008 .gitignore Handling](decisions/adrs/ADR-008-gitignore-handling.md) | Ignore-file parsing approach |
-| [ADR-009 Packaging and Distribution](decisions/adrs/ADR-009-packaging-distribution.md) | dotnet tool, single-file publish |
-| [ADR-010 Agent Usefulness Improvements](decisions/adrs/ADR-010-agent-usefulness-improvements.md) | Targeted improvements for coding-agent ergonomics |
-| [ADR-011 Domain-Specific Stewardship](decisions/adrs/ADR-011-domain-stewardship-through-generic-configuration.md) | Domain needs through generic configuration, not hardcoded logic |
-| [ADR-012 Artifact Type Schema Direction](decisions/adrs/ADR-012-artifact-type-schema-direction.md) | Per-type artifact definitions in policy.yaml |
+| [Decision Index](decisions/decision-index.md) | Index of accepted RFCs and ADRs |
+| [ADR-013 Pre-1.0 Versioning and Release Authorization](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) | Authoritative versioning policy and the rule that `1.0.0` needs explicit approval |
 
-## Implementation Planning
+## Planning
 
 | Document | Purpose |
 |----------|---------|
-| [Delivery Strategy](planning/delivery-strategy.md) | Sequencing rationale and approach |
-| [Milestone Plan](planning/milestone-plan.md) | Milestones v0.1.0 through v1.0.0 |
-| [Post-v1.0.0 Milestone Plan](planning/post-v1-milestone-plan.md) | Milestones v1.1.0 through v1.6.0 (RFC-007 + use-case analysis) |
-| [Implementation Instructions](planning/implementation-instructions.md) | Per-milestone execution guide |
-| [Curation Notes](planning/curation-notes.md) | What was merged, superseded, or deferred |
-| [RFC-007 Governance Enhancements Backlog](planning/rfc-007-governance-enhancements-backlog.md) | Actionable backlog derived from RFC-007 **(Accepted)** |
+| [Delivery Strategy](planning/delivery-strategy.md) | Sequencing principles and versioning strategy |
+| [Milestone Plan](planning/milestone-plan.md) | Delivered lineage through `v0.10.0` plus planned pre-1.0 milestones |
+| [Implementation Instructions](planning/implementation-instructions.md) | Contributor execution guide for the active pre-1.0 roadmap |
+| [RFC-007 Governance Enhancements Backlog](planning/rfc-007-governance-enhancements-backlog.md) | Status ledger for accepted governance-enhancement items |
+| [Curation Notes](planning/curation-notes.md) | Provenance, superseded framing, and roadmap retargeting notes |
 
 ## Audits
+
+Historical audits are preserved for evidence and context. Active repository truth lives in the current-state and planning artifacts above.
 
 | Document | Purpose |
 | -------- | ------- |
 | [Repository Audit — 2026-04-14](audits/repository-audit-2026-04-14.md) | Requirement-driven release audit and contract-alignment review |
-| [Requirements Implementation Review — 2026-04-14](audits/review-requirements.md) | Detailed per-requirement status review against codebase |
-| [Coding-Agent Usefulness Assessment — 2026-04-14](audits/assessment-coding-agent-usefulness.md) | Per-command assessment of Steward's value in the agent terminal workflow |
-| [Maintainer Review — 2026-04-14](audits/maintainer-review.md) | Maintainer-perspective gaps and improvement requests for rule enforcement |
-| [Use-Case Consolidation Proposal — 2026-04-15](audits/usecase-consolidation-proposal.md) | Exhaustive cross-reference of maintainer use-case files against CLI capabilities and roadmap |
-| [CLI Usability and Configurability Review - 2026-04-15](audits/usability-review-2026-04-15.md) | Steward-on-Steward review of CLI ergonomics, configuration fit, and contributor entry experience |
-| [Maintainer Use-Case Expectations](audits/maintainer-usecase-expectations.md) | Detailed maintainer expectations for story/worldbuilding repository stewardship |
-| [Maintainer Use-Case Ideas](audits/maintainer-usecase-ideas.md) | Steward-aware improvement proposals for story/worldbuilding domain |
+| [Requirements Implementation Review — 2026-04-14](audits/review-requirements.md) | Detailed per-requirement status review against the earlier repo state |
+| [Coding-Agent Usefulness Assessment — 2026-04-14](audits/assessment-coding-agent-usefulness.md) | Per-command assessment of Steward in the agent workflow |
+| [Maintainer Review — 2026-04-14](audits/maintainer-review.md) | Maintainer-perspective governance and maintenance gaps |
+| [Use-Case Consolidation Proposal — 2026-04-15](audits/usecase-consolidation-proposal.md) | Cross-reference of domain use cases against current and later pre-1.0 scope |
+| [CLI Usability and Configurability Review — 2026-04-15](audits/usability-review-2026-04-15.md) | Steward-on-Steward review of CLI ergonomics and configuration fit |
+| [Maintainer Use-Case Expectations](audits/maintainer-usecase-expectations.md) | Detailed domain use-case expectations that feed the later pre-1.0 roadmap |
+| [Maintainer Use-Case Ideas](audits/maintainer-usecase-ideas.md) | Additional domain-specific idea inventory preserved as input evidence |
 
-## Source Materials
+## Source Material
 
 | Document | Role |
 |----------|------|

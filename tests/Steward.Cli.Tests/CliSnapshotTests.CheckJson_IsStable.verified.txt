@@ -11,7 +11,29 @@
     "requiredArtifactsMissing": 1,
     "staleArtifacts": 0,
     "brokenLinks": 0,
-    "brokenReferences": 0
+    "brokenReferences": 0,
+    "rules": [
+      {
+        "ruleId": "STWD-001",
+        "description": "required artifact(s) missing",
+        "count": 1
+      },
+      {
+        "ruleId": "STWD-007",
+        "description": "maintained artifact(s) stale -\u003E run \u0027steward maintain --apply\u0027",
+        "count": 0
+      },
+      {
+        "ruleId": "STWD-008",
+        "description": "broken internal link(s)",
+        "count": 0
+      },
+      {
+        "ruleId": "STWD-009",
+        "description": "broken artifact reference(s) in policy",
+        "count": 0
+      }
+    ]
   },
   "diagnostics": [
     {

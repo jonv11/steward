@@ -1,8 +1,9 @@
 # Assumptions, Constraints, Dependencies, and Risks
 
 - **Document ID:** ACD-0001
-- **Version:** 1.0.0
+- **Version:** 0.10.0
 - **Status:** Accepted
+- **Last updated:** 2026-04-15
 
 ---
 
@@ -11,7 +12,7 @@
 | ID | Assumption | Rationale |
 |----|-----------|-----------|
 | A-01 | .NET 10 is GA and stable (released Nov 2025). | Standard .NET release cadence; LTS release. |
-| A-02 | System.CommandLine is stable enough for production use by .NET 10 timeframe. | Has been in preview since .NET 6; expected to ship with .NET 10 or as stable package. |
+| A-02 | The current pre-1.0 line may continue to use prerelease dependencies temporarily, but dependency stabilization is required before the first stable shipment. | The repo currently uses beta/preview packages and has not yet authorized `1.0.0`. |
 | A-03 | Target repositories are git-managed. | .gitignore support, change-set detection, and staged-file scoping all depend on git. Non-git repos may use the CLI with reduced functionality. |
 | A-04 | Markdown documents use CommonMark with optional YAML frontmatter. | Markdig supports CommonMark and extensions. YAML frontmatter is the dominant convention. |
 | A-05 | Most target repositories have fewer than 50,000 files. | Performance design targets reasonable repository sizes; very large monorepos may require explicit scoping. |
@@ -23,7 +24,7 @@
 | ID | Constraint | Source |
 |----|-----------|--------|
 | C-01 | The CLI must target .NET 10 and be multi-platform (Windows, macOS, Linux). | Hard architectural constraint from project charter. |
-| C-02 | Must be CLI-first; no GUI, no IDE plugin in v1.0.0. | REQ-CORE-003 |
+| C-02 | Must be CLI-first; no GUI or IDE plugin is required before the first stable shipment. | REQ-CORE-003 |
 | C-03 | Must work offline without network access. | REQ-CORE-003, REQ-DIST-001 |
 | C-04 | Must not require host platform credentials (GitHub, GitLab, etc.) for core functionality. | REQ-DIST-001 |
 | C-05 | Policy must not be silently overridden by runtime config in enforced mode. | REQ-CONFIG-003 |
@@ -46,7 +47,7 @@
 
 | ID | Risk | Likelihood | Impact | Mitigation |
 |----|------|-----------|--------|------------|
-| R-01 | System.CommandLine API instability | Low | Medium | Pin to a stable version; abstract behind thin command-registration layer. |
+| R-01 | System.CommandLine and DI package instability while the repo remains on preview/beta dependencies | Medium | Medium | Keep the pre-1.0 line explicit, pin exact versions, and stabilize dependencies before `1.0.0`. |
 | R-02 | Scope creep from 130+ requirements | Medium | High | Strict milestone scoping; each milestone has clear boundaries and deferred items. |
 | R-03 | Markdown structural editing edge cases | Medium | Medium | Extensive snapshot testing; conservative edit strategy; fail-safe on ambiguity. |
 | R-04 | .gitignore semantic parity with git | Low | Medium | Use established .gitignore parsing approaches; test against known edge cases. |

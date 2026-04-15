@@ -1,16 +1,17 @@
 # Curation Notes
 
-- **Version:** 1.0.0
+- **Version:** 0.10.0
+- **Last updated:** 2026-04-15
 
 ---
 
-## Source material
+## Source Material
 
 | Source | Disposition |
 |--------|------------|
 | `repository-steward-master-requirements.md` (MRD-0001) | Analyzed and fully mapped to PRD, RFCs, and milestone plan. Preserved as original source material. |
 
-## Artifacts created
+## Artifacts Created
 
 The following canonical artifacts were created from the master requirements:
 
@@ -24,16 +25,17 @@ The following canonical artifacts were created from the master requirements:
 | `docs/decisions/rfcs/RFC-001` through `RFC-006` | Product and requirement decisions |
 | `docs/decisions/adrs/ADR-001` through `ADR-009` | Technical and architectural decisions |
 | `docs/planning/delivery-strategy.md` | Sequencing rationale |
-| `docs/planning/milestone-plan.md` | Milestones v0.1.0 through v1.0.0 |
+| `docs/planning/milestone-plan.md` | Delivered and planned pre-1.0 milestone sequencing |
 | `docs/planning/implementation-instructions.md` | Per-milestone execution guide |
+| `docs/planning/pre-1-0-readiness-plan.md` | Active readiness and remaining-work register before first stable shipment |
 
-## Conflicts resolved
+## Conflicts Resolved
 
 No competing artifacts existed. The repository was empty except for the master requirements document.
 
-## Key decisions during curation
+## Key Decisions During Curation
 
-1. **Scope prioritization:** ~130 requirements were mapped to 10 milestones. 5 requirements were explicitly deferred beyond v1.0.0 (typed resource addresses, split/extract workflows, search resource addresses, hosting integrations).
+1. **Scope prioritization:** ~125 traced requirements remain organized into incremental milestones, but the active roadmap now stays on the `0.x` line until explicit `1.0.0` criteria are approved.
 
 2. **Implicit requirements added:** The PRD includes requirements not explicitly in MRD but necessary for a professional CLI: help system, version command, config initialization, color control, verbosity control.
 
@@ -45,14 +47,20 @@ No competing artifacts existed. The repository was empty except for the master r
 
 6. **mdpath selector syntax:** MRD referenced "mdpath-style or equivalent" without specifying syntax. RFC-004 designed a concrete selector syntax.
 
-## Items intentionally deferred
+## Retargeting Notes
+
+- The previous live "post-v1" framing was superseded because the repository is not yet approved for `1.0.0`.
+- Future work that had been labeled `v1.1.0+` is now retargeted to logical pre-1.0 milestones (`v0.11.0+`).
+- Historical audit documents remain historical, but active planning artifacts now describe one consistent pre-stable story.
+
+## Items Intentionally Deferred Within The Pre-1.0 Line
 
 | Item | Reason |
 |------|--------|
-| Typed resource-address model (REQ-ADDR-002–005) | Architectural evolution beyond v1.0.0; path-based model is sufficient |
-| Split/extract workflows (REQ-MD-012) | High-risk, low-priority for first release |
-| Canonical addresses in search (REQ-SEARCH-012) | Depends on resource-address model |
-| Git hosting integrations (REQ-DIST-002) | Explicitly out of v1.0.0 scope per requirements |
-| Native AOT compilation | System.CommandLine and YAML parsing may have AOT limitations |
-| Plugin/extensibility system | Internal rules are sufficient for v1.0.0 |
-| Protocol integration (MCP, LSP) | Future enhancement beyond CLI-first scope |
+| Typed resource-address model (REQ-ADDR-002–005) | Larger architectural change; keep on a later pre-1.0 milestone until the simpler path model is fully hardened |
+| Split/extract workflows (REQ-MD-012) | Higher-risk Markdown mutation work than the current stable-readiness set |
+| Canonical addresses in search (REQ-SEARCH-012) | Depends on the resource-address model |
+| Git hosting integrations (REQ-DIST-002) | Optional integration point, not part of the current offline-first core |
+| Native AOT compilation | Current dependency stack still includes preview/beta components and has not been hardened for AOT |
+| Plugin/extensibility system | Internal rules remain sufficient on the current roadmap |
+| Protocol integration (MCP, LSP) | Future enhancement, but still part of the broader pre-1.0 exploration line rather than a shipped stable promise |

@@ -111,6 +111,49 @@ artifacts:
     }
 
     [Fact]
+    public void Status_SurfacesRecommendedArtifactsFromRoleDefaults()
+    {
+        WritePolicyYaml(@"
+artifacts:
+  - path: STRUCTURE.md
+    role: generated
+");
+        WriteFile("STRUCTURE.md", "# Structure");
+
+        var (exitCode, output, _) = InvokeStatus("status");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("Recommended Artifacts:");
+        output.Should().Contain("STRUCTURE.md");
+        output.Should().Contain("Recommended artifacts: 1/1 present");
+    }
+
+    [Fact]
+    public void Status_SurfacesStateDocuments()
+    {
+        WritePolicyYaml(@"
+artifacts:
+  - path: docs/implementation-status.md
+    role: current-state
+    freshness:
+      max_age_days: 30
+");
+        WriteFile("docs/implementation-status.md", """
+            ---
+            last_updated: 2026-04-15
+            ---
+            # Status
+            """);
+
+        var (exitCode, output, _) = InvokeStatus("status");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("State Documents:");
+        output.Should().Contain("docs/implementation-status.md");
+        output.Should().Contain("current-state");
+    }
+
+    [Fact]
     public void Status_JsonOutput()
     {
         WritePolicyYaml(@"

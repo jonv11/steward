@@ -1,40 +1,36 @@
 # Delivery Strategy
 
 - **Document ID:** PLAN-0001
-- **Version:** 1.0.0
+- **Version:** 0.10.0
 - **Status:** Accepted
+- **Last updated:** 2026-04-15
 
 ---
 
 ## Approach
 
-The project follows an **incremental milestone** delivery model. Each milestone delivers a coherent, testable slice of functionality that builds on previous milestones.
+Steward continues to follow an incremental milestone model. Each milestone must deliver a coherent, testable slice of functionality without assuming that the first stable release has already been approved.
 
-### Sequencing principles
+## Sequencing Principles
 
-1. **Foundation first.** Project scaffolding, CLI framework, config loading, and file discovery must exist before any feature commands.
-2. **Read before write.** Discovery, orientation, outline, and search (read-only surfaces) are built before validation (advisory) and maintenance (mutation).
-3. **Validate before maintain.** The validation engine and check command must exist before deterministic maintenance, because maintenance depends on staleness detection.
-4. **Markdown query before edit.** The Markdown structural model and query operations must be stable before edit/mutation operations are added.
-5. **Preview before apply.** All mutation commands are implemented with preview mode first; apply mode is added in the same or next milestone.
-6. **Agent-friendly from the start.** JSON output and structured exit codes are available from v0.1.0, not bolted on later.
+1. **Foundation first.** CLI scaffolding, config loading, and file discovery land before higher-level behavior.
+2. **Read before write.** Orientation, outline, explainability, and search precede mutation-heavy surfaces.
+3. **Validate before maintain.** Deterministic maintenance depends on policy-aware validation and stale-artifact detection.
+4. **Preview before apply.** Mutating flows stay preview-first and must surface review-friendly output.
+5. **Policy before hardcoding.** Repository-specific workflow semantics belong in config and policy, not in Steward source.
+6. **Pre-1.0 honesty.** Planning, packaging, and release signaling must describe the repo as pre-stable until `1.0.0` is explicitly authorized.
 
-### Milestone boundaries
+## Versioning
 
-Each milestone:
-- Has a clear, testable objective.
-- Produces a working (if incomplete) CLI.
-- Includes tests for all new functionality.
-- Updates documentation where affected.
-- Does not break prior milestone functionality.
+Authoritative versioning policy is recorded in [ADR-013](../decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
-### Versioning
+- `0.10.0` is the current pre-1.0 baseline.
+- Future feature work stays on the `0.x.y` line until an explicit release-authorization decision approves `1.0.0`.
+- Pre-1.0 patch bumps are reserved for tightly scoped fixes, packaging corrections, and documentation adjustments on the same baseline.
+- Pre-1.0 minor bumps are intentional roadmap moves and require written rationale in the active planning/state artifacts.
 
-Semantic versioning: `MAJOR.MINOR.PATCH`.
-- `v0.x.0` milestones are feature additions.
-- `v1.0.0` is the first complete release covering the planned v1.0 scope.
-- Patch versions (`v0.x.1`) are reserved for bug fixes within a milestone.
+## Milestone Shape
 
-### Milestone count
-
-10 milestones from v0.1.0 through v1.0.0. This reflects the breadth of the requirements (~130 requirements across 20+ areas). Each milestone covers 1-3 requirement areas and delivers in a focused, reviewable increment.
+- Delivered lineage: `v0.1.0` through `v0.10.0`
+- Planned pre-stable continuation: `v0.11.0` and later
+- First stable release: `v1.0.0`, not yet authorized and not yet scheduled

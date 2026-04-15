@@ -44,5 +44,5 @@ The PRD already anticipates this: "Document-type-aware frontmatter expectations 
 - Controlled vocabulary enforcement becomes a configuration concern, not a core feature per domain.
 - The story/worldbuilding profile (ADR-011) can ship meaningful defaults once this system exists: character types with frontmatter schemas, chapter types with required sections, etc.
 - Multiple use-case items that are currently classified as "proposed" or "future" become implementable once this system is delivered.
-- The design RFC should be created when the v1.6.0 milestone is scheduled for implementation, not before — to avoid premature specification without implementation context.
+- The design RFC should be created when the later pre-1.0 artifact-type milestone is scheduled for implementation, not before — to avoid premature specification without implementation context.
 - Existing G7 items (G7-02 scoped frontmatter, G7-03 naming enforcement, G7-12 three-level classification, G7-13 role-linked defaults) are building blocks that the type schema system unifies and extends.

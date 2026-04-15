@@ -13,7 +13,7 @@ artifacts:
 
   - path: docs/implementation-status.md
     role: current-state
-    description: Authoritative implementation snapshot, release readiness, and active gaps
+    description: Authoritative pre-1.0 implementation snapshot, release-readiness state, and remaining gaps
     required: true
     importance: required
     freshness:
@@ -22,7 +22,7 @@ artifacts:
   - path: docs/planning-index.md
     role: guide
     description: Central navigation hub for requirements, decisions, planning, and audits
-    index_of: docs
+    index_of: docs/planning
     required: true
     importance: required
 
@@ -73,13 +73,13 @@ artifacts:
 
   - path: docs/planning/milestone-plan.md
     role: milestones
-    description: Milestone plan through v1.0.0 that explains delivered sequencing
+    description: Delivered and planned pre-1.0 milestone sequencing from v0.1.0 onward
     required: false
     importance: recommended
 
-  - path: docs/planning/post-v1-milestone-plan.md
+  - path: docs/planning/pre-1-0-readiness-plan.md
     role: roadmap
-    description: Active post-v1 roadmap and backlog sequencing
+    description: Active pre-1.0 readiness plan and categorized remaining work before first stable shipment
     required: false
     importance: recommended
 
@@ -116,6 +116,16 @@ governance:
     - docs/implementation-status.md
     - docs/planning-index.md
     - docs/requirements/PRD.md
+  completion_policy:
+    rules:
+      - id: STWD-001
+        description: required artifact(s) missing
+      - id: STWD-007
+        description: maintained artifact(s) stale -> run 'steward maintain --apply'
+      - id: STWD-008
+        description: broken internal link(s)
+      - id: STWD-009
+        description: broken artifact reference(s) in policy
 
 validation:
   disabled_rules: []
