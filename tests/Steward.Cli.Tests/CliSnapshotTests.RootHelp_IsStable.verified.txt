@@ -24,3 +24,4 @@ Commands:
   maintain           Deterministic maintenance of governed artifacts
   status             Show current repository state at a glance
   explain <rule-id>  Explain a validation rule. Run without arguments to list all rules. []
+  refs <path>        Show inbound and outbound references for a file

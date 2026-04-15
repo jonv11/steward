@@ -23,6 +23,7 @@ public static class Program
         rootCommand.Add(MaintainCommand.Create());
         rootCommand.Add(StatusCommand.Create());
         rootCommand.Add(ExplainCommand.Create());
+        rootCommand.Add(RefsCommand.Create());
 
         return rootCommand;
     }

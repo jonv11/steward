@@ -60,7 +60,7 @@ public sealed class BrokenInternalLinkRule : IValidationRule
         .UsePreciseSourceLocation()
         .Build();
 
-    internal static List<(string Target, int Line)> ExtractInternalLinks(string content)
+    public static List<(string Target, int Line)> ExtractInternalLinks(string content)
     {
         var results = new List<(string, int)>();
         var document = Markdig.Markdown.Parse(content, Pipeline);
@@ -99,7 +99,7 @@ public sealed class BrokenInternalLinkRule : IValidationRule
         return true;
     }
 
-    internal static string? ResolveLinkTarget(string sourceFile, string target)
+    public static string? ResolveLinkTarget(string sourceFile, string target)
     {
         if (string.IsNullOrWhiteSpace(target)) return null;
 
