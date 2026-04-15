@@ -14,6 +14,7 @@
 │   │   ├── maintainer-usecase-ideas.md
 │   │   ├── repository-audit-2026-04-14.md
 │   │   ├── review-requirements.md
+│   │   ├── usability-review-2026-04-15.md
 │   │   └── usecase-consolidation-proposal.md
 │   ├── decisions/
 │   │   ├── adrs

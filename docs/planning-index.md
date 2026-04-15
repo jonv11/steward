@@ -10,6 +10,12 @@ Central navigation for all planning and decision artifacts.
 | [Assumptions, Constraints, and Dependencies](requirements/assumptions-constraints.md) | Explicit assumptions, constraints, dependencies, and risks |
 | [Requirements Traceability](requirements/requirements-traceability.md) | Mapping from master requirements to milestones |
 
+## Current State
+
+| Document | Purpose |
+|----------|---------|
+| [Implementation Status](implementation-status.md) | Current implementation snapshot, release readiness, and active gaps |
+
 ## Decisions
 
 | Document | Purpose |
@@ -55,6 +61,7 @@ Central navigation for all planning and decision artifacts.
 | [Coding-Agent Usefulness Assessment — 2026-04-14](audits/assessment-coding-agent-usefulness.md) | Per-command assessment of Steward's value in the agent terminal workflow |
 | [Maintainer Review — 2026-04-14](audits/maintainer-review.md) | Maintainer-perspective gaps and improvement requests for rule enforcement |
 | [Use-Case Consolidation Proposal — 2026-04-15](audits/usecase-consolidation-proposal.md) | Exhaustive cross-reference of maintainer use-case files against CLI capabilities and roadmap |
+| [CLI Usability and Configurability Review - 2026-04-15](audits/usability-review-2026-04-15.md) | Steward-on-Steward review of CLI ergonomics, configuration fit, and contributor entry experience |
 | [Maintainer Use-Case Expectations](audits/maintainer-usecase-expectations.md) | Detailed maintainer expectations for story/worldbuilding repository stewardship |
 | [Maintainer Use-Case Ideas](audits/maintainer-usecase-ideas.md) | Steward-aware improvement proposals for story/worldbuilding domain |
 

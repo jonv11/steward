@@ -1,10 +1,12 @@
 using System.CommandLine;
+using DotNet.Globbing;
 using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Configuration;
 using Steward.Core.Discovery;
 using Steward.Core.Formatting;
 using Steward.Core.Maintenance;
+using Steward.Core.Validation.Rules;
 
 namespace Steward.Cli.Commands;
 
@@ -94,7 +96,7 @@ public static class StatusCommand
 
                 if (showCoverage)
                 {
-                    var coverage = ComputeCoverage(ctx.Policy, ctx.Files!);
+                    var coverage = ComputeCoverage(ctx.Policy, ctx.Files!, ctx.FileSystem, ctx.RootPath);
                     ctx.Formatter.WriteMessage("");
                     ctx.Formatter.WriteMessage($"Governance coverage: {coverage.GovernedCount}/{coverage.TotalMarkdownFiles} Markdown files ({coverage.Percentage:F0}%)");
                     if (coverage.Ungoverned.Count > 0)
@@ -208,7 +210,11 @@ public static class StatusCommand
         public required bool Stale { get; init; }
     }
 
-    internal static CoverageResult ComputeCoverage(RepositoryPolicy? policy, IReadOnlyList<DiscoveredFile> files)
+    internal static CoverageResult ComputeCoverage(
+        RepositoryPolicy? policy,
+        IReadOnlyList<DiscoveredFile> files,
+        IFileSystem? fileSystem = null,
+        string? repositoryRoot = null)
     {
         var mdFiles = files
             .Where(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
@@ -218,7 +224,56 @@ public static class StatusCommand
         if (mdFiles.Count == 0)
             return new CoverageResult { TotalMarkdownFiles = 0, GovernedCount = 0, Percentage = 100, Ungoverned = [] };
 
+        var mdFileSet = new HashSet<string>(mdFiles, StringComparer.OrdinalIgnoreCase);
         var governed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var frontier = new Queue<string>();
+
+        void AddGovernedPath(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return;
+
+            var normalized = path.Replace('\\', '/').TrimEnd('/');
+            if (!mdFileSet.Contains(normalized))
+                return;
+
+            if (governed.Add(normalized))
+                frontier.Enqueue(normalized);
+        }
+
+        void AddGovernedDirectory(string? directoryPath)
+        {
+            if (string.IsNullOrWhiteSpace(directoryPath))
+                return;
+
+            var normalizedDir = directoryPath.Replace('\\', '/').TrimEnd('/');
+            foreach (var path in mdFiles)
+            {
+                if (path.Equals(normalizedDir, StringComparison.OrdinalIgnoreCase) ||
+                    path.StartsWith(normalizedDir + "/", StringComparison.OrdinalIgnoreCase))
+                {
+                    AddGovernedPath(path);
+                }
+            }
+        }
+
+        void AddGovernedSource(string? source)
+        {
+            if (string.IsNullOrWhiteSpace(source))
+                return;
+
+            var normalized = source.Replace('\\', '/');
+            var looksLikeGlob = normalized.IndexOfAny(['*', '?', '[']) >= 0;
+            if (!looksLikeGlob)
+            {
+                AddGovernedDirectory(normalized);
+                return;
+            }
+
+            var glob = Glob.Parse(normalized);
+            foreach (var path in mdFiles.Where(glob.IsMatch))
+                AddGovernedPath(path);
+        }
 
         // 1. Artifact paths
         if (policy?.Artifacts != null)
@@ -226,28 +281,27 @@ public static class StatusCommand
             foreach (var a in policy.Artifacts)
             {
                 if (!string.IsNullOrWhiteSpace(a.Path))
-                    governed.Add(a.Path.Replace('\\', '/').TrimEnd('/'));
+                {
+                    if (a.Path!.EndsWith('/'))
+                        AddGovernedDirectory(a.Path);
+                    else
+                        AddGovernedPath(a.Path);
+                }
+
+                if (!string.IsNullOrWhiteSpace(a.IndexOf))
+                    AddGovernedDirectory(a.IndexOf);
             }
         }
 
-        // 2. Maintenance source directories — files under them are governed
+        // 2. Maintenance scopes and maintained artifacts
         if (policy?.Maintenance?.Artifacts != null)
         {
             foreach (var ma in policy.Maintenance.Artifacts)
             {
-                if (string.IsNullOrWhiteSpace(ma.Source))
-                    continue;
-                var source = ma.Source.Replace('\\', '/').TrimEnd('/');
-                foreach (var f in mdFiles)
-                {
-                    if (f.StartsWith(source + "/", StringComparison.OrdinalIgnoreCase) ||
-                        f.Equals(source, StringComparison.OrdinalIgnoreCase))
-                        governed.Add(f);
-                }
-
-                // Also the artifact path itself
                 if (!string.IsNullOrWhiteSpace(ma.Path))
-                    governed.Add(ma.Path.Replace('\\', '/'));
+                    AddGovernedPath(ma.Path);
+
+                AddGovernedSource(ma.Source);
             }
         }
 
@@ -255,7 +309,29 @@ public static class StatusCommand
         if (policy?.Governance?.StartHere != null)
         {
             foreach (var s in policy.Governance.StartHere)
-                governed.Add(s.Replace('\\', '/'));
+                AddGovernedPath(s);
+        }
+
+        // 4. Markdown files reachable from governed navigation surfaces
+        if (fileSystem != null && !string.IsNullOrWhiteSpace(repositoryRoot))
+        {
+            while (frontier.Count > 0)
+            {
+                var currentPath = frontier.Dequeue();
+                var fullPath = Path.Combine(repositoryRoot!, currentPath);
+                if (!fileSystem.FileExists(fullPath))
+                    continue;
+
+                var content = fileSystem.ReadAllText(fullPath);
+                var links = BrokenInternalLinkRule.ExtractInternalLinks(content);
+
+                foreach (var (target, _) in links)
+                {
+                    var resolved = BrokenInternalLinkRule.ResolveLinkTarget(currentPath, target);
+                    if (resolved != null)
+                        AddGovernedPath(resolved);
+                }
+            }
         }
 
         var ungoverned = mdFiles.Where(f => !governed.Contains(f)).OrderBy(f => f, StringComparer.OrdinalIgnoreCase).ToList();

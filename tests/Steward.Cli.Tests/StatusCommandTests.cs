@@ -1,6 +1,9 @@
 using FluentAssertions;
 using Steward.Cli.Commands;
 using System.CommandLine;
+using Steward.Core.Abstractions;
+using Steward.Core.Configuration;
+using Steward.Core.Discovery;
 using Xunit;
 
 namespace Steward.Cli.Tests;
@@ -135,5 +138,49 @@ artifacts:
         var (exitCode, _, _) = InvokeStatus("status");
 
         exitCode.Should().Be(2);
+    }
+
+    [Fact]
+    public void ComputeCoverage_IncludesIndexedAndReachableMarkdownFiles()
+    {
+        WriteFile("README.md", "# Root\n[Index](docs/planning-index.md)\n[Guide](guides/getting-started.md)");
+        WriteFile("docs/planning-index.md", "# Planning Index");
+        WriteFile("docs/implementation-status.md", "# Status");
+        WriteFile("guides/getting-started.md", "# Guide");
+
+        var policy = new RepositoryPolicy
+        {
+            Governance = new GovernanceConfig
+            {
+                StartHere = ["README.md"]
+            },
+            Artifacts =
+            [
+                new ArtifactDefinition
+                {
+                    Path = "docs/planning-index.md",
+                    Role = "guide",
+                    IndexOf = "docs"
+                }
+            ]
+        };
+
+        IReadOnlyList<DiscoveredFile> files =
+        [
+            new("README.md", 10, false),
+            new("docs/planning-index.md", 10, false),
+            new("docs/implementation-status.md", 10, false),
+            new("guides/getting-started.md", 10, false)
+        ];
+
+        var coverage = StatusCommand.ComputeCoverage(
+            policy,
+            files,
+            new PhysicalFileSystem(),
+            _tempDir);
+
+        coverage.TotalMarkdownFiles.Should().Be(4);
+        coverage.GovernedCount.Should().Be(4);
+        coverage.Ungoverned.Should().BeEmpty();
     }
 }

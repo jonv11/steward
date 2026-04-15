@@ -58,6 +58,18 @@ steward maintain          # preview
 steward maintain --apply  # apply changes
 ```
 
+## Using Steward In This Repo
+
+When you are contributing to the Steward repository itself, use Steward as the first navigation surface:
+
+```bash
+steward orient --signals
+steward status --coverage
+steward check
+```
+
+In this repo, the main session-start documents are `README.md`, `docs/implementation-status.md`, `docs/planning-index.md`, and `docs/requirements/PRD.md`. After structural moves or new documentation, refresh the generated map with `steward maintain --artifact structure --apply`.
+
 ## Commands
 
 | Command | Description |

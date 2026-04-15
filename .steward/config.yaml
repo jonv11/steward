@@ -2,4 +2,11 @@ profile: software
 
 discovery:
   exclude:
+    - "**/bin/**"
+    - "**/obj/**"
+    - "**/publish/**"
+    - "**/TestResults/**"
+    - "**/*.nupkg"
+    - ".vs/**"
+    - ".idea/**"
     - ".steward/generated/**"
