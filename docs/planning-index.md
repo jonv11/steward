@@ -51,6 +51,7 @@ Central navigation for all planning and decision artifacts.
 | Document | Purpose |
 | -------- | ------- |
 | [Repository Audit — 2026-04-14](audits/repository-audit-2026-04-14.md) | Requirement-driven release audit and contract-alignment review |
+| [Requirements Implementation Review — 2026-04-14](audits/review-requirements.md) | Detailed per-requirement status review against codebase |
 | [Coding-Agent Usefulness Assessment — 2026-04-14](audits/assessment-coding-agent-usefulness.md) | Per-command assessment of Steward's value in the agent terminal workflow |
 | [Maintainer Review — 2026-04-14](audits/maintainer-review.md) | Maintainer-perspective gaps and improvement requests for rule enforcement |
 | [Use-Case Consolidation Proposal — 2026-04-15](audits/usecase-consolidation-proposal.md) | Exhaustive cross-reference of maintainer use-case files against CLI capabilities and roadmap |

@@ -1,9 +1,10 @@
 # RFC-007 Governance Enhancements — Actionable Backlog
 
-- **Source:** [RFC-007 Maintainer Governance and Stewardship Enhancements](../decisions/rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements-draft.md) (Draft)
+- **Source:** [RFC-007 Maintainer Governance and Stewardship Enhancements](../decisions/rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements-draft.md) (Accepted)
 - **Supporting evidence:** [Maintainer Review — 2026-04-14](../audits/maintainer-review.md)
-- **Status:** Accepted — RFC-007 accepted 2026-04-15, items scheduled in post-v1.0.0 milestones
+- **Status:** Accepted — RFC-007 accepted 2026-04-15, items scheduled in post-v1.0.0 milestones. Implementation in progress — 13 of 20 items have source code and tests.
 - **Created:** 2026-04-15
+- **Last updated:** 2026-04-15
 
 ---
 
@@ -11,11 +12,21 @@
 
 This backlog captures the actionable work derived from RFC-007 and the maintainer review. It covers enhancements to policy expressiveness, governance inspection, maintenance capabilities, discoverability analysis, workflow operations, and onboarding for mature repositories.
 
-All items here are **proposed future work**. They are not part of the accepted v1.0.0 scope defined by PRD-0001, TRACE-0001, and the v0.1.0–v1.0.0 milestone plan. Implementation should not begin until RFC-007 is formally accepted and specific items are scheduled into a post-v1.0.0 milestone.
+All items here are **proposed post-v1.0.0 enhancements**. Many items now have initial implementations with source code and tests. See [implementation-status.md](../implementation-status.md) for the current state of each item.
+
+### Implementation Progress
+
+| Phase | Total Items | Implemented | Planned |
+|-------|-------------|-------------|---------|
+| Phase 1 | 5 | 1 (G7-03) | 4 (G7-01, G7-02, G7-04, G7-05) |
+| Phase 2 | 4 | 2 (G7-08, G7-09) | 2 (G7-06, G7-07) |
+| Phase 3 | 4 | 3 (G7-10, G7-11, G7-13) | 1 (G7-12) |
+| Phase 4 | 4 | 4 (G7-14, G7-15, G7-16, G7-17) | 0 |
+| Phase 5 | 3 | 3 (G7-18, G7-19, G7-20) | 0 |
 
 ### Assumptions
 
-- The current v1.0.0 product surface (14 commands, 9 rules, 5 maintainers) is the baseline.
+- The current product surface (16 commands, 13 rules, 6 maintainers) is the baseline.
 - Enhancements must remain backward-compatible: existing repos without new config keys continue to work.
 - New advisory surfaces default to low-noise behavior.
 - All capabilities must remain deterministic, preview-first where relevant, and compatible with existing output contracts.
@@ -415,9 +426,9 @@ This backlog does **not** modify or supersede:
 - PRD-0001 (accepted product requirements for v1.0.0)
 - TRACE-0001 (accepted requirements traceability)
 - The v0.1.0–v1.0.0 milestone plan (PLAN-0002)
-- Any accepted RFC (RFC-001 through RFC-006) or ADR (ADR-001 through ADR-010)
+- Any accepted RFC (RFC-001 through RFC-006) or ADR (ADR-001 through ADR-012)
 
-Items in this backlog represent **proposed post-v1.0.0 enhancements** pending RFC-007 acceptance. They may refine or extend accepted requirements but should not contradict them.
+Items in this backlog represent **post-v1.0.0 enhancements** defined by RFC-007. Implementation has begun on 13 of 20 items, with source code and tests in place. The remaining 7 items are planned for future milestones.
 
 Some items partially overlap with existing accepted requirements that are already implemented but could be enhanced:
 - G7-02 extends REQ-FM-003 (document-type-aware frontmatter expectations)

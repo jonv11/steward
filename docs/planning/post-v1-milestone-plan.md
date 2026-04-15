@@ -3,6 +3,7 @@
 - **Source:** [RFC-007 Governance Enhancements Backlog](rfc-007-governance-enhancements-backlog.md)
 - **RFC:** [RFC-007 Maintainer Governance and Stewardship Enhancements](../decisions/rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements-draft.md) (Accepted)
 - **Created:** 2026-04-15
+- **Last updated:** 2026-04-15
 
 ---
 
@@ -10,15 +11,17 @@
 
 **Theme:** Fill day-to-day maintainer gaps with targeted extensions to the existing policy and validation engine.
 
-| Item | Summary | Effort |
-|------|---------|--------|
-| G7-01 | Per-path rule suppression (`validation.path_overrides`) | Low |
-| G7-02 | Scoped frontmatter requirements per path pattern | Medium |
-| G7-03 | Naming convention enforcement in path-policy (`must_match` regex) | Medium |
-| G7-04 | Post-fix and maintain diff output | Low |
-| G7-05 | Rule scope transparency in `explain --verbosity verbose` | Low |
+| Item | Summary | Effort | Status |
+|------|---------|--------|--------|
+| G7-01 | Per-path rule suppression (`validation.path_overrides`) | Low | Planned |
+| G7-02 | Scoped frontmatter requirements per path pattern | Medium | Planned |
+| G7-03 | Naming convention enforcement in path-policy (`must_match` regex) | Medium | ✅ Implemented (STWD-010) |
+| G7-04 | Post-fix and maintain diff output | Low | Planned |
+| G7-05 | Rule scope transparency in `explain --verbosity verbose` | Low | Planned |
 
 **Exit criteria:** All five items implemented, tested, and passing. `steward check` validates the new policy schema. Existing repos without new keys work unchanged.
+
+**Current status:** 1 of 5 items implemented (G7-03). Remaining 4 items are planned.
 
 ---
 
@@ -26,14 +29,16 @@
 
 **Theme:** Inspect, explain, and diagnose governance configuration and coverage.
 
-| Item | Summary | Effort |
-|------|---------|--------|
-| G7-06 | Effective policy explanation (`steward explain path <path>`) | Medium |
-| G7-07 | Configuration doctor (`steward config doctor`) | Medium |
-| G7-08 | Index-completeness validation rule (STWD-010) | Medium |
-| G7-09 | State-document freshness signaling (STWD-011) | Medium |
+| Item | Summary | Effort | Status |
+|------|---------|--------|--------|
+| G7-06 | Effective policy explanation (`steward explain path <path>`) | Medium | Planned |
+| G7-07 | Configuration doctor (`steward config doctor`) | Medium | Planned |
+| G7-08 | Index-completeness validation rule (STWD-011) | Medium | ✅ Implemented |
+| G7-09 | State-document freshness signaling (STWD-012) | Medium | ✅ Implemented |
 
 **Exit criteria:** All four items implemented. `explain path` shows complete effective governance for any file. `config doctor` detects at least three classes of ineffective configuration.
+
+**Current status:** 2 of 4 items implemented (G7-08 as STWD-011, G7-09 as STWD-012). G7-06 and G7-07 require follow-up ADRs.
 
 ---
 
@@ -41,14 +46,16 @@
 
 **Theme:** Extend the maintenance engine with directory-index generation, dependency modeling, and richer artifact classification.
 
-| Item | Summary | Effort |
-|------|---------|--------|
-| G7-10 | Directory-index generator for maintained sections | High |
-| G7-11 | Maintenance dependency modeling (`depends_on`) | Medium |
-| G7-12 | Three-level artifact classification (required/recommended/optional) | Medium |
-| G7-13 | Role-linked behavioral defaults | Medium |
+| Item | Summary | Effort | Status |
+|------|---------|--------|--------|
+| G7-10 | Directory-index generator for maintained sections | High | ✅ Implemented |
+| G7-11 | Maintenance dependency modeling (`depends_on`) | Medium | ✅ Implemented |
+| G7-12 | Three-level artifact classification (required/recommended/optional) | Medium | Planned |
+| G7-13 | Role-linked behavioral defaults | Medium | ✅ Implemented |
 
 **Exit criteria:** `steward maintain --apply` generates directory indexes deterministically. Dependency ordering works. Three-level classification changes STWD-001 severity correctly.
+
+**Current status:** 3 of 4 items implemented (G7-10, G7-11, G7-13). G7-12 (three-level classification) requires follow-up ADR.
 
 ---
 
@@ -56,14 +63,16 @@
 
 **Theme:** Proactive detection of discoverability gaps, change-impact signaling, and staged completeness.
 
-| Item | Summary | Effort |
-|------|---------|--------|
-| G7-14 | Orphaned-but-valid document detection | Medium |
-| G7-15 | Change-impact output in `steward check` | Medium |
-| G7-16 | Governance coverage reporting (`steward status --coverage`) | Medium |
-| G7-17 | Staged-scope completeness checks | Medium |
+| Item | Summary | Effort | Status |
+|------|---------|--------|--------|
+| G7-14 | Orphaned-but-valid document detection | Medium | ✅ Implemented (STWD-013) |
+| G7-15 | Change-impact output in `steward check` | Medium | ✅ Implemented |
+| G7-16 | Governance coverage reporting (`steward status --coverage`) | Medium | ✅ Implemented |
+| G7-17 | Staged-scope completeness checks | Medium | ✅ Implemented |
 
 **Exit criteria:** Orphan detection flags unreachable docs. Change-impact signals downstream refresh needs. Coverage report identifies ungoverned areas.
+
+**Current status:** All 4 items implemented (G7-14 as STWD-013, G7-15, G7-16, G7-17).
 
 ---
 
@@ -71,13 +80,15 @@
 
 **Theme:** Safe move/rename workflows, reference graph queries, and bootstrap-by-analysis.
 
-| Item | Summary | Effort |
-|------|---------|--------|
-| G7-18 | Reference graph queries (`steward refs <path>`) | Medium |
-| G7-19 | Safe move/rename (`steward refactor move`) | High |
-| G7-20 | Bootstrap-by-analysis (`steward init --analyze`) | High |
+| Item | Summary | Effort | Status |
+|------|---------|--------|--------|
+| G7-18 | Reference graph queries (`steward refs <path>`) | Medium | ✅ Implemented |
+| G7-19 | Safe move/rename (`steward refactor move`) | High | ✅ Implemented |
+| G7-20 | Bootstrap-by-analysis (`steward init --analyze`) | High | ✅ Implemented |
 
 **Exit criteria:** `refs` shows inbound/outbound links. `refactor move` updates all references with preview. `init --analyze` produces reviewable suggestions for mature repos.
+
+**Current status:** All 3 items implemented (G7-18, G7-19, G7-20).
 
 ---
 

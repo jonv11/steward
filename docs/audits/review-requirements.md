@@ -4,6 +4,18 @@
 **Reviewer:** Automated principal-level review
 **Scope:** Full requirement set (PRD-0001, TRACE-0001, ACD-0001, ADR-001–009, RFC-001–006) vs. current implementation (v1.0.0 as declared)
 
+> **Accuracy Note (2026-04-15):** Post-review code inspection confirmed several findings in this audit were already fixed at the time of review but were missed during the automated pass. Specifically:
+>
+> - **Profile merging IS implemented**: `ProfileMerger.Merge` is called in `CommandSetup.Build`; profile defaults are merged into effective policy.
+> - **`outline` does NOT crash on file-path input**: The command delegates to Markdown outline for `.md` files.
+> - **`--headings` flag IS implemented** on the `outline` command.
+> - **`--quiet` flag IS implemented** on the `check` command.
+> - **Test count**: 472 tests pass (363 core + 109 CLI), not 319.
+> - **Command count**: 16 commands exist (including `refs` and `refactor`), not 14.
+> - **Rule count**: 13 rules exist (STWD-001 through STWD-013), not 9.
+>
+> Remaining findings about policy schema gaps, md edit flags, and state documents remain accurate and are tracked in the post-v1.0.0 milestone plan.
+
 ---
 
 ## 1. Scope and Review Basis

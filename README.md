@@ -36,7 +36,7 @@ dotnet build
 steward init
 ```
 
-1. **Orient** yourself:
+2. **Orient** yourself:
 
 ```bash
 steward orient           # classified structure with roles
@@ -45,13 +45,13 @@ steward outline          # plain file tree
 steward md outline README.md  # Markdown heading hierarchy
 ```
 
-1. **Check** policy compliance:
+3. **Check** policy compliance:
 
 ```bash
 steward check
 ```
 
-1. **Maintain** generated artifacts:
+4. **Maintain** generated artifacts:
 
 ```bash
 steward maintain          # preview
@@ -76,6 +76,8 @@ steward maintain --apply  # apply changes
 | `steward maintain` | Deterministic maintenance of governed artifacts |
 | `steward status` | Show current repository state at a glance |
 | `steward explain [rule-id]` | Explain a validation rule, or list all rules |
+| `steward refs <path>` | Show inbound and outbound Markdown references for a file |
+| `steward refactor move <old> <new>` | Move/rename a file and update all Markdown references |
 
 ### Global Options
 
@@ -99,6 +101,10 @@ steward maintain --apply  # apply changes
 | STWD-007 | stale-artifact | Maintained artifacts must match expected state |
 | STWD-008 | broken-link | Internal Markdown links should resolve |
 | STWD-009 | broken-reference | Policy-declared artifact paths should resolve to existing files |
+| STWD-010 | path-policy | Files in governed directories must match declared naming conventions |
+| STWD-011 | index-completeness | All Markdown files in indexed directories should be linked from the index |
+| STWD-012 | freshness | State documents with freshness declarations should be updated within window |
+| STWD-013 | discoverability | Markdown files should be reachable from at least one navigation surface |
 
 Use `steward explain <rule-id>` for detailed guidance on any rule. Run `steward explain` (no argument) to list all rules.
 

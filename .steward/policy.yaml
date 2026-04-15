@@ -36,11 +36,27 @@ artifacts:
   - path: docs/decisions/decision-index.md
     role: reference
     description: Index of all accepted RFCs and ADRs with links and status
+    index_of: docs/decisions
     required: false
 
   - path: docs/planning/milestone-plan.md
     role: planning
     description: Detailed milestone plan from v0.1.0 through v1.0.0
+    required: false
+
+  - path: docs/planning/post-v1-milestone-plan.md
+    role: planning
+    description: Post-v1.0.0 milestone plan (v1.1.0 through v1.6.0) — active roadmap
+    required: false
+
+  - path: docs/requirements/requirements-traceability.md
+    role: requirements
+    description: Requirements traceability matrix mapping MRD-0001 to milestones and status
+    required: false
+
+  - path: docs/planning/rfc-007-governance-enhancements-backlog.md
+    role: planning
+    description: Actionable backlog of 20 governance-enhancement items from RFC-007
     required: false
 
   # Audits
