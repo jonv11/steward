@@ -15,9 +15,9 @@ public static class MaintainCommand
     {
         var command = new Command("maintain", "Deterministic maintenance of governed artifacts");
 
-        var scopeOption = new Option<string?>("--scope", "-s")
+        var scopeOption = new Option<string?>("--artifact", "-a")
         {
-            Description = "Maintain only a specific artifact by id"
+            Description = "Maintain only the artifact with this id (from policy.yaml maintenance.artifacts)"
         };
 
         var applyOption = new Option<bool>("--apply")
@@ -63,11 +63,32 @@ public static class MaintainCommand
             var engine = new MaintenanceEngine();
             var plan = engine.Evaluate(ctx.Policy, context, scope);
 
+            // Apply changes if requested
+            var appliedChanges = new List<(string path, int added, int removed)>();
+            if (apply && plan.HasChanges)
+            {
+                foreach (var action in plan.Actions.Where(a => a.HasChanges && a.ExpectedContent != null))
+                {
+                    var fullPath = Path.Combine(ctx.RootPath, action.ArtifactPath);
+                    var dir = Path.GetDirectoryName(fullPath);
+                    if (dir != null && !Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
+
+                    var oldContent = File.Exists(fullPath) ? File.ReadAllText(fullPath) : "";
+                    File.WriteAllText(fullPath, action.ExpectedContent);
+
+                    var (added, removed) = CountDiffLines(oldContent, action.ExpectedContent!);
+                    appliedChanges.Add((action.ArtifactPath, added, removed));
+                }
+            }
+
+            // Output — single pass for both text and JSON
             if (ctx.OutputFormat == OutputFormat.Json)
             {
                 ctx.Formatter.WriteObject(new
                 {
                     hasChanges = plan.HasChanges,
+                    applied = apply,
                     actions = plan.Actions.Select(a => new
                     {
                         artifactId = a.ArtifactId,
@@ -75,7 +96,15 @@ public static class MaintainCommand
                         type = a.Type,
                         description = a.Description,
                         hasChanges = a.HasChanges
-                    }).ToArray()
+                    }).ToArray(),
+                    changes = apply && appliedChanges.Count > 0
+                        ? appliedChanges.Select(c => new
+                        {
+                            path = c.path,
+                            linesAdded = c.added,
+                            linesRemoved = c.removed
+                        }).ToArray()
+                        : null
                 });
             }
             else
@@ -92,6 +121,7 @@ public static class MaintainCommand
                     ctx.Formatter.WriteMessage($"{status}  {action.ArtifactId}  {action.ArtifactPath}");
                     ctx.Formatter.WriteMessage($"  {action.Description}");
 
+                    // --diff works in both preview and apply modes
                     if (showDiff && action.HasChanges && action.CurrentContent != null && action.ExpectedContent != null)
                     {
                         var diffBuilder = new InlineDiffBuilder(new Differ());
@@ -111,52 +141,17 @@ public static class MaintainCommand
                 }
 
                 ctx.Formatter.WriteMessage("");
-            }
 
-            if (apply && plan.HasChanges)
-            {
-                var appliedChanges = new List<(string path, int added, int removed)>();
-
-                foreach (var action in plan.Actions.Where(a => a.HasChanges && a.ExpectedContent != null))
+                if (apply && appliedChanges.Count > 0)
                 {
-                    var fullPath = Path.Combine(ctx.RootPath, action.ArtifactPath);
-                    var dir = Path.GetDirectoryName(fullPath);
-                    if (dir != null && !Directory.Exists(dir))
-                        Directory.CreateDirectory(dir);
-
-                    var oldContent = File.Exists(fullPath) ? File.ReadAllText(fullPath) : "";
-                    File.WriteAllText(fullPath, action.ExpectedContent);
-
-                    var (added, removed) = CountDiffLines(oldContent, action.ExpectedContent!);
-                    appliedChanges.Add((action.ArtifactPath, added, removed));
-                }
-
-                if (ctx.OutputFormat == OutputFormat.Json)
-                {
-                    ctx.Formatter.WriteObject(new
-                    {
-                        applied = true,
-                        changes = appliedChanges.Select(c => new
-                        {
-                            path = c.path,
-                            linesAdded = c.added,
-                            linesRemoved = c.removed
-                        }).ToArray()
-                    });
-                }
-                else
-                {
-                    ctx.Formatter.WriteMessage("");
                     foreach (var (path, added, removed) in appliedChanges)
-                    {
                         ctx.Formatter.WriteMessage($"  {path}  (+{added} -{removed})");
-                    }
                     ctx.Formatter.WriteMessage($"\nChanges applied: {appliedChanges.Count} file(s) updated.");
                 }
-            }
-            else if (!apply && plan.HasChanges && ctx.OutputFormat != OutputFormat.Json)
-            {
-                ctx.Formatter.WriteMessage("No changes applied. Run with --apply to commit changes.");
+                else if (!apply && plan.HasChanges)
+                {
+                    ctx.Formatter.WriteMessage("No changes applied. Run with --apply to commit changes.");
+                }
             }
 
             return ExitCodes.Success;

@@ -48,9 +48,7 @@ public static class ProfileMerger
 
         return new GovernanceConfig
         {
-            SectionSizeWarningThreshold = repo.SectionSizeWarningThreshold != 500
-                ? repo.SectionSizeWarningThreshold
-                : profile.SectionSizeWarningThreshold,
+            SectionSizeWarningThreshold = repo.SectionSizeWarningThreshold ?? profile.SectionSizeWarningThreshold,
             StartHere = repo.StartHere ?? profile.StartHere,
             Frontmatter = repo.Frontmatter ?? profile.Frontmatter,
             ManagedRegions = repo.ManagedRegions ?? profile.ManagedRegions,

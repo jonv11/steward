@@ -68,7 +68,7 @@ public sealed class FreshnessConfig
 public sealed class GovernanceConfig
 {
     [YamlMember(Alias = "section_size_warning_threshold")]
-    public int SectionSizeWarningThreshold { get; set; } = 500;
+    public int? SectionSizeWarningThreshold { get; set; }
 
     [YamlMember(Alias = "start_here")]
     public List<string>? StartHere { get; set; }

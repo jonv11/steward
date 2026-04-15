@@ -22,9 +22,9 @@ public static class SearchCommand
         modeOption.AcceptOnlyFromAmong("all", "content", "headings");
         command.Add(modeOption);
 
-        var scopeOption = new Option<string?>("--scope", "-s")
+        var scopeOption = new Option<string?>("--role", "-r")
         {
-            Description = "Filter to artifacts matching a policy-defined role"
+            Description = "Restrict search to artifacts with this policy-defined role (e.g. requirements, planning)"
         };
         command.Add(scopeOption);
 

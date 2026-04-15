@@ -95,4 +95,15 @@ public class CheckCommandTests : IDisposable
         output.Should().Contain("\"severity\": \"error\"");
         output.Should().NotContain("\"severity\": 2");
     }
+
+    [Fact]
+    public void Check_InvalidScope_ReturnsUsageError()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), "");
+
+        var (exitCode, _, _) = CliTestHelper.InvokeCapture("check", "--scope", "badvalue");
+
+        // System.CommandLine rejects invalid scope values (AcceptOnlyFromAmong); exit code 2.
+        exitCode.Should().Be(2);
+    }
 }

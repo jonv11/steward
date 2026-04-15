@@ -86,4 +86,22 @@ public class SearchCommandTests : IDisposable
         exitCode.Should().Be(0);
         output.Should().Contain("(heading)");
     }
+
+    [Fact]
+    public void Search_RoleOption_IsAccepted()
+    {
+        // Verify --role is the correct option name (not the old --scope)
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello\nTest content.\n");
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            artifacts:
+              - path: README.md
+                role: readme
+                required: true
+            """);
+
+        // --role readme should restrict search to artifacts with the readme role
+        var (exitCode, _, _) = CliTestHelper.InvokeCapture("search", "Test", "--role", "readme");
+
+        exitCode.Should().Be(0);
+    }
 }

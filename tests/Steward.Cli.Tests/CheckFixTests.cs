@@ -110,7 +110,7 @@ public class CheckFixTests : IDisposable
     }
 
     [Fact]
-    public void Check_Scope_Invalid_FallsBackToFull()
+    public void Check_Scope_Invalid_ReturnsUsageError()
     {
         File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
             artifacts:
@@ -120,10 +120,10 @@ public class CheckFixTests : IDisposable
             """);
         File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
 
-        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--scope", "invalid");
+        var (exitCode, _, _) = CliTestHelper.InvokeCapture("check", "--scope", "invalid");
 
-        exitCode.Should().Be(0);
-        output.Should().Contain("Result: PASS");
+        // Invalid scope values are now rejected rather than silently falling back to 'full'
+        exitCode.Should().Be(2);
     }
 
     [Fact]

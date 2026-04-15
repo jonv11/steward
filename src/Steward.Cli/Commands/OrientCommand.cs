@@ -9,7 +9,7 @@ public static class OrientCommand
 {
     public static Command Create()
     {
-        var command = new Command("orient", "Show classified repository structure");
+        var command = new Command("orient", "Show repository structure classified by artifact role (readme, governance, planning, etc.)");
 
         var depthOption = new Option<int>("--depth", "-d")
         {

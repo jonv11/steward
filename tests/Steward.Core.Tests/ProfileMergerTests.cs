@@ -104,4 +104,45 @@ public class ProfileMergerTests
         result.Governance!.SectionSizeWarningThreshold.Should().Be(200);
         result.Governance.StartHere.Should().NotBeNullOrEmpty(); // from profile
     }
+
+    [Fact]
+    public void Merge_GovernanceThreshold_ExplicitlySet500_IsRespected()
+    {
+        // Regression: previously the merger treated repo=500 as "not set" because it compared
+        // to the magic value 500, overwriting an explicit user declaration with the profile value.
+        var profile = ProfileDefaults.GetProfilePolicy("docs")!; // docs profile uses 300
+        var repo = new RepositoryPolicy
+        {
+            Governance = new GovernanceConfig { SectionSizeWarningThreshold = 500 }
+        };
+
+        var result = ProfileMerger.Merge(repo, profile);
+
+        // The explicit repo value (500) must win over the profile value (300).
+        result.Governance!.SectionSizeWarningThreshold.Should().Be(500);
+    }
+
+    [Fact]
+    public void Merge_GovernanceThreshold_NotSet_FallsBackToProfile()
+    {
+        var profile = ProfileDefaults.GetProfilePolicy("docs")!; // docs profile uses 300
+        var repo = new RepositoryPolicy
+        {
+            Governance = new GovernanceConfig() // threshold left null
+        };
+
+        var result = ProfileMerger.Merge(repo, profile);
+
+        result.Governance!.SectionSizeWarningThreshold.Should().Be(300);
+    }
+
+    [Fact]
+    public void Merge_SearchRole_CanFindByPolicyRole()
+    {
+        // search --role uses artifact role to filter; verify profile artifacts carry their roles
+        var profile = ProfileDefaults.GetProfilePolicy("software")!;
+        var result = ProfileMerger.Merge(null, profile);
+
+        result.Artifacts.Should().Contain(a => a.Role == "authoritative");
+    }
 }

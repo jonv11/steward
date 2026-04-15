@@ -138,7 +138,7 @@ maintenance:
     }
 
     [Fact]
-    public void Scope_FiltersToSingleArtifact()
+    public void Artifact_FiltersToSingleArtifact()
     {
         WritePolicyYaml(@"
 maintenance:
@@ -152,11 +152,58 @@ maintenance:
 ");
         WriteFile("README.md", "# Hello");
 
-        var (exitCode, output, _) = InvokeMaintain("maintain", "--scope", "struct2");
+        var (exitCode, output, _) = InvokeMaintain("maintain", "--artifact", "struct2");
 
         exitCode.Should().Be(0);
         output.Should().Contain("struct2");
         output.Should().NotContain("struct1");
+    }
+
+    [Fact]
+    public void Apply_WithJsonOutput_ProducesSingleJsonObject()
+    {
+        WritePolicyYaml(@"
+maintenance:
+  artifacts:
+    - id: structure
+      path: STRUCTURE.md
+      type: structure-document
+");
+        WriteFile("README.md", "# Hello");
+
+        var (exitCode, output, _) = InvokeMaintain("maintain", "--apply", "--output", "json");
+
+        exitCode.Should().Be(0);
+
+        // Should be parseable as a single JSON object — not two concatenated objects
+        var trimmed = output.Trim();
+        trimmed.Should().StartWith("{");
+        trimmed.Should().EndWith("}");
+
+        // Single object contains both plan and apply result
+        output.Should().Contain("\"applied\"");
+        output.Should().Contain("\"hasChanges\"");
+        output.Should().Contain("\"actions\"");
+    }
+
+    [Fact]
+    public void Diff_ShowsChanges_WhenCombinedWithApply()
+    {
+        WritePolicyYaml(@"
+maintenance:
+  artifacts:
+    - id: structure
+      path: STRUCTURE.md
+      type: structure-document
+");
+        WriteFile("README.md", "# Hello");
+        WriteFile("STRUCTURE.md", "# Repository Structure\n\n```\nold tree\n```\n");
+
+        var (exitCode, output, _) = InvokeMaintain("maintain", "--apply", "--diff");
+
+        exitCode.Should().Be(0);
+        // --diff should work even with --apply
+        output.Should().Contain("+");
     }
 
     [Fact]

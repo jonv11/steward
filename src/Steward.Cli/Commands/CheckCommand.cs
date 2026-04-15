@@ -11,12 +11,13 @@ public static class CheckCommand
 
     public static Command Create()
     {
-        var command = new Command("check", "Validate repository against policy");
+        var command = new Command("check", "Validate repository against policy: required artifacts, frontmatter, links, naming, freshness");
 
         var scopeOption = new Option<string?>("--scope", "-s")
         {
-            Description = "Validation scope: full, changed, staged (default: full)"
+            Description = "Validation scope: full (all files), changed (git-modified), or staged (git-staged). Default: full"
         };
+        scopeOption.AcceptOnlyFromAmong("full", "changed", "staged");
         var pathsOption = new Option<string[]?>("--paths")
         {
             Description = "Validate only the specified paths"
@@ -242,7 +243,6 @@ public static class CheckCommand
         {
             "changed" => new ChangedScopeResolver(),
             "staged" => new StagedScopeResolver(),
-            "full" or null => new FullScopeResolver(),
             _ => new FullScopeResolver()
         };
     }

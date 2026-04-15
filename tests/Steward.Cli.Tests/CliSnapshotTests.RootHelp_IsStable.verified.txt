@@ -14,11 +14,11 @@ Options:
 
 Commands:
   version            Print version and runtime information
-  orient             Show classified repository structure
+  orient             Show repository structure classified by artifact role (readme, governance, planning, etc.)
   outline <path>     Show the repository file tree [default: .]
   init               Initialize .steward configuration
-  config             Configuration management
-  check              Validate repository against policy
+  config             Inspect and validate .steward configuration
+  check              Validate repository against policy: required artifacts, frontmatter, links, naming, freshness
   md                 Markdown structural operations
   search <query>     Search repository content and headings
   maintain           Deterministic maintenance of governed artifacts

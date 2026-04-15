@@ -39,10 +39,10 @@ steward init
 2. **Orient** yourself:
 
 ```bash
-steward orient           # classified structure with roles
-steward orient --signals # cheap missing/stale signals
+steward orient           # structure classified by artifact role
+steward orient --signals # add quick missing/stale signals
 steward outline          # plain file tree
-steward md outline README.md  # Markdown heading hierarchy
+steward outline README.md     # Markdown heading hierarchy (shortcut for md outline)
 ```
 
 3. **Check** policy compliance:
@@ -63,21 +63,24 @@ steward maintain --apply  # apply changes
 | Command | Description |
 | ------- | ----------- |
 | `steward version` | Show version information |
-| `steward orient` | Show classified repository structure with roles |
-| `steward outline [path]` | Show directory file tree |
-| `steward init` | Initialize .steward configuration |
-| `steward config show [--effective]` | Show loaded configuration, raw files, and effective runtime defaults |
-| `steward config validate` | Validate configuration files for errors |
-| `steward check` | Validate repository against policy (supports `--scope`, `--fix`, `--dry-run`) |
-| `steward md outline <file>` | Show Markdown heading hierarchy |
-| `steward md query <file> <selector>` | Query Markdown structure with selectors |
-| `steward md edit <operation> <file>` | Structural Markdown editing operations |
-| `steward search <query>` | Search across repository content |
-| `steward maintain` | Deterministic maintenance of governed artifacts |
+| `steward init [--profile]` | Initialize .steward configuration |
+| `steward orient` | Show repository structure classified by artifact role |
+| `steward outline [path]` | Show directory file tree (pass a `.md` file to see its heading hierarchy) |
 | `steward status` | Show current repository state at a glance |
+| `steward check` | Validate repository against policy (`--scope full\|changed\|staged`, `--fix`, `--dry-run`) |
+| `steward maintain` | Preview or apply deterministic artifact maintenance (`--artifact <id>`, `--apply`, `--diff`) |
+| `steward search <query>` | Search repository content and headings (`--role`, `--mode`, `--regex`) |
 | `steward explain [rule-id]` | Explain a validation rule, or list all rules |
+| `steward explain path <file>` | Show the effective governance rules that apply to a specific file |
 | `steward refs <path>` | Show inbound and outbound Markdown references for a file |
 | `steward refactor move <old> <new>` | Move/rename a file and update all Markdown references |
+| `steward md outline <file>` | Show Markdown heading hierarchy with line counts |
+| `steward md query <file> <selector>` | Extract content using an MdPath selector |
+| `steward md edit <operation> <file>` | Structural Markdown editing (sections, frontmatter, blocks) |
+| `steward config show [--effective]` | Print raw config files and (with `--effective`) the resolved runtime defaults |
+| `steward config validate` | Check .steward/ YAML files for syntax and field errors |
+| `steward config doctor` | Detect valid-but-ineffective config: dead `start_here` entries, unmatched patterns |
+| `steward config suggest` | Analyze the repository and suggest artifact declarations for policy.yaml |
 
 ### Global Options
 
@@ -110,21 +113,22 @@ Use `steward explain <rule-id>` for detailed guidance on any rule. Run `steward 
 
 ## Configuration
 
-Steward uses a `.steward/` directory with YAML configuration files. Run `steward init` to scaffold the initial files, then edit them to match your repository.
+Steward uses a `.steward/` directory with three optional YAML configuration files. Run `steward init` to scaffold the initial files, then `steward config suggest` to get artifact suggestions for your specific repository.
 
 ### config.yaml — Runtime settings
 
-Controls output defaults and file discovery. These are defaults; CLI flags always override.
+Controls output defaults and file discovery. CLI flags always override these.
 
 ```yaml
-profile: software       # Built-in profile label surfaced by steward commands
+profile: software       # Built-in profile that supplies default artifact declarations
 
 output:
   format: text          # Default output format: text or json
   no_color: false       # Disable colored output
+  verbosity: normal     # quiet, normal, verbose, or debug
 
 discovery:
-  exclude:              # Additional patterns to exclude beyond .gitignore
+  exclude:              # Glob patterns to exclude beyond .gitignore
     - "node_modules/"
     - "dist/"
     - ".vs/"
@@ -132,47 +136,71 @@ discovery:
 
 ### policy.yaml — Repository contract
 
-Declares what the repository contains, what is required, and how governance rules apply.
+Declares what the repository contains, what governance rules apply, and what artifacts are maintained automatically.
 
 ```yaml
 repository:
   name: my-project
   description: A sample project
-  type: software        # software, docs, mixed, knowledge, minimal
+  type: software        # Informational: software, docs, mixed, knowledge, minimal
 
 artifacts:
   - path: README.md
-    role: readme
+    role: readme          # Role used by orient, search --role, and discoverability rules
+    description: Project overview
     required: true
   - path: CHANGELOG.md
     role: changelog
     required: false
+  - path: docs/adr/
+    role: decision
+    description: Architecture Decision Records
+    index_of: docs/adr/   # Signals that this artifact is a directory index
 
 governance:
-  section_size_warning_threshold: 500  # Lines per section before warning
+  section_size_warning_threshold: 500   # Lines per section before STWD-004 fires
   start_here:
     - README.md
-    - docs/planning-index.md
+    - docs/index.md
+
+  frontmatter:
+    required_fields: [status, owner]    # Fields all governed Markdown files must declare
+    auto_fields:
+      updated_at: true                  # Auto-populate updated_at on steward maintain --apply
 
 validation:
-  disabled_rules: []          # Rule IDs to disable, e.g. [STWD-004]
-  required_frontmatter_fields: []   # Fields every Markdown file must declare
+  disabled_rules: [STWD-004]           # Suppress rules globally
+  severity_overrides:
+    STWD-008: error                     # Upgrade broken-link from warning to error
+  path_overrides:
+    - pattern: "src/**/*.md"
+      disabled_rules: [STWD-003]       # No frontmatter required in source-adjacent docs
+  frontmatter_requirements:
+    - pattern: "docs/decisions/**/*.md"
+      required_fields: [status, date, deciders]
+      allowed_values:
+        status: [proposed, accepted, deprecated, superseded]
 
 maintenance:
   artifacts:
     - id: structure
       path: STRUCTURE.md
-      type: structure-document
+      type: structure-document          # Auto-generates a directory tree document
       options:
         depth: 3
         exclude:
           - ".git/**"
           - "node_modules/**"
+    - id: docs-index
+      path: docs/index.md
+      type: directory-index             # Auto-generates an index of a directory
+      source: docs/
+      sort: title
 ```
 
 ### path-policy.yaml — Path and naming rules
 
-Defines per-path rules (required, forbidden, discouraged, ignored, etc.).
+Enforces naming conventions and file presence/absence patterns. This file is optional.
 
 ```yaml
 rulesets:
@@ -181,10 +209,14 @@ rulesets:
       - pattern: "README.md"
         category: required
         exact: true
-  - name: forbidden
-    rules:
       - pattern: ".env"
-        category: forbidden
+        category: forbidden             # forbidden files must never exist
+
+  - name: adr-naming
+    rules:
+      - pattern: "docs/adr/**/*.md"
+        category: required
+        must_match: "^[0-9]{4}-[a-z0-9-]+\\.md$"   # Enforce e.g. 0001-use-postgres.md
 ```
 
 ### Configuration precedence
@@ -195,11 +227,11 @@ Settings are resolved in this order (highest to lowest):
 2. `config.yaml` setting (e.g. `output.format: json`)
 3. Built-in default (e.g. text output)
 
-`steward config validate` rejects unknown fields and invalid profile names, and `steward config show --effective` prints the resolved runtime defaults that the CLI will use.
+`steward config validate` checks YAML syntax and field names. `steward config show --effective` prints the resolved runtime defaults. `steward config doctor` detects silent problems like `start_here` entries that point to files that do not exist.
 
 ### Built-in profiles
 
-`steward init --profile <name>` scaffolds reasonable defaults for common repository types:
+`steward init --profile <name>` scaffolds reasonable defaults for common repository types. Profile defaults are applied wherever your `policy.yaml` does not specify a value.
 
 | Profile | Description |
 | ------- | ----------- |
@@ -208,6 +240,19 @@ Settings are resolved in this order (highest to lowest):
 | `mixed` | Mixed code and documentation |
 | `knowledge` | Knowledge base or wiki |
 | `minimal` | Minimal setup, only README suggested |
+
+### Adapting to your repository
+
+A typical adoption workflow:
+
+```bash
+steward init --profile software      # scaffold .steward/
+steward config suggest               # see what artifacts steward detects
+# edit .steward/policy.yaml to match your structure
+steward config doctor                # detect dead declarations
+steward check                        # validate and see remaining gaps
+steward maintain --apply             # generate any configured auto-artifacts
+```
 
 ## Development
 

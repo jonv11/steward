@@ -11,7 +11,7 @@ public static class ConfigCommand
 {
     public static Command Create()
     {
-        var command = new Command("config", "Configuration management");
+        var command = new Command("config", "Inspect and validate .steward configuration");
 
         command.Add(CreateValidateCommand());
         command.Add(CreateShowCommand());
@@ -23,7 +23,7 @@ public static class ConfigCommand
 
     private static Command CreateValidateCommand()
     {
-        var command = new Command("validate", "Validate configuration files");
+        var command = new Command("validate", "Check .steward/ YAML files for syntax and field errors");
 
         command.SetAction((parseResult) =>
         {
@@ -90,7 +90,7 @@ public static class ConfigCommand
 
     private static Command CreateShowCommand()
     {
-        var command = new Command("show", "Show the loaded configuration");
+        var command = new Command("show", "Print raw config files and (with --effective) the resolved runtime defaults");
 
         var effectiveOption = new Option<bool>("--effective")
         {
@@ -188,7 +188,7 @@ public static class ConfigCommand
 
     private static Command CreateDoctorCommand()
     {
-        var command = new Command("doctor", "Detect valid but ineffective configuration");
+        var command = new Command("doctor", "Detect valid but ineffective config: dead start_here entries, unmatched patterns, missing sources");
 
         command.SetAction(parseResult =>
         {
@@ -349,7 +349,7 @@ public static class ConfigCommand
 
     private static Command CreateSuggestCommand()
     {
-        var command = new Command("suggest", "Analyze repository and suggest initial governance configuration");
+        var command = new Command("suggest", "Analyze the repository and suggest artifact declarations and exclude patterns for policy.yaml");
 
         command.SetAction(parseResult =>
         {

@@ -54,9 +54,11 @@ public static class InitCommand
                 formatter.WriteMessage($"  {Path.GetRelativePath(rootPath, policyPath)}");
             formatter.WriteMessage("");
             formatter.WriteMessage("Next steps:");
-            formatter.WriteMessage("  1. Edit .steward/policy.yaml to describe your repository's artifacts and governance rules.");
-            formatter.WriteMessage("  2. Run 'steward check' to validate policy compliance.");
-            formatter.WriteMessage("  3. Run 'steward status' for a quick health summary.");
+            formatter.WriteMessage("  1. Run 'steward config suggest' to get artifact and exclude suggestions for this repository.");
+            formatter.WriteMessage("  2. Edit .steward/policy.yaml to declare your repository's artifacts, roles, and governance rules.");
+            formatter.WriteMessage("     Add .steward/path-policy.yaml to enforce naming conventions and forbidden path patterns.");
+            formatter.WriteMessage("  3. Run 'steward check' to validate policy compliance.");
+            formatter.WriteMessage("  4. Run 'steward status' for a quick health summary.");
 
             return ExitCodes.Success;
         });
