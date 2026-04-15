@@ -26,8 +26,20 @@ public sealed class FreshnessRule : IValidationRule
 
         foreach (var artifact in context.Policy.Artifacts)
         {
-            if (artifact.Freshness == null || artifact.Freshness.MaxAgeDays <= 0)
-                continue;
+            int maxAgeDays;
+            if (artifact.Freshness != null && artifact.Freshness.MaxAgeDays > 0)
+            {
+                maxAgeDays = artifact.Freshness.MaxAgeDays;
+            }
+            else
+            {
+                // Fall back to role-linked default freshness
+                var roleDefault = Configuration.RoleDefaults.GetDefaultFreshnessDays(artifact.Role);
+                if (roleDefault is null or <= 0)
+                    continue;
+                maxAgeDays = roleDefault.Value;
+            }
+
             if (string.IsNullOrWhiteSpace(artifact.Path))
                 continue;
 
@@ -44,7 +56,7 @@ public sealed class FreshnessRule : IValidationRule
             lastModified ??= context.FileSystem.GetLastWriteTimeUtc(fullPath);
 
             var age = now - lastModified.Value;
-            if (age.TotalDays > artifact.Freshness.MaxAgeDays)
+            if (age.TotalDays > maxAgeDays)
             {
                 diagnostics.Add(new Diagnostic(
                     RuleId,
@@ -52,7 +64,7 @@ public sealed class FreshnessRule : IValidationRule
                     Category,
                     artifactPath,
                     null,
-                    $"File is {(int)age.TotalDays} days old (max: {artifact.Freshness.MaxAgeDays} days).",
+                    $"File is {(int)age.TotalDays} days old (max: {maxAgeDays} days).",
                     $"Update the document content and its 'last_updated' frontmatter field.",
                     null));
             }

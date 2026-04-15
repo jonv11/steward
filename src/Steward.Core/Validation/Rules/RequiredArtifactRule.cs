@@ -64,6 +64,11 @@ public sealed class RequiredArtifactRule : IValidationRule
         if (!string.IsNullOrEmpty(artifact.Importance))
             return artifact.Importance.ToLowerInvariant();
 
-        return artifact.Required ? "required" : "optional";
+        if (artifact.Required)
+            return "required";
+
+        // Fall back to role-linked default
+        var roleDefault = Configuration.RoleDefaults.GetDefaultImportance(artifact.Role);
+        return roleDefault ?? "optional";
     }
 }
