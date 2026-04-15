@@ -20,6 +20,7 @@ public static class RuleRegistry
         new BrokenInternalLinkRule(),
         new BrokenArtifactReferenceRule(),
         new NamingConventionRule(),
-        new IndexCompletenessRule()
+        new IndexCompletenessRule(),
+        new FreshnessRule()
     ];
 }

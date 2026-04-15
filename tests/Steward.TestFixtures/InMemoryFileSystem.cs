@@ -6,11 +6,21 @@ public sealed class InMemoryFileSystem : IFileSystem
 {
     private readonly Dictionary<string, string> _files = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _directories = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, DateTime> _timestamps = new(StringComparer.OrdinalIgnoreCase);
 
     public InMemoryFileSystem AddFile(string path, string content = "")
     {
         var normalized = NormalizePath(path);
         _files[normalized] = content;
+        EnsureParentDirectories(normalized);
+        return this;
+    }
+
+    public InMemoryFileSystem AddFile(string path, string content, DateTime lastWriteTimeUtc)
+    {
+        var normalized = NormalizePath(path);
+        _files[normalized] = content;
+        _timestamps[normalized] = lastWriteTimeUtc;
         EnsureParentDirectories(normalized);
         return this;
     }
@@ -85,9 +95,10 @@ public sealed class InMemoryFileSystem : IFileSystem
 
     public DateTime GetLastWriteTimeUtc(string path)
     {
-        if (!FileExists(path))
+        var normalized = NormalizePath(path);
+        if (!FileExists(normalized))
             throw new FileNotFoundException($"File not found: {path}", path);
-        return DateTime.UtcNow;
+        return _timestamps.TryGetValue(normalized, out var ts) ? ts : DateTime.UtcNow;
     }
 
     private static string NormalizePath(string path)

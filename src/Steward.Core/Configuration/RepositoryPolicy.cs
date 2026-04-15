@@ -51,6 +51,15 @@ public sealed class ArtifactDefinition
 
     [YamlMember(Alias = "index_of")]
     public string? IndexOf { get; set; }
+
+    [YamlMember(Alias = "freshness")]
+    public FreshnessConfig? Freshness { get; set; }
+}
+
+public sealed class FreshnessConfig
+{
+    [YamlMember(Alias = "max_age_days")]
+    public int MaxAgeDays { get; set; }
 }
 
 public sealed class GovernanceConfig

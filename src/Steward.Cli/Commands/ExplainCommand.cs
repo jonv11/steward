@@ -158,6 +158,7 @@ public static class ExplainCommand
             "STWD-009" => "Create the artifact, remove it from policy.yaml, or mark it as required if it is mandatory.",
             "STWD-010" => "Rename the file to match the naming convention declared in path-policy.yaml.",
             "STWD-011" => "Add a link to the missing file in the index artifact, or move the file outside the indexed directory.",
+            "STWD-012" => "Update the document and set the 'last_updated' frontmatter field to the current date.",
             _ => "No specific remediation guidance available."
         };
     }

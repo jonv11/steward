@@ -8,10 +8,10 @@ namespace Steward.Core.Tests;
 public class RuleRegistryTests
 {
     [Fact]
-    public void CreateAllRules_ReturnsElevenRules()
+    public void CreateAllRules_ReturnsTwelveRules()
     {
         var rules = RuleRegistry.CreateAllRules();
-        rules.Should().HaveCount(11);
+        rules.Should().HaveCount(12);
     }
 
     [Fact]
@@ -30,6 +30,7 @@ public class RuleRegistryTests
         rules.Should().ContainSingle(r => r is BrokenArtifactReferenceRule);
         rules.Should().ContainSingle(r => r is NamingConventionRule);
         rules.Should().ContainSingle(r => r is IndexCompletenessRule);
+        rules.Should().ContainSingle(r => r is FreshnessRule);
     }
 
     [Fact]

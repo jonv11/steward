@@ -79,7 +79,7 @@ public class ExplainCommandTests
     {
         foreach (var ruleId in new[] { "STWD-001", "STWD-002", "STWD-003", "STWD-004",
                                         "STWD-005", "STWD-006", "STWD-007", "STWD-008",
-                                        "STWD-009", "STWD-010", "STWD-011" })
+                                        "STWD-009", "STWD-010", "STWD-011", "STWD-012" })
         {
             var remediation = ExplainCommand.GetRemediation(ruleId);
             remediation.Should().NotBeNullOrWhiteSpace($"Rule {ruleId} should have remediation guidance");
