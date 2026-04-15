@@ -136,4 +136,121 @@ public class RequiredArtifactRuleTests
 
         diagnostics.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Evaluate_ImportanceRequired_ReportsError()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new() { Path = "README.md", Role = "authoritative", Importance = "required" }
+            ]
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [],
+            FileSystem = new InMemoryFileSystem(),
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredArtifactRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().HaveCount(1);
+        diagnostics[0].Severity.Should().Be(DiagnosticSeverity.Error);
+        diagnostics[0].Message.Should().Contain("Required");
+    }
+
+    [Fact]
+    public async Task Evaluate_ImportanceRecommended_ReportsWarning()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new() { Path = "CONTRIBUTING.md", Role = "guide", Importance = "recommended" }
+            ]
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [],
+            FileSystem = new InMemoryFileSystem(),
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredArtifactRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().HaveCount(1);
+        diagnostics[0].Severity.Should().Be(DiagnosticSeverity.Warning);
+        diagnostics[0].Message.Should().Contain("Recommended");
+    }
+
+    [Fact]
+    public async Task Evaluate_ImportanceOptional_NoDiagnostics()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new() { Path = "CHANGELOG.md", Role = "changelog", Importance = "optional" }
+            ]
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [],
+            FileSystem = new InMemoryFileSystem(),
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredArtifactRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Evaluate_RequiredTrue_BackwardCompat_ReportsError()
+    {
+        // When importance is not set but required=true, should still report Error
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new() { Path = "README.md", Role = "authoritative", Required = true }
+            ]
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [],
+            FileSystem = new InMemoryFileSystem(),
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredArtifactRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().HaveCount(1);
+        diagnostics[0].Severity.Should().Be(DiagnosticSeverity.Error);
+    }
+
+    [Fact]
+    public async Task ResolveImportance_ExplicitOverridesRequired()
+    {
+        var artifact = new ArtifactDefinition { Required = true, Importance = "recommended" };
+        RequiredArtifactRule.ResolveImportance(artifact).Should().Be("recommended");
+    }
 }

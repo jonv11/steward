@@ -18,8 +18,16 @@ public sealed class RequiredArtifactRule : IValidationRule
             context.TargetFiles.Select(f => f.RelativePath),
             StringComparer.OrdinalIgnoreCase);
 
-        foreach (var artifact in context.Policy.Artifacts.Where(a => a.Required && a.Path != null))
+        foreach (var artifact in context.Policy.Artifacts.Where(a => a.Path != null))
         {
+            var importance = ResolveImportance(artifact);
+            if (importance == "optional")
+                continue;
+
+            var severity = importance == "recommended"
+                ? DiagnosticSeverity.Warning
+                : DiagnosticSeverity.Error;
+
             var path = artifact.Path!.TrimEnd('/');
             var isDir = artifact.Path.EndsWith('/');
 
@@ -38,16 +46,24 @@ public sealed class RequiredArtifactRule : IValidationRule
             {
                 diagnostics.Add(new Diagnostic(
                     RuleId: RuleId,
-                    Severity: DefaultSeverity,
+                    Severity: severity,
                     Category: Category,
                     Path: artifact.Path,
                     Line: null,
-                    Message: $"Required artifact '{artifact.Path}' is missing.",
+                    Message: $"{(importance == "recommended" ? "Recommended" : "Required")} artifact '{artifact.Path}' is missing.",
                     Remediation: $"Create the file '{artifact.Path}' as specified in the repository policy.",
                     Source: "policy.yaml"));
             }
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
+    }
+
+    internal static string ResolveImportance(Configuration.ArtifactDefinition artifact)
+    {
+        if (!string.IsNullOrEmpty(artifact.Importance))
+            return artifact.Importance.ToLowerInvariant();
+
+        return artifact.Required ? "required" : "optional";
     }
 }
