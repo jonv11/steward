@@ -184,6 +184,18 @@ public static class CheckCommand
                     }
                 }
 
+                // Impact analysis
+                var impacts = ComputeImpactSignals(ctx.Policy, orderedDiagnostics);
+                if (impacts.Count > 0)
+                {
+                    ctx.Formatter.WriteMessage("");
+                    ctx.Formatter.WriteMessage("Impact signals:");
+                    foreach (var (artifactId, artifactPath, sourcePath) in impacts)
+                    {
+                        ctx.Formatter.WriteMessage($"  [info] Changes in '{sourcePath}' may affect maintained artifact '{artifactId}' ({artifactPath})");
+                    }
+                }
+
                 // Completion summary
                 ctx.Formatter.WriteMessage("");
                 ctx.Formatter.WriteMessage($"Files checked: {result.Summary.FilesChecked}  " +
@@ -275,6 +287,46 @@ public static class CheckCommand
         DiagnosticSeverity.Info => "info",
         _ => "unknown"
     };
+
+    internal static List<(string ArtifactId, string ArtifactPath, string SourcePath)> ComputeImpactSignals(
+        Core.Configuration.RepositoryPolicy? policy, IReadOnlyList<Diagnostic> diagnostics)
+    {
+        var impacts = new List<(string, string, string)>();
+
+        var maintenanceArtifacts = policy?.Maintenance?.Artifacts;
+        if (maintenanceArtifacts is null || maintenanceArtifacts.Count == 0)
+            return impacts;
+
+        // Collect unique file paths from diagnostics
+        var diagnosticPaths = new HashSet<string>(
+            diagnostics.Where(d => d.Path != null).Select(d => d.Path!.Replace('\\', '/')),
+            StringComparer.OrdinalIgnoreCase);
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var artifact in maintenanceArtifacts)
+        {
+            if (string.IsNullOrWhiteSpace(artifact.Source) || string.IsNullOrWhiteSpace(artifact.Id))
+                continue;
+
+            var source = artifact.Source.Replace('\\', '/').TrimEnd('/');
+
+            foreach (var path in diagnosticPaths)
+            {
+                if (path.StartsWith(source + "/", StringComparison.OrdinalIgnoreCase) ||
+                    path.Equals(source, StringComparison.OrdinalIgnoreCase))
+                {
+                    var key = $"{artifact.Id}:{path}";
+                    if (seen.Add(key))
+                    {
+                        impacts.Add((artifact.Id, artifact.Path ?? artifact.Id, path));
+                    }
+                }
+            }
+        }
+
+        return impacts;
+    }
 }
 
 internal sealed class CheckResponse
