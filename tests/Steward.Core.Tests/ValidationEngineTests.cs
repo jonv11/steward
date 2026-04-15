@@ -139,6 +139,82 @@ public class ValidationEngineTests
         result.Diagnostics[0].RuleId.Should().Be("TEST-002");
     }
 
+    [Fact]
+    public async Task ValidateAsync_PathOverrides_SuppressRuleForMatchingPath()
+    {
+        var engine = new ValidationEngine([new AlwaysErrorRule(), new AlwaysWarningRule()]);
+        var context = MakeContext();
+        context.Policy!.Validation = new ValidationConfig
+        {
+            PathOverrides =
+            [
+                new PathOverride { Pattern = "file.*", DisabledRules = ["TEST-001"] }
+            ]
+        };
+
+        var result = await engine.ValidateAsync(context);
+
+        result.Diagnostics.Should().HaveCount(1);
+        result.Diagnostics[0].RuleId.Should().Be("TEST-002");
+        result.Diagnostics[0].Path.Should().Be("other.txt");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_PathOverrides_NonMatchingPattern_NoSuppression()
+    {
+        var engine = new ValidationEngine([new AlwaysErrorRule()]);
+        var context = MakeContext();
+        context.Policy!.Validation = new ValidationConfig
+        {
+            PathOverrides =
+            [
+                new PathOverride { Pattern = "no-match/**", DisabledRules = ["TEST-001"] }
+            ]
+        };
+
+        var result = await engine.ValidateAsync(context);
+
+        result.Diagnostics.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_PathOverrides_MultiplePatterns()
+    {
+        var engine = new ValidationEngine([new AlwaysErrorRule(), new AlwaysWarningRule()]);
+        var context = MakeContext();
+        context.Policy!.Validation = new ValidationConfig
+        {
+            PathOverrides =
+            [
+                new PathOverride { Pattern = "file.*", DisabledRules = ["TEST-001"] },
+                new PathOverride { Pattern = "other.*", DisabledRules = ["TEST-002"] }
+            ]
+        };
+
+        var result = await engine.ValidateAsync(context);
+
+        result.Diagnostics.Should().BeEmpty();
+        result.Summary.Pass.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_PathOverrides_GlobPattern()
+    {
+        var engine = new ValidationEngine([new AlwaysErrorRule()]);
+        var context = MakeContext();
+        context.Policy!.Validation = new ValidationConfig
+        {
+            PathOverrides =
+            [
+                new PathOverride { Pattern = "**/*.txt", DisabledRules = ["TEST-001"] }
+            ]
+        };
+
+        var result = await engine.ValidateAsync(context);
+
+        result.Diagnostics.Should().BeEmpty();
+    }
+
     private static ValidationContext MakeContext(IReadOnlyList<DiscoveredFile>? files = null) => new()
     {
         Policy = new RepositoryPolicy(),

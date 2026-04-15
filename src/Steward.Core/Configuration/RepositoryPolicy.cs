@@ -111,6 +111,18 @@ public sealed class ValidationConfig
 
     [YamlMember(Alias = "required_frontmatter_fields")]
     public List<string>? RequiredFrontmatterFields { get; set; }
+
+    [YamlMember(Alias = "path_overrides")]
+    public List<PathOverride>? PathOverrides { get; set; }
+}
+
+public sealed class PathOverride
+{
+    [YamlMember(Alias = "pattern")]
+    public string? Pattern { get; set; }
+
+    [YamlMember(Alias = "disabled_rules")]
+    public List<string>? DisabledRules { get; set; }
 }
 
 public sealed class MaintenanceConfig
