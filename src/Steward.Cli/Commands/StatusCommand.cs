@@ -14,10 +14,18 @@ public static class StatusCommand
     {
         var command = new Command("status", "Show current repository state at a glance");
 
+        var coverageOption = new Option<bool>("--coverage")
+        {
+            Description = "Include governance coverage report"
+        };
+        command.Add(coverageOption);
+
         command.SetAction(parseResult =>
         {
             if (!CommandSetup.TryBuild(parseResult, out var ctx))
                 return ExitCodes.UsageError;
+
+            var showCoverage = parseResult.GetValue(coverageOption);
 
             if (ctx!.ConfigDirectory == null)
             {
@@ -83,6 +91,21 @@ public static class StatusCommand
                 ctx.Formatter.WriteMessage($"Completeness: {status.PresentCount}/{status.RequiredCount} required artifacts present");
                 if (status.StaleCount > 0)
                     ctx.Formatter.WriteMessage($"Stale artifacts: {status.StaleCount}");
+
+                if (showCoverage)
+                {
+                    var coverage = ComputeCoverage(ctx.Policy, ctx.Files!);
+                    ctx.Formatter.WriteMessage("");
+                    ctx.Formatter.WriteMessage($"Governance coverage: {coverage.GovernedCount}/{coverage.TotalMarkdownFiles} Markdown files ({coverage.Percentage:F0}%)");
+                    if (coverage.Ungoverned.Count > 0)
+                    {
+                        ctx.Formatter.WriteMessage("Ungoverned files:");
+                        foreach (var path in coverage.Ungoverned.Take(20))
+                            ctx.Formatter.WriteMessage($"  - {path}");
+                        if (coverage.Ungoverned.Count > 20)
+                            ctx.Formatter.WriteMessage($"  ... and {coverage.Ungoverned.Count - 20} more");
+                    }
+                }
             }
 
             return ExitCodes.Success;
@@ -183,5 +206,74 @@ public static class StatusCommand
         public required string Id { get; init; }
         public required string Path { get; init; }
         public required bool Stale { get; init; }
+    }
+
+    internal static CoverageResult ComputeCoverage(RepositoryPolicy? policy, IReadOnlyList<DiscoveredFile> files)
+    {
+        var mdFiles = files
+            .Where(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            .Select(f => f.RelativePath.Replace('\\', '/'))
+            .ToList();
+
+        if (mdFiles.Count == 0)
+            return new CoverageResult { TotalMarkdownFiles = 0, GovernedCount = 0, Percentage = 100, Ungoverned = [] };
+
+        var governed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // 1. Artifact paths
+        if (policy?.Artifacts != null)
+        {
+            foreach (var a in policy.Artifacts)
+            {
+                if (!string.IsNullOrWhiteSpace(a.Path))
+                    governed.Add(a.Path.Replace('\\', '/').TrimEnd('/'));
+            }
+        }
+
+        // 2. Maintenance source directories — files under them are governed
+        if (policy?.Maintenance?.Artifacts != null)
+        {
+            foreach (var ma in policy.Maintenance.Artifacts)
+            {
+                if (string.IsNullOrWhiteSpace(ma.Source))
+                    continue;
+                var source = ma.Source.Replace('\\', '/').TrimEnd('/');
+                foreach (var f in mdFiles)
+                {
+                    if (f.StartsWith(source + "/", StringComparison.OrdinalIgnoreCase) ||
+                        f.Equals(source, StringComparison.OrdinalIgnoreCase))
+                        governed.Add(f);
+                }
+
+                // Also the artifact path itself
+                if (!string.IsNullOrWhiteSpace(ma.Path))
+                    governed.Add(ma.Path.Replace('\\', '/'));
+            }
+        }
+
+        // 3. start_here
+        if (policy?.Governance?.StartHere != null)
+        {
+            foreach (var s in policy.Governance.StartHere)
+                governed.Add(s.Replace('\\', '/'));
+        }
+
+        var ungoverned = mdFiles.Where(f => !governed.Contains(f)).OrderBy(f => f, StringComparer.OrdinalIgnoreCase).ToList();
+
+        return new CoverageResult
+        {
+            TotalMarkdownFiles = mdFiles.Count,
+            GovernedCount = mdFiles.Count - ungoverned.Count,
+            Percentage = mdFiles.Count > 0 ? (double)(mdFiles.Count - ungoverned.Count) / mdFiles.Count * 100 : 100,
+            Ungoverned = ungoverned
+        };
+    }
+
+    internal sealed class CoverageResult
+    {
+        public int TotalMarkdownFiles { get; init; }
+        public int GovernedCount { get; init; }
+        public double Percentage { get; init; }
+        public List<string> Ungoverned { get; init; } = [];
     }
 }
