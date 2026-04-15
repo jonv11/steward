@@ -28,3 +28,5 @@ Index of all accepted RFCs and ADRs for the Repository Steward project.
 | [ADR-008](adrs/ADR-008-gitignore-handling.md) | .gitignore Handling | Accepted | Custom implementation, IIgnoreFilter, early pruning |
 | [ADR-009](adrs/ADR-009-packaging-distribution.md) | Packaging and Distribution | Accepted | dotnet tool, self-contained single-file, NuGet |
 | [ADR-010](adrs/ADR-010-agent-usefulness-improvements.md) | Agent-Usefulness Improvements | Accepted | --compact orient, --regex search, --quiet check, stdin content, maintain diff, batch query |
+| [ADR-011](adrs/ADR-011-domain-stewardship-through-generic-configuration.md) | Domain-Specific Stewardship Through Generic Configuration | Accepted | Domain needs served through generic policy mechanisms, not hardcoded domain logic |
+| [ADR-012](adrs/ADR-012-artifact-type-schema-direction.md) | Artifact Type Schema System Direction | Accepted | Per-type artifact definitions in policy.yaml for frontmatter, sections, naming, lifecycle |

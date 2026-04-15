@@ -78,3 +78,41 @@
 | G7-20 | Bootstrap-by-analysis (`steward init --analyze`) | High |
 
 **Exit criteria:** `refs` shows inbound/outbound links. `refactor move` updates all references with preview. `init --analyze` produces reviewable suggestions for mature repos.
+
+---
+
+## v1.6.0 — Artifact Type Schemas and Domain Configuration
+
+**Theme:** Deliver the artifact type schema system that enables domain-specific governance through generic configuration.
+
+**Source:** [Use-Case Consolidation Proposal](../audits/usecase-consolidation-proposal.md), [ADR-012](../decisions/adrs/ADR-012-artifact-type-schema-direction.md)
+
+| Item | Summary | Effort |
+|------|---------|--------|
+| T6-01 | Artifact type definition schema in policy.yaml (`artifact_types:`) | High |
+| T6-02 | Type-to-file matching (by path pattern and/or frontmatter `type` field) | Medium |
+| T6-03 | Per-type frontmatter field requirements with value constraints (enum, regex, data type) | High |
+| T6-04 | Per-type required/optional section declarations and section-presence validation rule | Medium |
+| T6-05 | Controlled vocabulary enforcement via `allowed_values` field constraints | Medium |
+| T6-06 | Story/worldbuilding built-in profile leveraging artifact type schemas | Low |
+| T6-07 | Design RFC for artifact type schema system (prerequisite for T6-01) | Medium |
+
+**Prerequisites:** v1.1.0 (G7-02 scoped frontmatter, G7-03 naming enforcement provide foundations). G7-12 (three-level classification) and G7-13 (role-linked defaults) from v1.3.0 are complementary.
+
+**Exit criteria:** A repository can declare artifact types in policy.yaml with per-type frontmatter requirements, field value constraints, required sections, and naming patterns. `steward check` validates against declared type schemas. Existing repos without `artifact_types:` work unchanged. Story/worldbuilding profile provides a curated starting configuration.
+
+**Requires follow-up RFC:** Yes — T6-07 must produce the design RFC before implementation of T6-01 through T6-05.
+
+---
+
+## Future Direction (v2.0+)
+
+The following capabilities are identified by the use-case analysis as valuable but deferred beyond the v1.x roadmap. They require the artifact type schema system (v1.6.0) as a foundation.
+
+| Item | Summary | Depends on |
+|------|---------|------------|
+| Scaffold/template command | Guided artifact creation from per-type templates | v1.6.0 (type definitions, naming patterns) |
+| Status lifecycle and transition rules | Configurable allowed status transitions per type | v1.6.0 (per-type status enum) |
+| Plan/next computed recommendations | Computed next-action suggestions based on policy | v1.6.0 + lifecycle rules |
+| Relationship type declarations | Declare and validate allowed references between types | v1.6.0 (type awareness) |
+| Backlink generation | Deterministic backlink sections in managed regions | v1.5.0 (reference graph) |
