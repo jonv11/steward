@@ -18,6 +18,7 @@ public static class RuleRegistry
         new ManagedScopeViolationRule(),
         new StaleArtifactRule(),
         new BrokenInternalLinkRule(),
-        new BrokenArtifactReferenceRule()
+        new BrokenArtifactReferenceRule(),
+        new NamingConventionRule()
     ];
 }

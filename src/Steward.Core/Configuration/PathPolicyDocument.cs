@@ -39,4 +39,7 @@ public sealed class PathRule
 
     [YamlMember(Alias = "kind")]
     public string? Kind { get; set; }
+
+    [YamlMember(Alias = "must_match")]
+    public string? MustMatch { get; set; }
 }

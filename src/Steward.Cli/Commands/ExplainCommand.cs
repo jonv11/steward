@@ -149,6 +149,7 @@ public static class ExplainCommand
             "STWD-007" => "Run 'steward maintain --apply' to synchronize maintained artifacts.",
             "STWD-008" => "Fix the broken link target or remove the link. Verify the referenced file exists.",
             "STWD-009" => "Create the artifact, remove it from policy.yaml, or mark it as required if it is mandatory.",
+            "STWD-010" => "Rename the file to match the naming convention declared in path-policy.yaml.",
             _ => "No specific remediation guidance available."
         };
     }
