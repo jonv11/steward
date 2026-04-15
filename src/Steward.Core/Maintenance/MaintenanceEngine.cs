@@ -38,7 +38,8 @@ public sealed class MaintenanceEngine
                 Fields = a.Fields,
                 Options = a.Options != null
                     ? new MaintenanceOptions { Depth = a.Options.Depth, Exclude = a.Options.Exclude }
-                    : null
+                    : null,
+                DependsOn = a.DependsOn
             })
             .ToList();
 
@@ -49,7 +50,22 @@ public sealed class MaintenanceEngine
 
         var actions = new List<MaintenanceAction>();
 
-        foreach (var config in configs)
+        // Topological sort by depends_on
+        var ordered = TopologicalSort(configs, out var cyclicIds);
+
+        foreach (var id in cyclicIds)
+        {
+            actions.Add(new MaintenanceAction
+            {
+                ArtifactId = id,
+                ArtifactPath = "",
+                Type = "error",
+                Description = $"Circular dependency detected involving '{id}'.",
+                HasChanges = false
+            });
+        }
+
+        foreach (var config in ordered)
         {
             if (_maintainers.TryGetValue(config.Type, out var maintainer))
             {
@@ -69,4 +85,46 @@ public sealed class MaintenanceEngine
         new FrontmatterAutoMaintainer(),
         new ManifestMaintainer()
     ];
+
+    internal static List<MaintenanceArtifactConfig> TopologicalSort(
+        List<MaintenanceArtifactConfig> configs, out List<string> cyclicIds)
+    {
+        var byId = configs.ToDictionary(c => c.Id, StringComparer.OrdinalIgnoreCase);
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var inStack = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var result = new List<MaintenanceArtifactConfig>();
+        var cycles = new List<string>();
+
+        void Visit(string id)
+        {
+            if (visited.Contains(id)) return;
+            if (inStack.Contains(id))
+            {
+                cycles.Add(id);
+                return;
+            }
+
+            inStack.Add(id);
+
+            if (byId.TryGetValue(id, out var config) && config.DependsOn != null)
+            {
+                foreach (var dep in config.DependsOn)
+                {
+                    if (byId.ContainsKey(dep))
+                        Visit(dep);
+                }
+            }
+
+            inStack.Remove(id);
+            visited.Add(id);
+            if (byId.TryGetValue(id, out var c))
+                result.Add(c);
+        }
+
+        foreach (var config in configs)
+            Visit(config.Id);
+
+        cyclicIds = cycles;
+        return result;
+    }
 }

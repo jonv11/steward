@@ -40,6 +40,7 @@ public sealed class MaintenanceArtifactConfig
     public string? Targets { get; init; }
     public Dictionary<string, string>? Fields { get; init; }
     public MaintenanceOptions? Options { get; init; }
+    public List<string>? DependsOn { get; init; }
 }
 
 public sealed class MaintenanceOptions

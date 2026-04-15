@@ -186,6 +186,9 @@ public sealed class MaintenanceArtifactDef
 
     [YamlMember(Alias = "options")]
     public MaintenanceOptionsDef? Options { get; set; }
+
+    [YamlMember(Alias = "depends_on")]
+    public List<string>? DependsOn { get; set; }
 }
 
 public sealed class MaintenanceOptionsDef
