@@ -24,6 +24,7 @@ public static class Program
         rootCommand.Add(StatusCommand.Create());
         rootCommand.Add(ExplainCommand.Create());
         rootCommand.Add(RefsCommand.Create());
+        rootCommand.Add(RefactorCommand.Create());
 
         return rootCommand;
     }
