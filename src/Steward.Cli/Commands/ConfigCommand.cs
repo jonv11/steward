@@ -16,6 +16,7 @@ public static class ConfigCommand
         command.Add(CreateValidateCommand());
         command.Add(CreateShowCommand());
         command.Add(CreateDoctorCommand());
+        command.Add(CreateSuggestCommand());
 
         return command;
     }
@@ -344,6 +345,63 @@ public static class ConfigCommand
         formatter.WriteMessage(content);
         if (!content.EndsWith('\n'))
             formatter.WriteMessage("");
+    }
+
+    private static Command CreateSuggestCommand()
+    {
+        var command = new Command("suggest", "Analyze repository and suggest initial governance configuration");
+
+        command.SetAction(parseResult =>
+        {
+            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+                return ExitCodes.UsageError;
+
+            var suggestion = BootstrapAnalyzer.Analyze(ctx!.Files!, ctx.FileSystem, ctx.RootPath);
+
+            if (ctx.OutputFormat == OutputFormat.Json)
+            {
+                ctx.Formatter.WriteObject(suggestion);
+            }
+            else
+            {
+                if (suggestion.StartHere.Count > 0)
+                {
+                    ctx.Formatter.WriteMessage("Suggested start_here:");
+                    foreach (var s in suggestion.StartHere)
+                        ctx.Formatter.WriteMessage($"  - {s}");
+                    ctx.Formatter.WriteMessage("");
+                }
+
+                if (suggestion.Artifacts.Count > 0)
+                {
+                    ctx.Formatter.WriteMessage("Suggested artifacts:");
+                    foreach (var a in suggestion.Artifacts)
+                        ctx.Formatter.WriteMessage($"  - {a.Path} (role: {a.Role}, importance: {a.Importance}) — {a.Reason}");
+                    ctx.Formatter.WriteMessage("");
+                }
+
+                if (suggestion.ExcludePatterns.Count > 0)
+                {
+                    ctx.Formatter.WriteMessage("Suggested exclude patterns:");
+                    foreach (var e in suggestion.ExcludePatterns)
+                        ctx.Formatter.WriteMessage($"  - {e}");
+                    ctx.Formatter.WriteMessage("");
+                }
+
+                if (suggestion.StartHere.Count == 0 && suggestion.Artifacts.Count == 0)
+                {
+                    ctx.Formatter.WriteMessage("No governance suggestions — repository structure does not match known patterns.");
+                }
+                else
+                {
+                    ctx.Formatter.WriteMessage("These are suggestions only. Apply them by editing .steward/policy.yaml.");
+                }
+            }
+
+            return ExitCodes.Success;
+        });
+
+        return command;
     }
 
 }
