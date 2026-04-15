@@ -105,7 +105,14 @@ public static class CheckCommand
                             var dir = Path.GetDirectoryName(Path.Combine(ctx.RootPath, fix.FilePath));
                             if (dir != null && !Directory.Exists(dir))
                                 Directory.CreateDirectory(dir);
-                            File.WriteAllText(Path.Combine(ctx.RootPath, fix.FilePath), fix.NewContent);
+
+                            var fullPath = Path.Combine(ctx.RootPath, fix.FilePath);
+                            var oldContent = File.Exists(fullPath) ? File.ReadAllText(fullPath) : "";
+                            File.WriteAllText(fullPath, fix.NewContent);
+
+                            var (added, removed) = MaintainCommand.CountDiffLines(oldContent, fix.NewContent);
+                            if (!quiet && ctx.OutputFormat != OutputFormat.Json)
+                                ctx.Formatter.WriteMessage($"       (+{added} -{removed})");
                         }
                     }
 

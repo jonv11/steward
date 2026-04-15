@@ -115,6 +115,8 @@ public static class MaintainCommand
 
             if (apply && plan.HasChanges)
             {
+                var appliedChanges = new List<(string path, int added, int removed)>();
+
                 foreach (var action in plan.Actions.Where(a => a.HasChanges && a.ExpectedContent != null))
                 {
                     var fullPath = Path.Combine(ctx.RootPath, action.ArtifactPath);
@@ -122,12 +124,34 @@ public static class MaintainCommand
                     if (dir != null && !Directory.Exists(dir))
                         Directory.CreateDirectory(dir);
 
+                    var oldContent = File.Exists(fullPath) ? File.ReadAllText(fullPath) : "";
                     File.WriteAllText(fullPath, action.ExpectedContent);
+
+                    var (added, removed) = CountDiffLines(oldContent, action.ExpectedContent!);
+                    appliedChanges.Add((action.ArtifactPath, added, removed));
                 }
 
-                if (ctx.OutputFormat != OutputFormat.Json)
+                if (ctx.OutputFormat == OutputFormat.Json)
                 {
-                    ctx.Formatter.WriteMessage("Changes applied.");
+                    ctx.Formatter.WriteObject(new
+                    {
+                        applied = true,
+                        changes = appliedChanges.Select(c => new
+                        {
+                            path = c.path,
+                            linesAdded = c.added,
+                            linesRemoved = c.removed
+                        }).ToArray()
+                    });
+                }
+                else
+                {
+                    ctx.Formatter.WriteMessage("");
+                    foreach (var (path, added, removed) in appliedChanges)
+                    {
+                        ctx.Formatter.WriteMessage($"  {path}  (+{added} -{removed})");
+                    }
+                    ctx.Formatter.WriteMessage($"\nChanges applied: {appliedChanges.Count} file(s) updated.");
                 }
             }
             else if (!apply && plan.HasChanges && ctx.OutputFormat != OutputFormat.Json)
@@ -139,5 +163,14 @@ public static class MaintainCommand
         });
 
         return command;
+    }
+
+    internal static (int added, int removed) CountDiffLines(string oldContent, string newContent)
+    {
+        var diffBuilder = new InlineDiffBuilder(new Differ());
+        var diff = diffBuilder.BuildDiffModel(oldContent, newContent);
+        var added = diff.Lines.Count(l => l.Type == ChangeType.Inserted);
+        var removed = diff.Lines.Count(l => l.Type == ChangeType.Deleted);
+        return (added, removed);
     }
 }
