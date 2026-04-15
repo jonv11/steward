@@ -21,6 +21,7 @@ Central navigation for all planning and decision artifacts.
 | [RFC-004 Markdown Structural Model](decisions/rfcs/RFC-004-markdown-structural-model.md) | Selectors, edit ops, managed regions |
 | [RFC-005 Orientation, Search, and Outline](decisions/rfcs/RFC-005-orientation-search-outline.md) | Surface boundaries and responsibilities |
 | [RFC-006 Maintenance and Memory](decisions/rfcs/RFC-006-maintenance-and-memory.md) | Maintenance flows, memory artifacts |
+| [RFC-007 Maintainer Governance and Stewardship Enhancements](decisions/rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements-draft.md) | Policy expressiveness, governance inspection, stewardship workflows **(Accepted)** |
 | [ADR-001 .NET 10 CLI Architecture](decisions/adrs/ADR-001-dotnet10-cli-architecture.md) | Runtime, CLI framework, project shape |
 | [ADR-002 Project Structure](decisions/adrs/ADR-002-project-structure.md) | Solution layout and assembly boundaries |
 | [ADR-003 Configuration Format](decisions/adrs/ADR-003-configuration-format-yaml.md) | YAML choice and library |
@@ -38,8 +39,10 @@ Central navigation for all planning and decision artifacts.
 |----------|---------|
 | [Delivery Strategy](planning/delivery-strategy.md) | Sequencing rationale and approach |
 | [Milestone Plan](planning/milestone-plan.md) | Milestones v0.1.0 through v1.0.0 |
+| [Post-v1.0.0 Milestone Plan](planning/post-v1-milestone-plan.md) | Milestones v1.1.0 through v1.5.0 (RFC-007) |
 | [Implementation Instructions](planning/implementation-instructions.md) | Per-milestone execution guide |
 | [Curation Notes](planning/curation-notes.md) | What was merged, superseded, or deferred |
+| [RFC-007 Governance Enhancements Backlog](planning/rfc-007-governance-enhancements-backlog.md) | Actionable backlog derived from RFC-007 **(Accepted)** |
 
 ## Audits
 

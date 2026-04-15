@@ -12,6 +12,7 @@ Index of all accepted RFCs and ADRs for the Repository Steward project.
 | [RFC-004](rfcs/RFC-004-markdown-structural-model.md) | Markdown Structural Model | Accepted | Selectors (mdpath), managed regions, edit ops, preview/apply |
 | [RFC-005](rfcs/RFC-005-orientation-search-outline.md) | Orientation, Search, and Outline | Accepted | Surface boundaries and responsibilities |
 | [RFC-006](rfcs/RFC-006-maintenance-and-memory.md) | Maintenance and Memory | Accepted | Maintenance flows, memory artifacts, anti-drift |
+| [RFC-007](rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements-draft.md) | Maintainer Governance and Stewardship Enhancements | Accepted | Policy expressiveness, governance inspection, maintenance evolution, stewardship workflows |
 
 ## ADRs — Technical and Architectural Decisions
 
