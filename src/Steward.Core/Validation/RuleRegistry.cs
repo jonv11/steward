@@ -21,6 +21,7 @@ public static class RuleRegistry
         new BrokenArtifactReferenceRule(),
         new NamingConventionRule(),
         new IndexCompletenessRule(),
-        new FreshnessRule()
+        new FreshnessRule(),
+        new OrphanedDocumentRule()
     ];
 }

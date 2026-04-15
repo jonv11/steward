@@ -11,7 +11,7 @@ public class RuleRegistryTests
     public void CreateAllRules_ReturnsTwelveRules()
     {
         var rules = RuleRegistry.CreateAllRules();
-        rules.Should().HaveCount(12);
+        rules.Should().HaveCount(13);
     }
 
     [Fact]
