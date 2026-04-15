@@ -23,6 +23,7 @@ public static class ExplainCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+            var verbosity = parseResult.GetValue(GlobalOptionsSetup.VerbosityOption);
             var ruleId = parseResult.GetValue(ruleArg);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
@@ -42,16 +43,27 @@ public static class ExplainCommand
                 return ExitCodes.UsageError;
             }
 
+            // In verbose mode, attempt to show file evaluation count
+            int? filesEvaluated = null;
+            if (verbosity >= Verbosity.Verbose)
+            {
+                filesEvaluated = GetFilesEvaluatedCount(parseResult, rule);
+            }
+
             if (output == OutputFormat.Json)
             {
-                formatter.WriteObject(new
+                var jsonObj = new Dictionary<string, object?>
                 {
-                    ruleId = rule.RuleId,
-                    category = rule.Category,
-                    severity = rule.DefaultSeverity.ToString().ToLowerInvariant(),
-                    description = rule.Description,
-                    remediation = GetRemediation(rule.RuleId)
-                });
+                    ["ruleId"] = rule.RuleId,
+                    ["category"] = rule.Category,
+                    ["severity"] = rule.DefaultSeverity.ToString().ToLowerInvariant(),
+                    ["description"] = rule.Description,
+                    ["remediation"] = GetRemediation(rule.RuleId)
+                };
+                if (filesEvaluated.HasValue)
+                    jsonObj["filesEvaluated"] = filesEvaluated.Value;
+
+                formatter.WriteObject(jsonObj);
             }
             else
             {
@@ -61,12 +73,43 @@ public static class ExplainCommand
                 formatter.WriteMessage($"Description: {rule.Description}");
                 formatter.WriteMessage("");
                 formatter.WriteMessage($"Remediation: {GetRemediation(rule.RuleId)}");
+
+                if (filesEvaluated.HasValue)
+                {
+                    formatter.WriteMessage("");
+                    formatter.WriteMessage($"Files evaluated: {filesEvaluated.Value}");
+                }
             }
 
             return ExitCodes.Success;
         });
 
         return command;
+    }
+
+    private static int? GetFilesEvaluatedCount(System.CommandLine.ParseResult parseResult, IValidationRule rule)
+    {
+        try
+        {
+            if (!CommandSetup.TryBuild(parseResult, out var ctx) || ctx?.Files == null)
+                return null;
+
+            // Count files that would be evaluated by this rule
+            var files = ctx.Files;
+
+            // For markdown-specific rules, count only .md files
+            var ruleCategory = rule.Category.ToLowerInvariant();
+            if (ruleCategory is "frontmatter" or "governance" or "link-integrity")
+            {
+                return files.Count(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase));
+            }
+
+            return files.Count;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static int ListAllRules(IOutputFormatter formatter, OutputFormat output)

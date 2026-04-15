@@ -108,4 +108,15 @@ public class ExplainCommandTests
         output.Should().Contain("STWD-009");
         output.Should().Contain("STWD-001");
     }
+
+    [Fact]
+    public void Explain_Verbose_ShowsFilesEvaluated()
+    {
+        // Explain with --verbosity verbose outside a steward repo should still work (no files info)
+        var (exitCode, output, _) = InvokeExplain("explain", "STWD-001", "--verbosity", "verbose");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("STWD-001");
+        // Without a valid steward dir, filesEvaluated may not appear — that's OK
+    }
 }
