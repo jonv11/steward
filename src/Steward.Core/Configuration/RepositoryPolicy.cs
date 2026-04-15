@@ -48,6 +48,9 @@ public sealed class ArtifactDefinition
 
     [YamlMember(Alias = "required")]
     public bool Required { get; set; }
+
+    [YamlMember(Alias = "index_of")]
+    public string? IndexOf { get; set; }
 }
 
 public sealed class GovernanceConfig
