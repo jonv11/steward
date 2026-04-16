@@ -3,7 +3,7 @@
     <!-- Intentionally pinned prerelease CLI stack; see README.md "Dependency posture". -->
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta5.25306.1" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
-    <PackageVersion Include="Markdig" Version="0.39.1" />
+    <PackageVersion Include="Markdig" Version="1.1.2" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
     <PackageVersion Include="DiffPlex" Version="1.9.0" />
     <!-- These preview DI packages are acceptable on the current pre-1.0 line but remain a stable-release hardening item. -->
