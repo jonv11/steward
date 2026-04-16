@@ -64,6 +64,7 @@ public static class CheckCommand
                 Policy = ctx.Policy,
                 PathPolicy = ctx.PathPolicy,
                 TargetFiles = targetFiles,
+                AllDiscoveredFiles = ctx.Files,
                 FileSystem = ctx.FileSystem,
                 RepositoryRoot = ctx.RootPath,
                 DocumentCache = docCache

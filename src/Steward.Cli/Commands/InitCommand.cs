@@ -13,10 +13,10 @@ public static class InitCommand
 
         var profileOption = new Option<string>("--profile", "-p")
         {
-            Description = "Starting-point profile to scaffold: software, docs, mixed, knowledge, minimal",
+            Description = "Starting-point profile to scaffold: software, docs, minimal",
             DefaultValueFactory = _ => "software"
         };
-        profileOption.AcceptOnlyFromAmong("software", "docs", "mixed", "knowledge", "minimal");
+        profileOption.AcceptOnlyFromAmong("software", "docs", "minimal");
         command.Add(profileOption);
 
         command.SetAction((parseResult) =>

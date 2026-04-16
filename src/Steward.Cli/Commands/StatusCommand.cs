@@ -41,7 +41,38 @@ public static class StatusCommand
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                ctx.Formatter.WriteObject(status);
+                if (showCoverage)
+                {
+                    var coverage = ComputeCoverage(ctx.Policy, ctx.Files!, ctx.FileSystem, ctx.RootPath);
+                    ctx.Formatter.WriteObject(new RepositoryStatusWithCoverage
+                    {
+                        RepositoryName = status.RepositoryName,
+                        RepositoryType = status.RepositoryType,
+                        Profile = status.Profile,
+                        FileCount = status.FileCount,
+                        RequiredArtifacts = status.RequiredArtifacts,
+                        RecommendedArtifacts = status.RecommendedArtifacts,
+                        StateDocuments = status.StateDocuments,
+                        MaintenanceArtifacts = status.MaintenanceArtifacts,
+                        StartHere = status.StartHere,
+                        PresentCount = status.PresentCount,
+                        RequiredCount = status.RequiredCount,
+                        RecommendedPresentCount = status.RecommendedPresentCount,
+                        RecommendedCount = status.RecommendedCount,
+                        StaleCount = status.StaleCount,
+                        Coverage = new CoverageResponse
+                        {
+                            GovernedCount = coverage.GovernedCount,
+                            TotalMarkdownFiles = coverage.TotalMarkdownFiles,
+                            Percentage = coverage.Percentage,
+                            Ungoverned = coverage.Ungoverned
+                        }
+                    });
+                }
+                else
+                {
+                    ctx.Formatter.WriteObject(status);
+                }
             }
             else
             {
@@ -412,6 +443,33 @@ public static class StatusCommand
     {
         public int TotalMarkdownFiles { get; init; }
         public int GovernedCount { get; init; }
+        public double Percentage { get; init; }
+        public List<string> Ungoverned { get; init; } = [];
+    }
+
+    internal sealed class RepositoryStatusWithCoverage
+    {
+        public string? RepositoryName { get; init; }
+        public string? RepositoryType { get; init; }
+        public string? Profile { get; init; }
+        public int FileCount { get; init; }
+        public List<ArtifactStatus> RequiredArtifacts { get; init; } = [];
+        public List<ArtifactStatus> RecommendedArtifacts { get; init; } = [];
+        public List<StateDocumentStatus> StateDocuments { get; init; } = [];
+        public List<MaintenanceStatus> MaintenanceArtifacts { get; init; } = [];
+        public List<string> StartHere { get; init; } = [];
+        public int PresentCount { get; init; }
+        public int RequiredCount { get; init; }
+        public int RecommendedPresentCount { get; init; }
+        public int RecommendedCount { get; init; }
+        public int StaleCount { get; init; }
+        public required CoverageResponse Coverage { get; init; }
+    }
+
+    internal sealed class CoverageResponse
+    {
+        public int GovernedCount { get; init; }
+        public int TotalMarkdownFiles { get; init; }
         public double Percentage { get; init; }
         public List<string> Ungoverned { get; init; } = [];
     }

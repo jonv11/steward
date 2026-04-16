@@ -37,7 +37,7 @@ Use a public-feed install only when the project intentionally publishes a releas
 
 ### Dependency posture
 
-Steward currently pins exact prerelease CLI-stack versions in [Directory.Packages.props](Directory.Packages.props), including `System.CommandLine` beta5 and preview `Microsoft.Extensions.DependencyInjection` packages. That is an intentional pre-`1.0.0` tradeoff for the current repo line, not a claim that stable-release dependency hardening is already complete.
+Steward currently pins exact prerelease CLI-stack versions in [Directory.Packages.props](Directory.Packages.props), including `System.CommandLine` beta5. All other runtime dependencies are at stable GA versions. That is an intentional pre-`1.0.0` tradeoff for the current repo line, not a claim that stable-release dependency hardening is already complete.
 
 ## Quick Start
 
@@ -256,15 +256,15 @@ For global Markdown frontmatter requirements, `governance.frontmatter.required_f
 
 ### Built-in profiles
 
-`steward init --profile <name>` scaffolds conservative starting-point defaults for common repository types. At runtime, profile defaults merge in shallowly: repository-local scalar/object values override profile values, while repository-local list sections such as `artifacts:` replace the corresponding profile list as a whole. The `software` profile is the only one exercised on this repository today; the other built-ins are intentionally lightweight starting points rather than battle-tested curated experiences.
+`steward init --profile <name>` scaffolds conservative starting-point defaults for common repository types. At runtime, profile defaults merge in shallowly: repository-local scalar/object values override profile values, while repository-local list sections such as `artifacts:` replace the corresponding profile list as a whole.
 
 | Profile | Description | Readiness |
 | ------- | ----------- | --------- |
 | `software` | Software project with README, LICENSE, CHANGELOG | Exercised on this repository |
-| `docs` | Documentation repository | Starting-point default; not yet battle-tested here |
-| `mixed` | Mixed code and documentation | Starting-point default; not yet battle-tested here |
-| `knowledge` | Knowledge base or wiki | Starting-point default; not yet battle-tested here |
-| `minimal` | README-first baseline with minimal additional defaults | Starting-point default; intentionally sparse |
+| `docs` | Documentation repository | Fixture-backed; meaningfully archetype-specific |
+| `minimal` | README-first baseline with minimal additional defaults | Fixture-backed; intentionally sparse |
+
+> **Note:** `mixed` and `knowledge` profiles exist in code for backward compatibility but are not offered via `init` until their governance contracts are enriched. See [ADR-014](docs/decisions/adrs/ADR-014-non-software-profile-scope.md).
 
 ### Adapting to your repository
 

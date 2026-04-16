@@ -19,6 +19,13 @@ public sealed class ValidationContext
     public required RepositoryPolicy? Policy { get; init; }
     public required PathPolicyDocument? PathPolicy { get; init; }
     public required IReadOnlyList<DiscoveredFile> TargetFiles { get; init; }
+    /// <summary>
+    /// The full set of discovered files in the repository, regardless of scope.
+    /// Repo-wide obligation rules (e.g. STWD-001, STWD-009) use this for existence
+    /// checks so that scoped validation does not produce false positives.
+    /// When null, falls back to <see cref="TargetFiles"/>.
+    /// </summary>
+    public IReadOnlyList<DiscoveredFile>? AllDiscoveredFiles { get; init; }
     public required IFileSystem FileSystem { get; init; }
     public required string RepositoryRoot { get; init; }
     public CancellationToken CancellationToken { get; init; }

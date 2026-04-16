@@ -19,8 +19,12 @@ public sealed class BrokenArtifactReferenceRule : IValidationRule
         if (context.Policy?.Artifacts == null)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
 
+        // Use AllDiscoveredFiles for existence checks so that scoped validation
+        // (--scope changed/staged) does not produce false broken-reference diagnostics.
+        var allFiles = context.AllDiscoveredFiles ?? context.TargetFiles;
+
         var existingPaths = new HashSet<string>(
-            context.TargetFiles.Select(f => f.RelativePath),
+            allFiles.Select(f => f.RelativePath),
             StringComparer.OrdinalIgnoreCase);
 
         foreach (var artifact in context.Policy.Artifacts.Where(a => a.Path != null))
@@ -31,7 +35,7 @@ public sealed class BrokenArtifactReferenceRule : IValidationRule
             bool found;
             if (isDir)
             {
-                found = context.TargetFiles.Any(f => f.IsDirectory &&
+                found = allFiles.Any(f => f.IsDirectory &&
                     f.RelativePath.Equals(path, StringComparison.OrdinalIgnoreCase));
             }
             else

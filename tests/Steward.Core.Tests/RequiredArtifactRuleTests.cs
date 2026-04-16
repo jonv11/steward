@@ -253,4 +253,61 @@ public class RequiredArtifactRuleTests
         var artifact = new ArtifactDefinition { Required = true, Importance = "recommended" };
         artifact.ResolveImportance().Should().Be("recommended");
     }
+
+    [Fact]
+    public async Task Evaluate_ScopedTargetFiles_UsesAllDiscoveredFiles()
+    {
+        // B6 regression: when TargetFiles is empty (scoped check, no changed files),
+        // existence checks must use AllDiscoveredFiles instead of TargetFiles.
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new() { Path = "README.md", Role = "authoritative", Required = true }
+            ]
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [], // empty scope — no changed files
+            AllDiscoveredFiles = [new DiscoveredFile("README.md", 100, false)],
+            FileSystem = new InMemoryFileSystem(),
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredArtifactRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().BeEmpty("README.md exists in AllDiscoveredFiles");
+    }
+
+    [Fact]
+    public async Task Evaluate_ScopedTargetFiles_NoAllDiscovered_FallsBackToTarget()
+    {
+        // When AllDiscoveredFiles is null, rule falls back to TargetFiles (pre-B6 behavior).
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new() { Path = "README.md", Role = "authoritative", Required = true }
+            ]
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [],
+            AllDiscoveredFiles = null,
+            FileSystem = new InMemoryFileSystem(),
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredArtifactRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().HaveCount(1);
+    }
 }

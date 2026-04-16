@@ -31,3 +31,4 @@ Index of all accepted RFCs and ADRs for the Repository Steward project.
 | [ADR-011](adrs/ADR-011-domain-stewardship-through-generic-configuration.md) | Domain-Specific Stewardship Through Generic Configuration | Accepted | Domain needs served through generic policy mechanisms, not hardcoded domain logic |
 | [ADR-012](adrs/ADR-012-artifact-type-schema-direction.md) | Artifact Type Schema System Direction | Accepted | Per-type artifact definitions in policy.yaml for frontmatter, sections, naming, lifecycle |
 | [ADR-013](adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) | Pre-1.0 Versioning and Release Authorization | Accepted | Keeps Steward on `0.x.y` until explicit stable-release approval and defines version-bump governance |
+| [ADR-014](adrs/ADR-014-non-software-profile-scope.md) | Non-Software Profile Scope for First Public Release | Accepted | Keep `software`/`docs`/`minimal`; defer `mixed`/`knowledge` until contracts are enriched |

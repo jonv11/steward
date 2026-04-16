@@ -184,6 +184,50 @@ artifacts:
     }
 
     [Fact]
+    public void Status_CoverageJsonOutput_IncludesCoverageObject()
+    {
+        WritePolicyYaml(@"
+repository:
+  name: test-repo
+artifacts:
+  - path: README.md
+    role: readme
+    required: true
+");
+        WriteFile("README.md", "# Hello\n[Guide](docs/guide.md)");
+        WriteFile("docs/guide.md", "# Guide");
+        WriteFile("orphan.md", "# Orphan");
+
+        var (exitCode, output, _) = InvokeStatus("status", "--coverage", "--output", "json");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("\"coverage\"");
+        output.Should().Contain("\"governedCount\"");
+        output.Should().Contain("\"totalMarkdownFiles\"");
+        output.Should().Contain("\"percentage\"");
+        output.Should().Contain("\"ungoverned\"");
+    }
+
+    [Fact]
+    public void Status_JsonOutput_WithoutCoverage_OmitsCoverageObject()
+    {
+        WritePolicyYaml(@"
+repository:
+  name: test-repo
+artifacts:
+  - path: README.md
+    role: readme
+    required: true
+");
+        WriteFile("README.md", "# Hello");
+
+        var (exitCode, output, _) = InvokeStatus("status", "--output", "json");
+
+        exitCode.Should().Be(0);
+        output.Should().NotContain("\"coverage\"");
+    }
+
+    [Fact]
     public void ComputeCoverage_IncludesIndexedAndReachableMarkdownFiles()
     {
         WriteFile("README.md", "# Root\n[Index](docs/planning-index.md)\n[Guide](guides/getting-started.md)");

@@ -2,7 +2,7 @@
 
 - **Source:** [Release-Readiness Assessment 2026-04-15](../audits/release-readiness-assessment-2026-04-15.md)
 - **Status:** Active
-- **Last updated:** 2026-04-16 (B6, B7 added from CLI review normalization)
+- **Last updated:** 2026-04-16 (B6, B7 resolved; DI Abstractions upgraded to GA)
 
 ---
 
@@ -55,7 +55,7 @@ These are not nice-to-haves. Each item, if left unresolved, would materially wea
 
 ### B4: Document or mitigate System.CommandLine beta dependency risk
 
-- **Status:** Completed for option (a) on 2026-04-16
+- **Status:** Completed for option (a) on 2026-04-16; DI Abstractions upgraded from preview to GA 10.0.6
 - **Category:** Dependency / Release
 - **Promise affected:** Product reliability
 - **Resolution evidence:** `README.md`, `Directory.Packages.props`
@@ -67,29 +67,20 @@ These are not nice-to-haves. Each item, if left unresolved, would materially wea
 
 ### B5: Validate or reduce non-software profile offerings
 
-- **Status:** In progress (fixture-backed validation added on 2026-04-16; keep/narrow decision still pending)
+- **Status:** Completed
 - **Category:** Product / Config
 - **Promise affected:** "Works across repository archetypes"
-- **Current note:** README now presents non-software profiles as conservative starting-point defaults rather than battle-tested curated experiences, and the repo now has representative fixture-backed CLI coverage for `docs`, `mixed`, `knowledge`, and `minimal`. The remaining release decision is whether the observed behavior is strong enough to keep each profile enabled, or whether the offered `init --profile` set should be narrowed.
+- **Resolution evidence:** [ADR-014 — Non-Software Profile Scope](../decisions/adrs/ADR-014-non-software-profile-scope.md), `src/Steward.Cli/Commands/InitCommand.cs` (init offering narrowed to `software`, `docs`, `minimal`)
+- **Decision summary:** Keep `software`, `docs`, `minimal`; defer `mixed` and `knowledge` until their contracts are enriched to provide meaningful archetype distinctiveness. Profile definitions remain in `ProfileDefaults.cs` for backward compatibility.
 - **Detailed breakdown:** [Profile Readiness Review — 2026-04-16](../audits/profile-readiness-review-2026-04-16.md)
-- **What must change:**
-  - Use the current representative validation evidence to make an explicit release decision for each non-software profile (`docs`, `mixed`, `knowledge`, `minimal`)
-  - Either (a) keep only the profiles whose resulting contracts are clearly useful and document any important semantics, or (b) reduce the `init --profile` options to only the profiles that meet that bar and document that others are coming later
-- **Command-level release checklist:**
-  - `init --profile <name>` must scaffold an intentional-looking policy for each kept profile
-  - `config show --effective` must reveal a meaningfully archetype-specific merged policy for each kept profile
-  - `status` must show a useful required/recommended artifact contract for each kept profile
-  - `check` must have representative passing and failing fixture coverage for each kept profile
-  - `config doctor` should not raise confusing false positives immediately after scaffolding a representative kept profile
-- **Acceptance criteria:** Every profile offered in `init --profile` either produces demonstrated value or is not offered.
-- **Effort estimate:** Medium for option (a), small for option (b)
 
 ### B6: Fix scoped validation false positives on clean tree
 
-- **Status:** Open
+- **Status:** Completed
 - **Category:** Implementation — critical workflow trust defect
 - **Promise affected:** Scoped pre-commit/CI validation (PRD UC-02, REQ-VALIDATE-002/003, RFC-003)
 - **Evidence sources:** [CLI Expectation Fidelity Review — 2026-04-16](../audits/cli-expectation-fidelity-review-2026-04-16.md) EF-001, [CLI Expectation Fidelity Reassessment — 2026-04-16](../audits/cli-expectation-fidelity-reassessment-2026-04-16.md) F-01, [CLI Full Assessment — 2026-04-16](../audits/cli-full-assessment-2026-04-16.md) F1
+- **Resolution evidence:** `src/Steward.Core/Validation/IValidationRule.cs` (`AllDiscoveredFiles` added to `ValidationContext`), `src/Steward.Core/Validation/Rules/RequiredArtifactRule.cs`, `BrokenArtifactReferenceRule.cs`, `StaleArtifactRule.cs` (use `AllDiscoveredFiles ?? TargetFiles` for existence checks), `src/Steward.Cli/Commands/CheckCommand.cs` (populates `AllDiscoveredFiles`), 4 regression tests across Core rule test files + 1 contract test in `StableSurfaceContractTests.cs`
 - **What is broken:**
   - `steward check --scope changed` and `--scope staged` on a clean tree produce false missing-artifact, broken-reference, and stale-artifact diagnostics (`STWD-001`, `STWD-007`, `STWD-009`) while reporting `Files checked: 0`.
   - Root cause: `RequiredArtifactRule`, `BrokenArtifactReferenceRule`, and `StaleArtifactRule` evaluate repository-wide obligations against `context.TargetFiles` instead of a full-repo file set.
@@ -103,10 +94,11 @@ These are not nice-to-haves. Each item, if left unresolved, would materially wea
 
 ### B7: Include governance coverage in status JSON output
 
-- **Status:** Open
+- **Status:** Completed
 - **Category:** Implementation — agent-facing parity gap
 - **Promise affected:** Dual-audience coverage reporting (PRD §3, REQ-WORKFLOW-005)
 - **Evidence sources:** [CLI Expectation Fidelity Review — 2026-04-16](../audits/cli-expectation-fidelity-review-2026-04-16.md) EF-002, [CLI Expectation Fidelity Reassessment — 2026-04-16](../audits/cli-expectation-fidelity-reassessment-2026-04-16.md) F-02, [CLI Full Assessment — 2026-04-16](../audits/cli-full-assessment-2026-04-16.md) F3
+- **Resolution evidence:** `src/Steward.Cli/Commands/StatusCommand.cs` (`RepositoryStatusWithCoverage` and `CoverageResponse` classes), 2 contract tests in `StatusCommandTests.cs`
 - **What is broken:**
   - `steward status --coverage --output json` returns the same JSON as `status --output json` — no `coverage` field is included even when `--coverage` is requested.
 - **What must change:**

@@ -60,11 +60,13 @@ public sealed class StaleArtifactRule : IValidationRule, IFixableRule
         if (context.Policy?.Maintenance?.Artifacts == null)
             return null;
 
+        // Use AllDiscoveredFiles so that maintenance evaluation sees the full repo
+        // even during scoped validation (--scope changed/staged).
         var maintenanceContext = new MaintenanceContext
         {
             RepositoryRoot = context.RepositoryRoot,
             FileSystem = context.FileSystem,
-            Files = context.TargetFiles
+            Files = context.AllDiscoveredFiles ?? context.TargetFiles
         };
 
         var engine = new MaintenanceEngine();

@@ -30,25 +30,20 @@ public class ProfileReadinessTests : IDisposable
 
     public static IEnumerable<object[]> RepresentativeProfiles()
     {
+        // Only advertised profiles per ADR-014; mixed/knowledge deferred
         yield return ["docs", "docs-repo", "documentation", new[] { "README.md", "docs/" }, new[] { "README.md" }];
-        yield return ["mixed", "mixed-repo", "mixed", new[] { "README.md" }, new[] { "README.md" }];
-        yield return ["knowledge", "knowledge-repo", "knowledge", new[] { "README.md" }, new[] { "README.md" }];
         yield return ["minimal", "minimal-repo", "general", new[] { "README.md" }, Array.Empty<string>()];
     }
 
     public static IEnumerable<object[]> CheckProfiles()
     {
         yield return ["docs", "docs-repo"];
-        yield return ["mixed", "mixed-repo"];
-        yield return ["knowledge", "knowledge-repo"];
         yield return ["minimal", "minimal-repo"];
     }
 
     public static IEnumerable<object[]> FailureCases()
     {
         yield return ["docs", "docs-repo", "docs", "docs/"];
-        yield return ["mixed", "mixed-repo", "README.md", "README.md"];
-        yield return ["knowledge", "knowledge-repo", "README.md", "README.md"];
         yield return ["minimal", "minimal-repo", "README.md", "README.md"];
     }
 

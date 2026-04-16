@@ -238,4 +238,56 @@ public class StaleArtifactRuleTests
 
         fixes.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Evaluate_ScopedTargetFiles_UsesAllDiscoveredFiles()
+    {
+        // B6 regression: when TargetFiles is empty (scoped check), maintenance
+        // evaluation must use AllDiscoveredFiles to see the full repo file set.
+        var fs = new InMemoryFileSystem();
+        var allFiles = new List<DiscoveredFile> { new("README.md", 100, false) };
+
+        // Generate expected content from the full file set
+        var engine = new Core.Maintenance.MaintenanceEngine();
+        var mCtx = new Core.Maintenance.MaintenanceContext
+        {
+            RepositoryRoot = "/repo",
+            FileSystem = fs,
+            Files = allFiles
+        };
+
+        var policy = new RepositoryPolicy
+        {
+            Maintenance = new MaintenanceConfig
+            {
+                Artifacts =
+                [
+                    new MaintenanceArtifactDef
+                    {
+                        Id = "structure",
+                        Path = "STRUCTURE.md",
+                        Type = "structure-document"
+                    }
+                ]
+            }
+        };
+
+        var plan = engine.Evaluate(policy, mCtx);
+        fs.AddFile("/repo/STRUCTURE.md", plan.Actions[0].ExpectedContent!);
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [], // empty scope — no changed files
+            AllDiscoveredFiles = allFiles, // full repo
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new StaleArtifactRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().BeEmpty("STRUCTURE.md is up-to-date when evaluated against AllDiscoveredFiles");
+    }
 }

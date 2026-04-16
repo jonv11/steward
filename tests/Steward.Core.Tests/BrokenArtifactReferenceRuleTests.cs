@@ -208,4 +208,33 @@ public class BrokenArtifactReferenceRuleTests
         diagnostics.Should().HaveCount(2);
         diagnostics.Should().OnlyContain(d => d.RuleId == "STWD-009");
     }
+
+    [Fact]
+    public async Task Evaluate_ScopedTargetFiles_UsesAllDiscoveredFiles()
+    {
+        // B6 regression: when TargetFiles is empty (scoped check), existence checks
+        // must use AllDiscoveredFiles to avoid false broken-reference diagnostics.
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new ArtifactDefinition { Path = "CHANGELOG.md", Role = "changelog", Required = false }
+            ]
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [], // empty scope
+            AllDiscoveredFiles = [new DiscoveredFile("CHANGELOG.md", 50, false)],
+            FileSystem = new InMemoryFileSystem(),
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new BrokenArtifactReferenceRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().BeEmpty("CHANGELOG.md exists in AllDiscoveredFiles");
+    }
 }
