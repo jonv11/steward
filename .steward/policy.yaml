@@ -75,8 +75,33 @@ artifacts:
 
   # Note: Individual audit files, planning detail docs, and per-ADR/RFC entries are
   # intentionally NOT listed here. They are discoverable by path convention and
-  # governed by frontmatter_requirements below. See RFC-008 for the product direction
-  # toward full convention-based artifact discovery.
+  # governed by artifact_families below (ADRs and RFCs) or frontmatter_requirements
+  # (requirements and planning). See RFC-008 §8 for the v0.13.0 scope.
+
+artifact_families:
+  - family: adr
+    display_name: Architecture Decision Record
+    match:
+      path_pattern: "docs/decisions/adrs/ADR-*.md"
+    role: governance
+    importance: recommended
+    frontmatter_schema:
+      required: [type, status, category]
+      allowed_values:
+        type: [adr]
+        status: [Draft, Proposed, Accepted, Superseded, Deprecated]
+
+  - family: rfc
+    display_name: Request for Comments
+    match:
+      path_pattern: "docs/decisions/rfcs/RFC-*.md"
+    role: governance
+    importance: recommended
+    frontmatter_schema:
+      required: [type, status, resolves]
+      allowed_values:
+        type: [rfc]
+        status: [Draft, Proposed, Accepted, Superseded, Deprecated]
 
 governance:
   section_size_warning_threshold: 500
@@ -100,42 +125,12 @@ validation:
   disabled_rules: []
 
   # Convention-based frontmatter enforcement by path pattern.
-  # This replaces per-file artifact entries for document families that share
-  # a common structure. Any new ADR, RFC, or planning doc automatically
-  # inherits these requirements without needing a new policy.yaml entry.
-  #
-  # Expected section structure per family (documentation-only; enforcement
-  # requires artifact type schema work per RFC-008 §3.3 and ADR-012):
-  #   ADRs:     ## Context | ## Decision | ## Consequences
-  #             (## Alternatives considered is optional but conventional)
-  #   RFCs:     Numbered sections: ## 1. Context | ## 2. Problem Statement |
-  #             ## 3. Proposed ... | ## 4. Migration Path | ## 5. Impact |
-  #             ## 6. Alternatives Considered | ## 7. Consequences
-  #   PRDs:     Numbered sections: ## 1. Overview | ## 2. Problem Statement |
-  #             ## 3. Target Users | ## 4. Goals | ## 5. Non-Goals | ...
-  #   Planning: Free-form; no enforced section schema.
+  # ADRs and RFCs are now governed by artifact_families above (v0.13.0).
+  # Requirements and planning docs are still governed here by path pattern.
   #
   # Full required_sections enforcement is tracked as a later pre-1.0 gap
   # in pre-1-0-readiness-plan.md (v0.14.0+ per RFC-008 §3.3 and ADR-012).
   frontmatter_requirements:
-    - pattern: "docs/decisions/adrs/**"
-      required_fields:
-        - type
-        - status
-        - category
-      allowed_values:
-        type: [adr]
-        status: [Draft, Proposed, Accepted, Superseded, Deprecated]
-
-    - pattern: "docs/decisions/rfcs/**"
-      required_fields:
-        - type
-        - status
-        - resolves
-      allowed_values:
-        type: [rfc]
-        status: [Draft, Proposed, Accepted, Superseded, Deprecated]
-
     - pattern: "docs/requirements/**"
       required_fields:
         - type

@@ -4,6 +4,7 @@ using Steward.Core;
 using Steward.Core.Configuration;
 using Steward.Core.Discovery;
 using Steward.Core.Formatting;
+using Steward.Core.Markdown;
 using Steward.Core.Orientation;
 using Steward.Core.Validation;
 namespace Steward.Cli.Commands;
@@ -192,7 +193,21 @@ public static class ExplainCommand
 
             if (output == OutputFormat.Json)
             {
-                formatter.WriteObject(info);
+                var jsonObj = new Dictionary<string, object?>
+                {
+                    ["path"] = info.Path,
+                    ["classification"] = info.Classification,
+                    ["pathPolicyCategory"] = info.PathPolicyCategory,
+                    ["matchedPattern"] = info.MatchedPattern,
+                    ["matchedFamily"] = info.MatchedFamily,
+                    ["familyDisplayName"] = info.FamilyDisplayName,
+                    ["artifact"] = info.Artifact,
+                    ["suppressedRules"] = info.SuppressedRules,
+                    ["requiredFrontmatterFields"] = info.RequiredFrontmatterFields,
+                    ["allowedValues"] = info.AllowedValues,
+                    ["applicableRules"] = info.ApplicableRules
+                };
+                formatter.WriteObject(jsonObj);
             }
             else
             {
@@ -201,6 +216,14 @@ public static class ExplainCommand
                 formatter.WriteMessage($"Path-policy category: {info.PathPolicyCategory}");
                 if (info.MatchedPattern != null)
                     formatter.WriteMessage($"Matched pattern: {info.MatchedPattern}");
+
+                if (info.MatchedFamily != null)
+                {
+                    var familyLabel = info.FamilyDisplayName != null
+                        ? $"{info.MatchedFamily} ({info.FamilyDisplayName})"
+                        : info.MatchedFamily;
+                    formatter.WriteMessage($"Family: {familyLabel}");
+                }
 
                 if (info.Artifact != null)
                 {
@@ -343,6 +366,52 @@ public static class ExplainCommand
             }
         }
 
+        // 5b. Family classification (only if not an explicit artifact)
+        string? matchedFamily = null;
+        string? familyDisplayName = null;
+        if (artifactSummary == null && ctx.Policy?.ArtifactFamilies is { Count: > 0 })
+        {
+            IReadOnlyDictionary<string, object?>? frontmatterFields = null;
+            var fullPath = System.IO.Path.Combine(ctx.RootPath, relativePath);
+            if (ctx.FileSystem?.FileExists(fullPath) == true)
+            {
+                try
+                {
+                    var content = ctx.FileSystem.ReadAllText(fullPath);
+                    var doc = MarkdownParser.Parse(relativePath, content);
+                    if (doc.Frontmatter?.Fields != null)
+                    {
+                        frontmatterFields = doc.Frontmatter.Fields
+                            .ToDictionary(kv => kv.Key, kv => (object?)kv.Value, StringComparer.OrdinalIgnoreCase);
+                    }
+                }
+                catch
+                {
+                    // File unreadable — classify by path pattern only
+                }
+            }
+
+            var classifier = new ArtifactFamilyClassifier(ctx.Policy.ArtifactFamilies);
+            var family = classifier.Classify(relativePath, frontmatterFields);
+            if (family != null)
+            {
+                matchedFamily = family.Family;
+                familyDisplayName = family.DisplayName;
+
+                // Merge family-level frontmatter requirements
+                foreach (var field in family.FrontmatterSchema?.Required ?? [])
+                {
+                    if (!requiredFields.Contains(field, StringComparer.OrdinalIgnoreCase))
+                        requiredFields.Add(field);
+                }
+                if (family.FrontmatterSchema?.AllowedValues != null)
+                {
+                    foreach (var (field, values) in family.FrontmatterSchema.AllowedValues)
+                        allowedValues[field] = values;
+                }
+            }
+        }
+
         // 6. Applicable rules — filter by actual relevance to this path
         var suppressedSet = new HashSet<string>(suppressedRules, StringComparer.OrdinalIgnoreCase);
         var isMarkdown = relativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase);
@@ -386,6 +455,8 @@ public static class ExplainCommand
             PathPolicyCategory = pathEval.Category,
             MatchedPattern = pathEval.MatchedPattern,
             Artifact = artifactSummary,
+            MatchedFamily = matchedFamily,
+            FamilyDisplayName = familyDisplayName,
             SuppressedRules = suppressedRules,
             RequiredFrontmatterFields = requiredFields,
             AllowedValues = allowedValues,
@@ -400,6 +471,8 @@ public static class ExplainCommand
         public string PathPolicyCategory { get; set; } = "unclassified";
         public string? MatchedPattern { get; set; }
         public ArtifactSummary? Artifact { get; set; }
+        public string? MatchedFamily { get; set; }
+        public string? FamilyDisplayName { get; set; }
         public List<string> SuppressedRules { get; set; } = [];
         public List<string> RequiredFrontmatterFields { get; set; } = [];
         public Dictionary<string, List<string>> AllowedValues { get; set; } = [];

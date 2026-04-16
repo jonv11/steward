@@ -1,0 +1,31 @@
+repository:
+  name: artifact-families-fixture
+  type: software
+
+artifacts:
+  - path: README.md
+    role: authoritative
+    importance: required
+
+artifact_families:
+  - family: adr
+    display_name: Architecture Decision Record
+    match:
+      path_pattern: "docs/decisions/adrs/ADR-*.md"
+    role: governance
+    importance: recommended
+    frontmatter_schema:
+      required: [type, status, category]
+      allowed_values:
+        status: [Draft, Proposed, Accepted, Superseded, Deprecated]
+
+  - family: rfc
+    display_name: Request for Comments
+    match:
+      path_pattern: "docs/decisions/rfcs/RFC-*.md"
+    role: governance
+    importance: recommended
+    frontmatter_schema:
+      required: [type, status, resolves]
+      allowed_values:
+        status: [Draft, Proposed, Accepted, Superseded, Deprecated]

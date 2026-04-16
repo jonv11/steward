@@ -7,7 +7,7 @@ namespace Steward.Core.Validation.Rules;
 
 /// <summary>
 /// STWD-003: Checks that required frontmatter fields exist in Markdown files.
-/// Supports both global requirements and path-scoped requirements.
+/// Supports global requirements, path-scoped requirements, and artifact-family schema requirements.
 /// </summary>
 public sealed class RequiredFrontmatterFieldRule : IValidationRule
 {
@@ -32,78 +32,36 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
         var scopedRequirements = CompileScopedRequirements(
             context.Policy?.Validation?.FrontmatterRequirements);
 
-        if (globalRequired.Count == 0 && scopedRequirements.Count == 0)
+        // Build family classifier
+        var familyClassifier = new ArtifactFamilyClassifier(context.Policy?.ArtifactFamilies);
+
+        // Build set of explicit artifact paths (families do not apply to these)
+        var explicitArtifactPaths = BuildExplicitArtifactPaths(context.Policy);
+
+        var hasFamilies = context.Policy?.ArtifactFamilies is { Count: > 0 };
+
+        if (globalRequired.Count == 0 && scopedRequirements.Count == 0 && !hasFamilies)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
 
         foreach (var file in context.TargetFiles.Where(f =>
             f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase)))
         {
-            // Determine effective required fields for this path
+            // Determine effective required fields for this path (global + scoped)
             var effectiveFields = GetEffectiveRequiredFields(file.RelativePath, globalRequired, scopedRequirements);
             var effectiveAllowedValues = GetEffectiveAllowedValues(file.RelativePath, scopedRequirements);
 
-            if (effectiveFields.Count == 0 && effectiveAllowedValues.Count == 0)
+            // We may need to parse the document even if no global/scoped requirements apply,
+            // because family matching requires frontmatter fields.
+            var needsParse = effectiveFields.Count > 0 || effectiveAllowedValues.Count > 0 || hasFamilies;
+            if (!needsParse)
                 continue;
 
+            StructuredDocument? doc = null;
             try
             {
-                var doc = context.DocumentCache?.GetOrParse(file.RelativePath)
+                doc = context.DocumentCache?.GetOrParse(file.RelativePath)
                     ?? MarkdownParser.Parse(file.RelativePath,
                         context.FileSystem.ReadAllText(Path.Combine(context.RepositoryRoot, file.RelativePath)));
-
-                if (doc.Frontmatter == null)
-                {
-                    if (effectiveFields.Count > 0)
-                    {
-                        diagnostics.Add(new Diagnostic(
-                            RuleId: RuleId,
-                            Severity: DefaultSeverity,
-                            Category: Category,
-                            Path: file.RelativePath,
-                            Line: 1,
-                            Message: $"File '{file.RelativePath}' is missing frontmatter block.",
-                            Remediation: "Add a YAML frontmatter block enclosed by --- markers at the top of the file.",
-                            Source: "policy.yaml"));
-                    }
-                    continue;
-                }
-
-                foreach (var field in effectiveFields)
-                {
-                    if (!doc.Frontmatter.Fields.ContainsKey(field))
-                    {
-                        diagnostics.Add(new Diagnostic(
-                            RuleId: RuleId,
-                            Severity: DefaultSeverity,
-                            Category: Category,
-                            Path: file.RelativePath,
-                            Line: doc.Frontmatter.Range.Start,
-                            Message: $"Required frontmatter field '{field}' is missing in '{file.RelativePath}'.",
-                            Remediation: $"Add '{field}' to the frontmatter block.",
-                            Source: "policy.yaml"));
-                    }
-                }
-
-                // Check allowed values for scoped requirements
-                foreach (var (field, allowedValues) in effectiveAllowedValues)
-                {
-                    if (doc.Frontmatter.Fields.TryGetValue(field, out var rawValue) && rawValue != null)
-                    {
-                        var value = rawValue.ToString();
-                        if (value != null && !allowedValues.Any(v => string.Equals(v, value, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            diagnostics.Add(new Diagnostic(
-                                RuleId: RuleId,
-                                Severity: DefaultSeverity,
-                                Category: Category,
-                                Path: file.RelativePath,
-                                Line: doc.Frontmatter.Range.Start,
-                                Message: $"Frontmatter field '{field}' has value '{value}' which is not in the allowed set [{string.Join(", ", allowedValues)}] in '{file.RelativePath}'.",
-                                Remediation: $"Set '{field}' to one of: {string.Join(", ", allowedValues)}.",
-                                Source: "policy.yaml"));
-                        }
-                    }
-                }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -116,10 +74,114 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
                     Message: $"Could not read file '{file.RelativePath}': {ex.Message}",
                     Remediation: "Check file permissions and encoding.",
                     Source: "policy.yaml"));
+                continue;
+            }
+
+            // Apply family schema if the file is not an explicit artifact
+            string? matchedFamilyName = null;
+            if (hasFamilies && !explicitArtifactPaths.Contains(file.RelativePath))
+            {
+                var frontmatterFields = doc.Frontmatter?.Fields != null
+                    ? (IReadOnlyDictionary<string, object?>)doc.Frontmatter.Fields
+                        .ToDictionary(kv => kv.Key, kv => (object?)kv.Value, StringComparer.OrdinalIgnoreCase)
+                    : null;
+
+                var matchedFamily = familyClassifier.Classify(file.RelativePath, frontmatterFields);
+                if (matchedFamily != null)
+                {
+                    matchedFamilyName = matchedFamily.Family;
+
+                    // Merge family-required fields
+                    foreach (var field in matchedFamily.FrontmatterSchema?.Required ?? [])
+                    {
+                        if (!effectiveFields.Contains(field, StringComparer.OrdinalIgnoreCase))
+                            effectiveFields = [.. effectiveFields, field];
+                    }
+
+                    // Merge family allowed_values (family takes precedence over scoped for the same field)
+                    if (matchedFamily.FrontmatterSchema?.AllowedValues != null)
+                    {
+                        foreach (var (field, values) in matchedFamily.FrontmatterSchema.AllowedValues)
+                            effectiveAllowedValues[field] = values;
+                    }
+                }
+            }
+
+            if (effectiveFields.Count == 0 && effectiveAllowedValues.Count == 0)
+                continue;
+
+            var familyContext = matchedFamilyName != null ? $" [family: {matchedFamilyName}]" : "";
+
+            if (doc.Frontmatter == null)
+            {
+                if (effectiveFields.Count > 0)
+                {
+                    diagnostics.Add(new Diagnostic(
+                        RuleId: RuleId,
+                        Severity: DefaultSeverity,
+                        Category: Category,
+                        Path: file.RelativePath,
+                        Line: 1,
+                        Message: $"File '{file.RelativePath}' is missing frontmatter block.{familyContext}",
+                        Remediation: "Add a YAML frontmatter block enclosed by --- markers at the top of the file.",
+                        Source: "policy.yaml"));
+                }
+                continue;
+            }
+
+            foreach (var field in effectiveFields)
+            {
+                if (!doc.Frontmatter.Fields.ContainsKey(field))
+                {
+                    diagnostics.Add(new Diagnostic(
+                        RuleId: RuleId,
+                        Severity: DefaultSeverity,
+                        Category: Category,
+                        Path: file.RelativePath,
+                        Line: doc.Frontmatter.Range.Start,
+                        Message: $"Required frontmatter field '{field}' is missing in '{file.RelativePath}'.{familyContext}",
+                        Remediation: $"Add '{field}' to the frontmatter block.",
+                        Source: "policy.yaml"));
+                }
+            }
+
+            // Check allowed values
+            foreach (var (field, allowedValues) in effectiveAllowedValues)
+            {
+                if (doc.Frontmatter.Fields.TryGetValue(field, out var rawValue) && rawValue != null)
+                {
+                    var value = rawValue.ToString();
+                    if (value != null && !allowedValues.Any(v => string.Equals(v, value, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        diagnostics.Add(new Diagnostic(
+                            RuleId: RuleId,
+                            Severity: DefaultSeverity,
+                            Category: Category,
+                            Path: file.RelativePath,
+                            Line: doc.Frontmatter.Range.Start,
+                            Message: $"Frontmatter field '{field}' has value '{value}' which is not in the allowed set [{string.Join(", ", allowedValues)}] in '{file.RelativePath}'.{familyContext}",
+                            Remediation: $"Set '{field}' to one of: {string.Join(", ", allowedValues)}.",
+                            Source: "policy.yaml"));
+                    }
+                }
             }
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
+    }
+
+    private static HashSet<string> BuildExplicitArtifactPaths(RepositoryPolicy? policy)
+    {
+        if (policy?.Artifacts == null)
+            return [];
+
+        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var a in policy.Artifacts)
+        {
+            if (!string.IsNullOrWhiteSpace(a.Path))
+                set.Add(a.Path!.Replace('\\', '/').TrimEnd('/'));
+        }
+        return set;
     }
 
     private static List<string> GetEffectiveRequiredFields(

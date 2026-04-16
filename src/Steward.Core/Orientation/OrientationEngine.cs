@@ -1,5 +1,5 @@
-using Steward.Core.Discovery;
 using Steward.Core.Configuration;
+using Steward.Core.Discovery;
 
 namespace Steward.Core.Orientation;
 
@@ -109,6 +109,15 @@ public sealed class OrientationEngine
             if (WellKnownRoles.IsStateDocumentRole(configuredRole))
                 return $"state:{configuredRole}";
             return configuredRole;
+        }
+
+        // Family classification: files not matched by an explicit artifact may match a family
+        if (policy?.ArtifactFamilies is { Count: > 0 })
+        {
+            var classifier = new ArtifactFamilyClassifier(policy.ArtifactFamilies);
+            var family = classifier.Classify(file.RelativePath, frontmatterFields: null);
+            if (family?.Family != null)
+                return $"family:{family.Family}";
         }
 
         var fileName = Path.GetFileName(file.RelativePath);

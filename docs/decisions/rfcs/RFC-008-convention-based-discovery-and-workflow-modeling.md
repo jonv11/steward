@@ -1,6 +1,6 @@
 ---
 type: rfc
-status: Proposed
+status: Accepted
 resolves: >-
   Convention-based artifact discovery, hierarchical path rules, frontmatter-driven
   classification, workflow/session modeling, and policy scalability gaps identified
@@ -217,3 +217,40 @@ workflows:
 - Workflow modeling becomes a first-class configuration concern.
 - Implementation requires changes to the discovery engine, validation engine, and multiple command surfaces.
 - This RFC should be scheduled for implementation when artifact-type-schema work begins (per ADR-012).
+
+---
+
+## 8. v0.13.0 Accepted Scope
+
+This section narrows the RFC to the concrete contract implemented in v0.13.0. It supersedes any ambiguity in earlier sections regarding what is and is not in scope for this milestone.
+
+### In v0.13.0
+
+- **`artifact_families:` section in `policy.yaml`** — the primary new policy surface.
+- **`match:` with `path_pattern` and/or `frontmatter` fields** — AND semantics: all specified criteria must be satisfied. Either criterion alone is sufficient to declare a family match.
+- **Explicit `artifacts[]` entries always take precedence** over family matches; family classification applies only to files not explicitly declared.
+- **`frontmatter_schema:` with `required:` and `allowed_values:`** — enforced by STWD-003 (extended); required fields and controlled-vocabulary constraints per family.
+- **`role:` and `importance:`** on a family definition — informational in v0.13.0; surfaced in `status` and `orient` classification output.
+- **`naming_pattern:`** — stored in the model, not validated in v0.13.0.
+- **`display_name:`** — shown in `explain path`, `status`, and `orient` output.
+- **Deterministic classification** — declaration order determines precedence; first matching family wins.
+- **`steward check`** reports family-schema violations with `[family: <name>]` in the diagnostic message.
+- **`steward explain path`** shows matched family name and effective family-level frontmatter requirements.
+- **`steward status`** shows a per-family matched-file count when families are configured.
+- **`steward orient`** classifies family-matched files as `family:<name>` in the role/classification display.
+- **`config validate`** rejects invalid family definitions (missing `match`, invalid glob, blank required fields, duplicate family names, invalid importance).
+- **`config doctor`** reports unreachable family patterns (patterns matching zero discovered files).
+- **Backward compatible** — repositories without `artifact_families` behave identically to v0.12.0.
+
+### Explicitly Deferred (not in v0.13.0)
+
+| Item | Target |
+| --- | --- |
+| `required_sections:` per family | v0.14.0+ |
+| `directory_expectations.min_count` | v0.14.0+ |
+| `naming_pattern` regex enforcement | v0.14.0+ |
+| Field type constraints (date, list, boolean, number) | v0.14.0+ |
+| Regex field-value constraints | v0.14.0+ |
+| `workflows:` section (RFC-008 Phase 3) | v0.15.0+ |
+| Family inheritance / sub-families | Not scheduled |
+| Auto-population of frontmatter from family schema | Not scheduled |

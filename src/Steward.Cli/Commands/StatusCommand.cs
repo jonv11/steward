@@ -60,6 +60,7 @@ public static class StatusCommand
                         RecommendedPresentCount = status.RecommendedPresentCount,
                         RecommendedCount = status.RecommendedCount,
                         StaleCount = status.StaleCount,
+                        ArtifactFamilies = status.ArtifactFamilies,
                         Coverage = new CoverageResponse
                         {
                             GovernedCount = coverage.GovernedCount,
@@ -144,6 +145,18 @@ public static class StatusCommand
                     {
                         var icon = m.Stale ? "STALE" : "OK   ";
                         ctx.Formatter.WriteMessage($"  [{icon}] {m.Id}: {m.Path}");
+                    }
+                    ctx.Formatter.WriteMessage("");
+                }
+
+                // Artifact families
+                if (status.ArtifactFamilies.Count > 0)
+                {
+                    ctx.Formatter.WriteMessage("Artifact Families:");
+                    foreach (var f in status.ArtifactFamilies)
+                    {
+                        var label = f.DisplayName != null ? $"{f.Family} ({f.DisplayName})" : f.Family;
+                        ctx.Formatter.WriteMessage($"  {label}: {f.MatchedCount} matched");
                     }
                     ctx.Formatter.WriteMessage("");
                 }
@@ -242,6 +255,8 @@ public static class StatusCommand
             }
         }
 
+        var familySummaries = ComputeFamilySummary(policy, files);
+
         return new RepositoryStatus
         {
             RepositoryName = policy?.Repository?.Name,
@@ -257,8 +272,52 @@ public static class StatusCommand
             RequiredCount = requiredArtifacts.Count,
             RecommendedPresentCount = recommendedArtifacts.Count(a => a.Present),
             RecommendedCount = recommendedArtifacts.Count,
-            StaleCount = maintenanceArtifacts.Count(m => m.Stale)
+            StaleCount = maintenanceArtifacts.Count(m => m.Stale),
+            ArtifactFamilies = familySummaries
         };
+    }
+
+    internal static List<ArtifactFamilySummary> ComputeFamilySummary(
+        RepositoryPolicy? policy,
+        IReadOnlyList<DiscoveredFile> files)
+    {
+        var families = policy?.ArtifactFamilies;
+        if (families == null || families.Count == 0)
+            return [];
+
+        var classifier = new ArtifactFamilyClassifier(families);
+        var explicitPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var a in policy?.Artifacts ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(a.Path))
+                explicitPaths.Add(a.Path!.Replace('\\', '/').TrimEnd('/'));
+        }
+
+        var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var family in families)
+        {
+            if (!string.IsNullOrWhiteSpace(family.Family))
+                counts[family.Family!] = 0;
+        }
+
+        foreach (var file in files.Where(f =>
+            f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase) &&
+            !explicitPaths.Contains(f.RelativePath)))
+        {
+            var matched = classifier.Classify(file.RelativePath, frontmatterFields: null);
+            if (matched?.Family != null && counts.ContainsKey(matched.Family))
+                counts[matched.Family]++;
+        }
+
+        return families
+            .Where(f => !string.IsNullOrWhiteSpace(f.Family))
+            .Select(f => new ArtifactFamilySummary
+            {
+                Family = f.Family!,
+                DisplayName = f.DisplayName,
+                MatchedCount = counts.TryGetValue(f.Family!, out var c) ? c : 0
+            })
+            .ToList();
     }
 
     internal sealed class RepositoryStatus
@@ -277,6 +336,14 @@ public static class StatusCommand
         public int RecommendedPresentCount { get; init; }
         public int RecommendedCount { get; init; }
         public int StaleCount { get; init; }
+        public List<ArtifactFamilySummary> ArtifactFamilies { get; init; } = [];
+    }
+
+    internal sealed class ArtifactFamilySummary
+    {
+        public required string Family { get; init; }
+        public string? DisplayName { get; init; }
+        public required int MatchedCount { get; init; }
     }
 
     internal sealed class ArtifactStatus
@@ -475,6 +542,7 @@ public static class StatusCommand
         public int RecommendedPresentCount { get; init; }
         public int RecommendedCount { get; init; }
         public int StaleCount { get; init; }
+        public List<ArtifactFamilySummary> ArtifactFamilies { get; init; } = [];
         public required CoverageResponse Coverage { get; init; }
     }
 

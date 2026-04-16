@@ -401,6 +401,26 @@ public static class ConfigCommand
             }
         }
 
+        // 9. Unreachable artifact family path patterns
+        if (ctx.Policy?.ArtifactFamilies is { Count: > 0 })
+        {
+            foreach (var family in ctx.Policy.ArtifactFamilies)
+            {
+                if (string.IsNullOrWhiteSpace(family.Family) ||
+                    string.IsNullOrWhiteSpace(family.Match?.PathPattern))
+                    continue;
+
+                var glob = Glob.Parse(family.Match.PathPattern);
+                if (!existingPaths.Any(p => glob.IsMatch(p)))
+                {
+                    findings.Add(new DoctorFinding(
+                        "unreachable-family-pattern",
+                        $"Artifact family '{family.Family}' path_pattern '{family.Match.PathPattern}' matches no discovered files.",
+                        $"Update the path_pattern or remove the family from artifact_families."));
+                }
+            }
+        }
+
         return findings;
     }
 

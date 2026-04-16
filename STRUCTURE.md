@@ -77,6 +77,7 @@
 ├── STRUCTURE.md
 └── tests/
     ├── Steward.Cli.Tests/
+    │   ├── ArtifactFamiliesCommandTests.cs
     │   ├── ChangeImpactTests.cs
     │   ├── CheckCommandTests.cs
     │   ├── CheckFixTests.cs
@@ -107,9 +108,12 @@
     │   ├── TextFormatterTests.cs
     │   └── VersionCommandTests.cs
     ├── Steward.Core.Tests/
+    │   ├── ArtifactFamilyClassifierTests.cs
+    │   ├── ArtifactFamilyValidationTests.cs
     │   ├── BootstrapAnalyzerTests.cs
     │   ├── BrokenArtifactReferenceRuleTests.cs
     │   ├── BrokenInternalLinkRuleTests.cs
+    │   ├── ConfigLoaderFamilyValidationTests.cs
     │   ├── ConfigLoaderTests.cs
     │   ├── DiagnosticTests.cs
     │   ├── DirectoryIndexMaintainerTests.cs

@@ -10,6 +10,9 @@ public sealed class RepositoryPolicy
     [YamlMember(Alias = "artifacts")]
     public List<ArtifactDefinition>? Artifacts { get; set; }
 
+    [YamlMember(Alias = "artifact_families")]
+    public List<ArtifactFamilyDefinition>? ArtifactFamilies { get; set; }
+
     [YamlMember(Alias = "governance")]
     public GovernanceConfig? Governance { get; set; }
 
@@ -216,4 +219,60 @@ public sealed class MaintenanceOptionsDef
 
     [YamlMember(Alias = "exclude")]
     public List<string>? Exclude { get; set; }
+}
+
+public sealed class ArtifactFamilyDefinition
+{
+    /// <summary>Unique identifier for this artifact family (e.g., "adr", "rfc").</summary>
+    [YamlMember(Alias = "family")]
+    public string? Family { get; set; }
+
+    /// <summary>Human-readable label shown in status, orient, and explain surfaces.</summary>
+    [YamlMember(Alias = "display_name")]
+    public string? DisplayName { get; set; }
+
+    /// <summary>Matching criteria. At least one of PathPattern or Frontmatter must be specified.</summary>
+    [YamlMember(Alias = "match")]
+    public ArtifactFamilyMatch? Match { get; set; }
+
+    /// <summary>Role assigned to files matched by this family (informational; surfaced in orient/status).</summary>
+    [YamlMember(Alias = "role")]
+    public string? Role { get; set; }
+
+    /// <summary>Importance level (required/recommended/optional) for family-matched files.</summary>
+    [YamlMember(Alias = "importance")]
+    public string? Importance { get; set; }
+
+    /// <summary>Frontmatter schema enforced on files matched by this family.</summary>
+    [YamlMember(Alias = "frontmatter_schema")]
+    public ArtifactFamilyFrontmatterSchema? FrontmatterSchema { get; set; }
+
+    /// <summary>Naming pattern (stored for future enforcement; not validated in v0.13.0).</summary>
+    [YamlMember(Alias = "naming_pattern")]
+    public string? NamingPattern { get; set; }
+}
+
+public sealed class ArtifactFamilyMatch
+{
+    /// <summary>Glob pattern matched against the file's relative path.</summary>
+    [YamlMember(Alias = "path_pattern")]
+    public string? PathPattern { get; set; }
+
+    /// <summary>
+    /// Frontmatter field conditions (field → required value). All specified
+    /// conditions must be satisfied (AND semantics). Case-insensitive comparison.
+    /// </summary>
+    [YamlMember(Alias = "frontmatter")]
+    public Dictionary<string, string>? Frontmatter { get; set; }
+}
+
+public sealed class ArtifactFamilyFrontmatterSchema
+{
+    /// <summary>Field names that must be present in matched files' frontmatter.</summary>
+    [YamlMember(Alias = "required")]
+    public List<string>? Required { get; set; }
+
+    /// <summary>Controlled vocabularies: each field maps to its allowed string values.</summary>
+    [YamlMember(Alias = "allowed_values")]
+    public Dictionary<string, List<string>>? AllowedValues { get; set; }
 }

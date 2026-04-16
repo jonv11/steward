@@ -4,16 +4,17 @@ Last updated: 2026-04-17
 
 ## Current Baseline
 
-Steward is currently on **`v0.12.0`**. The repository is **still pre-1.0**: `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Steward is currently on **`v0.13.0`**. The repository is **still pre-1.0**: `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
 | Area | Current state |
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
-| Current repo version | `0.12.0` |
-| Tests | 539 passing (`375` core, `164` CLI) |
+| Current repo version | `0.13.0` |
+| Tests | 591 passing (`406` core, `185` CLI) |
 | Validation rules | 13 (`STWD-001` through `STWD-013`) |
+| Artifact families | `artifact_families` section now supported in `policy.yaml`; ADRs and RFCs governed by families in this repo |
 | Maintainer types | 6 (`structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`) |
-| Packaging | `dotnet pack` succeeds cleanly for `Steward.Cli.0.12.0.nupkg` |
+| Packaging | `dotnet pack` succeeds cleanly for `Steward.Cli.0.13.0.nupkg` |
 | Active readiness tracker | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) |
 
 ## Delivered Lineage
@@ -32,6 +33,7 @@ Steward is currently on **`v0.12.0`**. The repository is **still pre-1.0**: `v1.
 | `v0.10.0` | Delivered | Pre-1.0 governance hardening, version reset, semantic config validation, completion-policy wiring, and status/readiness surfacing cleanup |
 | `v0.11.0` | Delivered | Stable-release hardening: B5 profile scope (ADR-014), B6 scoped validation fix, B7 status JSON coverage, contract tests, exit-code tests, dependency stabilization, publication checklist |
 | `v0.12.0` | Delivered | CLI fidelity, governance deepening, and Markdown subsystem completion (init scaffolding, md query --pattern fix, preview/apply standardization, coverage exclude, explain filtering, config suggest/doctor deepening, fm-validate) |
+| `v0.13.0` | Delivered | Artifact type schema RFC and base implementation: `artifact_families` in policy, deterministic family classification, type-aware frontmatter validation, family awareness in `status`, `orient`, `explain path`, `config doctor` |
 
 ## What Is Already True In `v0.10.0`
 
@@ -76,6 +78,20 @@ The following known defects were identified in the 2026-04-16 CLI review cycle. 
 - **`fm-validate` added:** `md edit fm-validate <file>` validates frontmatter against policy requirements (global + scoped), completing the RFC-004 edit operation set.
 - **Mixed/knowledge profiles:** Remain deferred per ADR-014; no changes in this milestone.
 
+## What Is New In v0.13.0
+
+- **`artifact_families` in policy:** `policy.yaml` now supports a top-level `artifact_families:` section. Each family declares a `match:` criterion (path glob, frontmatter key-value, or both) and an optional `frontmatter_schema:` with `required:` fields and `allowed_values:` constraints.
+- **Deterministic family classification (`ArtifactFamilyClassifier`):** A shared engine classifies files against families using declaration-order first-match semantics and AND criteria. Explicit `artifacts[]` entries always take precedence.
+- **Type-aware frontmatter validation (STWD-003 extended):** `check` now enforces family-level `frontmatter_schema` requirements. Diagnostics include `[family: name]` for traceability.
+- **`explain path` family awareness:** Shows `Family: name (DisplayName)` and surfaces family-level required fields and allowed values.
+- **`status` family summary:** Text and JSON output include a per-family matched-file count under `Artifact Families:` / `artifactFamilies`.
+- **`orient` family classification:** Files matched by a family are classified as `family:{name}` in the orientation tree.
+- **`config doctor` unreachable family patterns:** Doctor now reports families whose `path_pattern` matches zero discovered files.
+- **`config validate` family validation:** Validates glob syntax, duplicate names, blank required fields, and invalid importance in `artifact_families`.
+- **`ProfileMerger` fix:** `ArtifactFamilies` is now preserved through profile merging (was silently dropped before this milestone).
+- **Dogfooding migration:** This repo's `.steward/policy.yaml` migrated ADR and RFC governance from `frontmatter_requirements` to `artifact_families`.
+- **RFC-008 accepted:** RFC-008 accepted with §8 narrowing the v0.13.0 scope. Deferred: `required_sections`, `min_count`, `naming_pattern` enforcement, workflow modeling.
+
 ## Incremental Pass (post-v0.12.0, in-progress)
 
 ### Required-sections enforcement
@@ -110,9 +126,9 @@ The detailed categorized list lives in [Pre-1.0 Readiness Plan](planning/pre-1-0
 
 ### Optional / Later Pre-1.0
 
-- Artifact type schema work and convention-based discovery per RFC-008
+- **v0.14.0+:** `required_sections` per family, `min_count` directory expectations, `naming_pattern` regex enforcement (all deferred from v0.13.0 per RFC-008 §8)
 - Re-enabling deferred profiles (`mixed`, `knowledge`) when their contracts are enriched (see [ADR-014](decisions/adrs/ADR-014-non-software-profile-scope.md))
-- Workflow/session modeling (RFC-008 Phase 3)
+- Workflow/session modeling (RFC-008 Phase 3, v0.15.0+)
 
 ## Manual Follow-Up Outside The Repo
 

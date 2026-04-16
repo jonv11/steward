@@ -21,6 +21,7 @@ public static class ProfileMerger
         {
             Repository = MergeRepository(repoPolicy.Repository, profilePolicy.Repository),
             Artifacts = repoPolicy.Artifacts ?? profilePolicy.Artifacts,
+            ArtifactFamilies = repoPolicy.ArtifactFamilies ?? profilePolicy.ArtifactFamilies,
             Governance = MergeGovernance(repoPolicy.Governance, profilePolicy.Governance),
             Validation = repoPolicy.Validation ?? profilePolicy.Validation,
             Maintenance = repoPolicy.Maintenance ?? profilePolicy.Maintenance

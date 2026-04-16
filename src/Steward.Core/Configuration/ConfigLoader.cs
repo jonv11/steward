@@ -251,6 +251,88 @@ public sealed class ConfigLoader
                 }
             }
         }
+
+        ValidateArtifactFamilies(policy, path);
+    }
+
+    private static void ValidateArtifactFamilies(RepositoryPolicy policy, string path)
+    {
+        var families = policy.ArtifactFamilies;
+        if (families == null || families.Count == 0)
+            return;
+
+        var seenFamilyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var family in families)
+        {
+            if (string.IsNullOrWhiteSpace(family.Family))
+            {
+                throw new StewardConfigException(
+                    $"artifact_families entries must declare a non-blank 'family' name in '{path}'.",
+                    path);
+            }
+
+            if (!seenFamilyNames.Add(family.Family))
+            {
+                throw new StewardConfigException(
+                    $"Duplicate artifact family name '{family.Family}' in '{path}'. Family names must be unique.",
+                    path);
+            }
+
+            if (family.Match == null)
+            {
+                throw new StewardConfigException(
+                    $"Artifact family '{family.Family}' must declare a 'match' section in '{path}'.",
+                    path);
+            }
+
+            var hasPathPattern = !string.IsNullOrWhiteSpace(family.Match.PathPattern);
+            var hasFrontmatter = family.Match.Frontmatter is { Count: > 0 };
+
+            if (!hasPathPattern && !hasFrontmatter)
+            {
+                throw new StewardConfigException(
+                    $"Artifact family '{family.Family}' match section must declare at least one of 'path_pattern' or 'frontmatter' in '{path}'.",
+                    path);
+            }
+
+            if (hasPathPattern)
+                EnsureValidGlob(family.Match.PathPattern, path, $"artifact_families['{family.Family}'].match.path_pattern");
+
+            if (!string.IsNullOrWhiteSpace(family.Importance) &&
+                family.Importance is not ("required" or "recommended" or "optional"))
+            {
+                throw new StewardConfigException(
+                    $"Invalid importance '{family.Importance}' for artifact family '{family.Family}' in '{path}'. Valid values: required, recommended, optional.",
+                    path);
+            }
+
+            if (family.FrontmatterSchema?.Required != null)
+            {
+                foreach (var field in family.FrontmatterSchema.Required)
+                {
+                    if (string.IsNullOrWhiteSpace(field))
+                    {
+                        throw new StewardConfigException(
+                            $"artifact_families['{family.Family}'].frontmatter_schema.required entries must not be blank in '{path}'.",
+                            path);
+                    }
+                }
+            }
+
+            if (family.FrontmatterSchema?.AllowedValues != null)
+            {
+                foreach (var key in family.FrontmatterSchema.AllowedValues.Keys)
+                {
+                    if (string.IsNullOrWhiteSpace(key))
+                    {
+                        throw new StewardConfigException(
+                            $"artifact_families['{family.Family}'].frontmatter_schema.allowed_values keys must not be blank in '{path}'.",
+                            path);
+                    }
+                }
+            }
+        }
     }
 
     private static void ValidatePathPolicy(PathPolicyDocument pathPolicy, string path)
@@ -318,5 +400,23 @@ public sealed class ConfigLoader
                 path,
                 ex);
         }
+
+        // DotNet.Glob silently accepts malformed character classes (e.g. "[invalid").
+        // Validate structural correctness manually for the cases the library ignores.
+        ValidateGlobStructure(pattern, path, settingName);
+    }
+
+    private static void ValidateGlobStructure(string pattern, string path, string settingName)
+    {
+        var depth = 0;
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            if (pattern[i] == '[') depth++;
+            else if (pattern[i] == ']') depth = 0;
+        }
+        if (depth > 0)
+            throw new StewardConfigException(
+                $"Invalid glob '{pattern}' in {settingName} of '{path}': unclosed '[' character class.",
+                path);
     }
 }

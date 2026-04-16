@@ -1,9 +1,9 @@
 ---
 type: planning
 document_id: PLAN-0002
-version: 0.11.0
+version: 0.13.0
 status: Active
-last_updated: 2026-04-16
+last_updated: 2026-04-17
 ---
 
 # Milestone Plan — Pre-1.0 Mainline
@@ -30,13 +30,13 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 | `v0.10.0` | Pre-1.0 governance hardening and roadmap correction | Delivered |
 | `v0.11.0` | Stable-release hardening and trust fixes | Delivered |
 | `v0.12.0` | CLI fidelity, governance deepening, and Markdown subsystem completion | Delivered |
+| `v0.13.0` | Artifact type schema RFC and base implementation | Delivered |
 
 ## Planned Pre-1.0 Milestones
 
 | Version | Theme | Primary outcome |
 |---------|-------|-----------------|
-| `v0.13.0` | Artifact type schema RFC and base implementation | Begin the accepted ADR-012 direction on the pre-1.0 line |
-| `v0.14.0` | Type-aware validation expansion | Field constraints, section expectations, and controlled vocabulary enforcement |
+| `v0.14.0` | Type-aware validation expansion | `required_sections` per family, `min_count` directory expectations, `naming_pattern` regex enforcement (deferred from v0.13.0 per RFC-008 §8) |
 | `v0.15.0` | Later pre-1.0 requirement families | Typed resource-address follow-on work, search/address alignment, split-extract evaluation |
 | `v0.16.0` | Optional pre-stable extensions | Host-integration exploration and remaining later-scope items if still justified |
 
@@ -52,6 +52,28 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 - The exact boundary between later pre-1.0 milestones may continue to move as stable-release criteria are clarified, but the roadmap must stay on the `0.x` line until that decision is made.
 
 ---
+
+## v0.13.0 Delivered Scope
+
+All items planned for v0.13.0 have been implemented and tested. The primary outcome: policy can declare reusable artifact families, discovery classifies files deterministically, `steward check` enforces type-aware frontmatter, and `status`/`orient`/`explain path` surface those classifications.
+
+| # | Item | Source | Status |
+|---|------|--------|--------|
+| 1 | Accept RFC-008; narrow §8 scope for v0.13.0 | ADR-012, RFC-008 | Done — RFC-008 status: Accepted; §8 added with explicit IN/NOT IN contract |
+| 2 | `artifact_families` model classes in `RepositoryPolicy` | RFC-008 §8 | Done — `ArtifactFamilyDefinition`, `ArtifactFamilyMatch`, `ArtifactFamilyFrontmatterSchema` |
+| 3 | `ArtifactFamilyClassifier` shared classification engine | RFC-008 §8 | Done — declaration-order first-match, AND semantics, path+frontmatter criteria |
+| 4 | `ConfigLoader` validation for `artifact_families` | RFC-008 §8 | Done — validates glob syntax, duplicate names, blank fields, invalid importance |
+| 5 | Extend STWD-003 with family-level schema enforcement | RFC-008 §8 | Done — required fields + allowed_values per family; `[family: name]` in diagnostics |
+| 6 | `ProfileMerger` fix: preserve `ArtifactFamilies` | Bug | Done — was silently dropped through merge |
+| 7 | `explain path` family awareness | RFC-008 §8 | Done — `Family: name (DisplayName)`, family-level required fields/values |
+| 8 | `status` family summary | RFC-008 §8 | Done — text and JSON `Artifact Families:` / `artifactFamilies` section |
+| 9 | `orient` family classification | RFC-008 §8 | Done — `family:{name}` classification in orientation tree |
+| 10 | `config doctor` unreachable family patterns | RFC-008 §8 | Done — `unreachable-family-pattern` finding |
+| 11 | Test fixture: `artifact-families` | Plan | Done — ADR and RFC fixture files with valid/invalid documents |
+| 12 | Unit tests: classifier, validation, config loading | Plan | Done — 52 new tests across 3 test files |
+| 13 | CLI integration tests: all artifact-family commands | Plan | Done — 14 tests in `ArtifactFamiliesCommandTests` |
+| 14 | Dogfooding migration: `.steward/policy.yaml` | Plan | Done — ADR/RFC governance migrated from `frontmatter_requirements` to `artifact_families` |
+| 15 | Deferred: `required_sections`, `min_count`, `naming_pattern`, workflows | RFC-008 §8 | Deferred to v0.14.0+ |
 
 ## v0.12.0 Delivered Scope
 

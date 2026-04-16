@@ -2,7 +2,7 @@
 type: planning
 source_baseline: v0.11.0
 status: Active
-last_updated: 2026-04-16
+last_updated: 2026-04-17
 ---
 
 # Pre-1.0 Readiness Plan
@@ -44,8 +44,10 @@ These remain valid future scope, but they are not current stable-release blocker
 
 | Item | Rationale | Evidence / source | Partly implemented? | Work type | Home |
 |------|-----------|-------------------|---------------------|-----------|------|
-| Artifact type schema system and dependent validation features | Accepted direction with strong evidence from the use-case analysis, but larger than the current release-hardening set. | [ADR-012](../decisions/adrs/ADR-012-artifact-type-schema-direction.md), [Use-Case Consolidation Proposal](../audits/usecase-consolidation-proposal.md) | No | ADR/RFC, code, tests, docs | Later pre-1.0 milestone (`v0.13.0+`) |
-| Required-sections enforcement per document family | ADRs, RFCs, and PRDs have well-established section conventions (Context/Decision/Consequences for ADRs; numbered sections for RFCs) that could reduce drift if enforced. RFC-008 §3.3 explicitly marks `required_sections` per family as a future capability. Current Steward has no mechanism to enforce section presence at the family level; the gap is acknowledged and tracked here. Section conventions are documented in templates and policy comments as a documentation-only control until the artifact type schema system (v0.13.0+) provides the enforcement surface. | [RFC-008 §3.3](../decisions/rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md), [ADR-012](../decisions/adrs/ADR-012-artifact-type-schema-direction.md) | No — documentation/template only for now | Design, code, config | Later pre-1.0 milestone (`v0.14.0+`) |
+| ~~Artifact type schema system and dependent validation features~~ | ~~Accepted direction with strong evidence from the use-case analysis.~~ | RFC-008 accepted (§8 narrows v0.13.0 scope); `artifact_families` implemented in v0.13.0. | **Completed in v0.13.0** (Phase 1) | ADR/RFC, code, tests, docs | Milestone `v0.13.0` |
+| Required-sections enforcement per document family | ADRs, RFCs, and PRDs have well-established section conventions that could reduce drift if enforced. RFC-008 §8 explicitly defers `required_sections` per family from v0.13.0. Section conventions are documented as a documentation-only control until this feature lands. | [RFC-008 §8](../decisions/rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) | No — documentation/template only for now | Design, code, config | Later pre-1.0 milestone (`v0.14.0+`) |
+| `naming_pattern` regex enforcement per family | Stored in `ArtifactFamilyDefinition.NamingPattern` but not enforced; deferred from v0.13.0 per RFC-008 §8 to avoid regex complexity before core is stable. | [RFC-008 §8](../decisions/rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) | Partial — field stored, not validated | Code | Later pre-1.0 milestone (`v0.14.0+`) |
+| `directory_expectations.min_count` per family | Allows asserting that a family directory contains at least N files. Deferred from v0.13.0. | [RFC-008 §8](../decisions/rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) | No | Code | Later pre-1.0 milestone (`v0.14.0+`) |
 | Typed resource-address follow-on work | Still valuable, but depends on stronger pre-1.0 foundations and clearer type/address design. | Deferred requirement family in [requirements-traceability.md](../requirements/requirements-traceability.md) | Partial | Design, code, docs | Later pre-1.0 milestone |
 | Markdown split/extract workflows | Useful but higher-risk than the current stable-readiness set. | Deferred requirement family in [PRD](../requirements/PRD.md) and [requirements-traceability.md](../requirements/requirements-traceability.md) | No | Code, tests, docs | Later pre-1.0 milestone |
 | Optional host-specific integrations | Valid future extension, but intentionally outside the current offline-first core. | `REQ-DIST-002` in [PRD](../requirements/PRD.md) and [requirements-traceability.md](../requirements/requirements-traceability.md) | No | Integration, release | Later pre-1.0 milestone |
