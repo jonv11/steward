@@ -1,6 +1,6 @@
 # Implementation Status
 
-Last updated: 2026-04-17
+Last updated: 2026-04-16
 
 ## Current Baseline
 
@@ -10,7 +10,7 @@ Steward is currently on **`v0.13.0`**. The repository is **still pre-1.0**: `v1.
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
 | Current repo version | `0.13.0` |
-| Tests | 591 passing (`406` core, `185` CLI) |
+| Tests | 598 passing (`407` core, `191` CLI) |
 | Validation rules | 13 (`STWD-001` through `STWD-013`) |
 | Artifact families | `artifact_families` section now supported in `policy.yaml`; ADRs and RFCs governed by families in this repo |
 | Maintainer types | 6 (`structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`) |
@@ -35,9 +35,9 @@ Steward is currently on **`v0.13.0`**. The repository is **still pre-1.0**: `v1.
 | `v0.12.0` | Delivered | CLI fidelity, governance deepening, and Markdown subsystem completion (init scaffolding, md query --pattern fix, preview/apply standardization, coverage exclude, explain filtering, config suggest/doctor deepening, fm-validate) |
 | `v0.13.0` | Delivered | Artifact type schema RFC and base implementation: `artifact_families` in policy, deterministic family classification, type-aware frontmatter validation, family awareness in `status`, `orient`, `explain path`, `config doctor` |
 
-## What Is Already True In `v0.10.0`
+## What Was Established In `v0.10.0`
 
-- Shared version metadata now comes from `Directory.Build.props`, and `steward version` reports `0.10.0`.
+- Shared version metadata now comes from `Directory.Build.props`, and `steward version` now reports the current repo version.
 - The repo no longer needs per-project version duplication.
 - `config validate` now catches semantic problems such as unknown rule ids, invalid maintainer types, bad `depends_on` references, and invalid path-policy regex/glob declarations.
 - `check` completion summaries now follow repository policy instead of hardcoded rule assumptions.
@@ -92,17 +92,17 @@ The following known defects were identified in the 2026-04-16 CLI review cycle. 
 - **Dogfooding migration:** This repo's `.steward/policy.yaml` migrated ADR and RFC governance from `frontmatter_requirements` to `artifact_families`.
 - **RFC-008 accepted:** RFC-008 accepted with §8 narrowing the v0.13.0 scope. Deferred: `required_sections`, `min_count`, `naming_pattern` enforcement, workflow modeling.
 
-## Incremental Pass (post-v0.12.0, in-progress)
+## Incremental Pass (post-v0.13.0, in-progress)
 
 ### Required-sections enforcement
 
 ADRs, RFCs, and PRDs have established section conventions (Context / Decision / Consequences for ADRs; numbered sections for RFCs and PRDs). These conventions are consistent across all existing documents and are documented in policy comments and the planning gap tracker. Current Steward has no mechanism to enforce section presence at the family level — RFC-008 §3.3 explicitly marks `required_sections` per family as a future capability dependent on the artifact type schema work (ADR-012, v0.13.0+). The gap is tracked in [pre-1-0-readiness-plan.md](planning/pre-1-0-readiness-plan.md) under "Later Pre-1.0 Candidates".
 
-### Color UX coherence
+### Session-start and text-UX coherence
 
-`--no-color` was declared as a global option and plumbed into `TextOutputFormatter`, but previously only `WriteError` used color (red on stderr). The formatter interface now exposes `WriteSuccess` (green, stdout) and `WriteDiagnostic` (severity-colored, stdout) so that meaningful color is present for the PASS/FAIL result line and per-diagnostic severity labels (`error`=red, `warn`=yellow, `info`=plain). Color detection remains automatic (`Console.IsOutputRedirected` suppresses color when piped) and consistent with ADR-006. `--no-color` now has material effect on text-mode output.
+The text-mode entry surfaces are now more deliberate and trustworthy. `orient` is compact by default in text mode, `--full` restores the full classified inventory, and `--tree` renders actual hierarchy instead of mixing indentation with full paths. Compact tree views now preserve real ancestors rather than implying false parent-child relationships. `outline` now renders an actual tree by default, adds recursive folder counts via `--counts`, and shows aggregate directory sizes when `--sizes` is requested. `status`, `orient`, and `outline` now use semantic text styling for headings and key status/classification tokens, so `--no-color` has meaningful scope without changing machine-oriented JSON behavior.
 
-## Maintainer Review Pass (post-v0.12.0, in-progress)
+## Maintainer Review Pass (post-v0.13.0, in-progress)
 
 A comprehensive maintainer review pass addressed several cross-cutting concerns:
 
@@ -110,7 +110,7 @@ A comprehensive maintainer review pass addressed several cross-cutting concerns:
 - **JSON/text output parity:** `steward check --output json` now includes impact signals and staged completeness, matching the text output.
 - **Document frontmatter migration:** All ADR, RFC, PRD, planning, and requirements documents migrated from markdown-bullet metadata to YAML frontmatter blocks.
 - **Policy scalability:** `policy.yaml` refactored from 19 per-file artifact entries to 11 structurally essential ones, with convention-based `frontmatter_requirements` for document families.
-- **RFC-008 proposed:** [Convention-Based Discovery and Workflow Modeling](decisions/rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) captures remaining product gaps: artifact families, path-based discovery, workflow/session modeling.
+- **RFC-008 accepted and partially delivered:** [Convention-Based Discovery and Workflow Modeling](decisions/rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) now governs the current artifact-family baseline and captures the deferred follow-on work.
 
 ## Remaining Before First Stable Shipment
 

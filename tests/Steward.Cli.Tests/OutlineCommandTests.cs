@@ -71,6 +71,7 @@ public class OutlineCommandTests : IDisposable
         exitCode.Should().Be(0);
         output.Should().Contain("README.md");
         output.Should().Contain("src");
+        output.Should().Contain("├──");
     }
 
     [Fact]
@@ -100,5 +101,14 @@ public class OutlineCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         output.Should().MatchRegex(@"\d+ [BKMG]?[Bb]?");
+    }
+
+    [Fact]
+    public void Outline_WithCounts_ShowsDirectoryCounts()
+    {
+        var (exitCode, output, _) = InvokeOutline("outline", "--counts");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("src/ (1 file)");
     }
 }

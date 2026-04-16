@@ -5,6 +5,7 @@ using Steward.Core.Discovery;
 using Steward.Core.Formatting;
 using Steward.Core.Markdown;
 using Steward.Core.Orientation;
+using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -40,6 +41,12 @@ public static class OutlineCommand
         };
         command.Add(linesOption);
 
+        var countsOption = new Option<bool>("--counts")
+        {
+            Description = "Include recursive file and directory counts for folders"
+        };
+        command.Add(countsOption);
+
         var headingsOption = new Option<bool>("--headings")
         {
             Description = "Include Markdown heading outlines for .md files"
@@ -52,6 +59,7 @@ public static class OutlineCommand
             var depth = parseResult.GetValue(depthOption);
             var sizes = parseResult.GetValue(sizesOption);
             var lines = parseResult.GetValue(linesOption);
+            var counts = parseResult.GetValue(countsOption);
             var headings = parseResult.GetValue(headingsOption);
 
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
@@ -80,12 +88,18 @@ public static class OutlineCommand
                 }
             }
 
+            if (!Directory.Exists(rootPath))
+            {
+                formatter.WriteError($"Path does not exist: {path}");
+                return ExitCodes.UsageError;
+            }
+
             var ignoreFilter = GitIgnoreFilter.Load(rootPath, fileSystem);
             var discoveryService = new FileDiscoveryService(fileSystem, ignoreFilter);
             var files = discoveryService.Discover(rootPath);
 
             var engine = new OutlineEngine(fileSystem);
-            var result = engine.BuildOutline(rootPath, files, depth, sizes, lines);
+            var result = engine.BuildOutline(rootPath, files, depth, sizes, lines, counts);
 
             if (output == OutputFormat.Json)
             {
@@ -93,28 +107,7 @@ public static class OutlineCommand
             }
             else
             {
-                foreach (var entry in result.Entries)
-                {
-                    var indent = new string(' ', entry.Depth * 2);
-                    var suffix = entry.IsDirectory ? "/" : "";
-                    var name = Path.GetFileName(entry.Path) + suffix;
-
-                    var extras = new List<string>();
-                    if (entry.Size.HasValue)
-                        extras.Add(OutlineEngine.FormatSize(entry.Size.Value));
-                    if (entry.LineCount.HasValue)
-                        extras.Add($"{entry.LineCount.Value} lines");
-
-                    var info = extras.Count > 0 ? $" ({string.Join(", ", extras)})" : "";
-                    formatter.WriteMessage($"{indent}{name}{info}");
-
-                    // Show heading outline for .md files when --headings is enabled
-                    if (headings && !entry.IsDirectory && entry.Path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var fullFilePath = Path.Combine(rootPath, entry.Path);
-                        WriteInlineHeadings(fullFilePath, fileSystem, formatter, entry.Depth + 1);
-                    }
-                }
+                WriteDirectoryOutline(result.Entries, rootPath, fileSystem, formatter, headings);
             }
 
             return ExitCodes.Success;
@@ -144,10 +137,10 @@ public static class OutlineCommand
             if (doc.Frontmatter != null)
             {
                 var fmLines = doc.Frontmatter.Range.End - doc.Frontmatter.Range.Start + 1;
-                formatter.WriteMessage($"  [frontmatter] ({fmLines} lines)");
+                formatter.WriteMessage($"  {OutputStyler.Style(formatter, "[frontmatter]", CliTextStyle.Muted)} ({fmLines} lines)");
             }
 
-            WriteSectionsText(formatter, doc.Sections, 0);
+            WriteSectionsText(formatter, doc.Sections, "  ", 0);
             formatter.WriteMessage("");
             formatter.WriteMessage($"Total: {doc.TotalLines} lines");
         }
@@ -155,14 +148,83 @@ public static class OutlineCommand
         return ExitCodes.Success;
     }
 
+    private static void WriteDirectoryOutline(
+        IReadOnlyList<OutlineEntry> entries,
+        string rootPath,
+        IFileSystem fileSystem,
+        IOutputFormatter formatter,
+        bool headings)
+    {
+        var rootNodes = BuildTree(entries);
+        WriteTreeNodes(rootNodes, rootPath, fileSystem, formatter, headings, prefix: "");
+    }
+
+    private static void WriteTreeNodes(
+        IReadOnlyList<OutlineTreeNode> nodes,
+        string rootPath,
+        IFileSystem fileSystem,
+        IOutputFormatter formatter,
+        bool headings,
+        string prefix)
+    {
+        for (var i = 0; i < nodes.Count; i++)
+        {
+            var isLast = i == nodes.Count - 1;
+            var connector = isLast ? "└── " : "├── ";
+            var childPrefix = prefix + (isLast ? "    " : "│   ");
+
+            formatter.WriteMessage($"{prefix}{OutputStyler.Style(formatter, connector, CliTextStyle.Muted)}{FormatOutlineLabel(nodes[i].Entry, formatter)}");
+
+            if (headings &&
+                !nodes[i].Entry.IsDirectory &&
+                nodes[i].Entry.Path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            {
+                var fullFilePath = Path.Combine(rootPath, nodes[i].Entry.Path);
+                WriteInlineHeadings(fullFilePath, fileSystem, formatter, childPrefix);
+            }
+
+            if (nodes[i].Children.Count > 0)
+                WriteTreeNodes(nodes[i].Children, rootPath, fileSystem, formatter, headings, childPrefix);
+        }
+    }
+
+    private static string FormatOutlineLabel(OutlineEntry entry, IOutputFormatter formatter)
+    {
+        var suffix = entry.IsDirectory ? "/" : "";
+        var name = Path.GetFileName(entry.Path) + suffix;
+        var styledName = entry.IsDirectory
+            ? OutputStyler.Style(formatter, name, CliTextStyle.Directory)
+            : name;
+
+        var extras = new List<string>();
+        if (entry.FileCount.HasValue)
+            extras.Add(FormatCountSummary(entry.FileCount.Value, entry.DirectoryCount ?? 0));
+        if (entry.Size.HasValue)
+            extras.Add(OutlineEngine.FormatSize(entry.Size.Value));
+        if (entry.LineCount.HasValue)
+            extras.Add($"{entry.LineCount.Value} lines");
+
+        return extras.Count > 0
+            ? $"{styledName} {OutputStyler.Style(formatter, $"({string.Join(", ", extras)})", CliTextStyle.Muted)}"
+            : styledName;
+    }
+
+    private static string FormatCountSummary(int fileCount, int directoryCount)
+    {
+        var parts = new List<string> { fileCount == 1 ? "1 file" : $"{fileCount} files" };
+        if (directoryCount > 0)
+            parts.Add(directoryCount == 1 ? "1 dir" : $"{directoryCount} dirs");
+        return string.Join(", ", parts);
+    }
+
     private static void WriteInlineHeadings(string fullPath, IFileSystem fileSystem,
-        IOutputFormatter formatter, int baseIndent)
+        IOutputFormatter formatter, string prefix)
     {
         try
         {
             var content = fileSystem.ReadAllText(fullPath);
             var doc = MarkdownParser.Parse(fullPath, content);
-            WriteSectionsText(formatter, doc.Sections, baseIndent);
+            WriteSectionsText(formatter, doc.Sections, prefix, 0);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -171,15 +233,46 @@ public static class OutlineCommand
     }
 
     private static void WriteSectionsText(IOutputFormatter formatter,
-        IReadOnlyList<Section> sections, int indent)
+        IReadOnlyList<Section> sections, string prefix, int indent)
     {
         foreach (var section in sections)
         {
-            var prefix = new string(' ', indent * 2 + 2);
+            var sectionIndent = new string(' ', indent * 2);
             var hashes = new string('#', section.Level);
-            formatter.WriteMessage($"{prefix}{hashes} {section.Heading} ({section.LineCount} lines)");
-            WriteSectionsText(formatter, section.Children, indent + 1);
+            var line = $"{prefix}{sectionIndent}{OutputStyler.Style(formatter, hashes, CliTextStyle.Accent)} {section.Heading} {OutputStyler.Style(formatter, $"({section.LineCount} lines)", CliTextStyle.Muted)}";
+            formatter.WriteMessage(line);
+            WriteSectionsText(formatter, section.Children, prefix, indent + 1);
         }
+    }
+
+    private static List<OutlineTreeNode> BuildTree(IReadOnlyList<OutlineEntry> entries)
+    {
+        var rootNodes = new List<OutlineTreeNode>();
+        var nodeLookup = new Dictionary<string, OutlineTreeNode>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var entry in entries.OrderBy(static entry => entry.Path, StringComparer.OrdinalIgnoreCase))
+        {
+            var node = new OutlineTreeNode(entry);
+            nodeLookup[entry.Path] = node;
+
+            var parentPath = Path.GetDirectoryName(entry.Path)?.Replace('\\', '/');
+            if (string.IsNullOrWhiteSpace(parentPath) || !nodeLookup.TryGetValue(parentPath, out var parent))
+            {
+                rootNodes.Add(node);
+            }
+            else
+            {
+                parent.Children.Add(node);
+            }
+        }
+
+        return rootNodes;
+    }
+
+    private sealed class OutlineTreeNode(OutlineEntry entry)
+    {
+        public OutlineEntry Entry { get; } = entry;
+        public List<OutlineTreeNode> Children { get; } = [];
     }
 
     private static object[] FlattenSectionsForJson(IReadOnlyList<Section> sections)

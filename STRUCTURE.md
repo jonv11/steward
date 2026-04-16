@@ -50,6 +50,7 @@
 │       └── requirements-traceability.md
 ├── README.md
 ├── repository-steward-master-requirements.md
+├── SKILL.md
 ├── src/
 │   ├── Steward.Cli/
 │   │   ├── CommandContext.cs

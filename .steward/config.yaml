@@ -10,3 +10,7 @@ discovery:
     - ".vs/**"
     - ".idea/**"
     - ".steward/generated/**"
+
+coverage:
+  exclude:
+    - "tests/Steward.TestFixtures/Repos/**"

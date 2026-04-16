@@ -8,6 +8,7 @@ using Steward.Core.Formatting;
 using Steward.Core.Maintenance;
 using Steward.Core.Markdown;
 using Steward.Core.Validation.Rules;
+using Steward.Cli.Formatting;
 
 namespace Steward.Cli.Commands;
 
@@ -77,7 +78,8 @@ public static class StatusCommand
             }
             else
             {
-                ctx.Formatter.WriteMessage($"Repository: {status.RepositoryName ?? "(unnamed)"}");
+                ctx.Formatter.WriteMessage(
+                    $"{OutputStyler.Style(ctx.Formatter, "Repository:", CliTextStyle.Heading)} {status.RepositoryName ?? "(unnamed)"}");
                 if (!string.IsNullOrWhiteSpace(status.RepositoryType) || !string.IsNullOrWhiteSpace(status.Profile))
                 {
                     var details = new List<string>();
@@ -85,14 +87,16 @@ public static class StatusCommand
                         details.Add($"type={status.RepositoryType}");
                     if (!string.IsNullOrWhiteSpace(status.Profile))
                         details.Add($"profile={status.Profile}");
-                    ctx.Formatter.WriteMessage($"Context: {string.Join(", ", details)}");
+                    ctx.Formatter.WriteMessage(
+                        $"{OutputStyler.Style(ctx.Formatter, "Context:", CliTextStyle.Heading)} {string.Join(", ", details)}");
                 }
-                ctx.Formatter.WriteMessage($"Files: {status.FileCount}");
+                ctx.Formatter.WriteMessage(
+                    $"{OutputStyler.Style(ctx.Formatter, "Files:", CliTextStyle.Heading)} {status.FileCount}");
                 ctx.Formatter.WriteMessage("");
 
                 if (status.StartHere.Count > 0)
                 {
-                    ctx.Formatter.WriteMessage("Start Here:");
+                    ctx.Formatter.WriteMessage(OutputStyler.Style(ctx.Formatter, "Start Here:", CliTextStyle.Heading));
                     foreach (var path in status.StartHere)
                         ctx.Formatter.WriteMessage($"  - {path}");
                     ctx.Formatter.WriteMessage("");
@@ -101,29 +105,31 @@ public static class StatusCommand
                 // Required artifacts
                 if (status.RequiredArtifacts.Count > 0)
                 {
-                    ctx.Formatter.WriteMessage("Required Artifacts:");
+                    ctx.Formatter.WriteMessage(OutputStyler.Style(ctx.Formatter, "Required Artifacts:", CliTextStyle.Heading));
                     foreach (var a in status.RequiredArtifacts)
                     {
                         var icon = a.Present ? "OK" : "MISSING";
-                        ctx.Formatter.WriteMessage($"  [{icon}] {a.Path} ({a.Role})");
+                        ctx.Formatter.WriteMessage(
+                            $"  {FormatStatusIcon(ctx.Formatter, icon)} {a.Path} {OutputStyler.Style(ctx.Formatter, $"({a.Role})", CliTextStyle.Muted)}");
                     }
                     ctx.Formatter.WriteMessage("");
                 }
 
                 if (status.RecommendedArtifacts.Count > 0)
                 {
-                    ctx.Formatter.WriteMessage("Recommended Artifacts:");
+                    ctx.Formatter.WriteMessage(OutputStyler.Style(ctx.Formatter, "Recommended Artifacts:", CliTextStyle.Heading));
                     foreach (var a in status.RecommendedArtifacts)
                     {
                         var icon = a.Present ? "OK" : "MISSING";
-                        ctx.Formatter.WriteMessage($"  [{icon}] {a.Path} ({a.Role})");
+                        ctx.Formatter.WriteMessage(
+                            $"  {FormatStatusIcon(ctx.Formatter, icon)} {a.Path} {OutputStyler.Style(ctx.Formatter, $"({a.Role})", CliTextStyle.Muted)}");
                     }
                     ctx.Formatter.WriteMessage("");
                 }
 
                 if (status.StateDocuments.Count > 0)
                 {
-                    ctx.Formatter.WriteMessage("State Documents:");
+                    ctx.Formatter.WriteMessage(OutputStyler.Style(ctx.Formatter, "State Documents:", CliTextStyle.Heading));
                     foreach (var stateDoc in status.StateDocuments)
                     {
                         var icon = stateDoc.Present
@@ -132,7 +138,8 @@ public static class StatusCommand
                         var freshness = stateDoc.FreshnessMaxAgeDays.HasValue
                             ? $", freshness={stateDoc.FreshnessMaxAgeDays.Value}d"
                             : string.Empty;
-                        ctx.Formatter.WriteMessage($"  [{icon}] {stateDoc.Path} ({stateDoc.Role}{freshness})");
+                        ctx.Formatter.WriteMessage(
+                            $"  {FormatStatusIcon(ctx.Formatter, icon)} {stateDoc.Path} {OutputStyler.Style(ctx.Formatter, $"({stateDoc.Role}{freshness})", CliTextStyle.Muted)}");
                     }
                     ctx.Formatter.WriteMessage("");
                 }
@@ -140,11 +147,11 @@ public static class StatusCommand
                 // Maintenance status
                 if (status.MaintenanceArtifacts.Count > 0)
                 {
-                    ctx.Formatter.WriteMessage("Maintained Artifacts:");
+                    ctx.Formatter.WriteMessage(OutputStyler.Style(ctx.Formatter, "Maintained Artifacts:", CliTextStyle.Heading));
                     foreach (var m in status.MaintenanceArtifacts)
                     {
                         var icon = m.Stale ? "STALE" : "OK   ";
-                        ctx.Formatter.WriteMessage($"  [{icon}] {m.Id}: {m.Path}");
+                        ctx.Formatter.WriteMessage($"  {FormatStatusIcon(ctx.Formatter, icon)} {m.Id}: {m.Path}");
                     }
                     ctx.Formatter.WriteMessage("");
                 }
@@ -152,7 +159,7 @@ public static class StatusCommand
                 // Artifact families
                 if (status.ArtifactFamilies.Count > 0)
                 {
-                    ctx.Formatter.WriteMessage("Artifact Families:");
+                    ctx.Formatter.WriteMessage(OutputStyler.Style(ctx.Formatter, "Artifact Families:", CliTextStyle.Heading));
                     foreach (var f in status.ArtifactFamilies)
                     {
                         var label = f.DisplayName != null ? $"{f.Family} ({f.DisplayName})" : f.Family;
@@ -174,10 +181,11 @@ public static class StatusCommand
                 {
                     var coverage = ComputeCoverage(ctx.Policy, ctx.Files!, ctx.FileSystem, ctx.RootPath, ctx.Config?.Coverage?.Exclude);
                     ctx.Formatter.WriteMessage("");
-                    ctx.Formatter.WriteMessage($"Governance coverage: {coverage.GovernedCount}/{coverage.TotalMarkdownFiles} Markdown files ({coverage.Percentage:F0}%)");
+                    ctx.Formatter.WriteMessage(
+                        $"{OutputStyler.Style(ctx.Formatter, "Governance Coverage:", CliTextStyle.Heading)} {coverage.GovernedCount}/{coverage.TotalMarkdownFiles} Markdown files ({coverage.Percentage:F0}%)");
                     if (coverage.Ungoverned.Count > 0)
                     {
-                        ctx.Formatter.WriteMessage("Ungoverned files:");
+                        ctx.Formatter.WriteMessage(OutputStyler.Style(ctx.Formatter, "Ungoverned Files:", CliTextStyle.Heading));
                         foreach (var path in coverage.Ungoverned.Take(20))
                             ctx.Formatter.WriteMessage($"  - {path}");
                         if (coverage.Ungoverned.Count > 20)
@@ -190,6 +198,11 @@ public static class StatusCommand
         });
 
         return command;
+    }
+
+    private static string FormatStatusIcon(IOutputFormatter formatter, string status)
+    {
+        return $"[{OutputStyler.StatusToken(formatter, status)}]";
     }
 
     internal static RepositoryStatus ComputeStatus(

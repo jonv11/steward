@@ -2,7 +2,7 @@
 
 A configurable repository stewardship CLI for humans and AI agents. Steward helps maintain documentation structure, enforce governance policies, and keep repository artifacts in sync — all driven by declarative YAML configuration.
 
-Current repository baseline: **`0.10.0`**. Steward is still on a pre-`1.0.0` line in this repository; public stable-release messaging and publication are intentionally not assumed yet.
+Current repository baseline: **`0.13.0`**. Steward is still on a pre-`1.0.0` line in this repository; public stable-release messaging and publication are intentionally not assumed yet.
 
 ## Features
 
@@ -28,7 +28,7 @@ dotnet build
 
 ```bash
 dotnet pack src/Steward.Cli -c Release
-dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.Cli --version 0.10.0
+dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.Cli --version 0.13.0
 ```
 
 ### Public feed install
@@ -50,9 +50,11 @@ steward init
 2. **Orient** yourself:
 
 ```bash
-steward orient           # structure classified by artifact role
-steward orient --signals # add quick missing/stale signals
-steward outline          # plain file tree
+steward orient                # curated session-start map in text mode
+steward orient --signals      # add quick missing/stale signals
+steward orient --full --tree  # full classified tree
+steward outline               # tree view of the current directory
+steward outline --counts --sizes
 steward outline README.md     # Markdown heading hierarchy (shortcut for md outline)
 ```
 
@@ -79,7 +81,9 @@ steward status --coverage
 steward check
 ```
 
-In this repo, the main session-start documents are `README.md`, `docs/implementation-status.md`, `docs/planning-index.md`, and `docs/requirements/PRD.md`. After structural moves or new documentation, refresh the generated map with `steward maintain --artifact structure --apply`.
+Agent-specific operational guidance for using Steward on this repo lives in [SKILL.md](SKILL.md).
+
+For the strongest repo-specific orientation flow, start with `README.md`, `docs/planning-index.md`, `docs/implementation-status.md`, `docs/planning/implementation-instructions.md`, and `docs/requirements/PRD.md`, then open `steward.sln` when you are ready to enter the code. If you are changing repo guidance or stewardship behavior, inspect `.steward/policy.yaml` next. After structural moves or new documentation, refresh the generated map with `steward maintain --artifact structure --apply`.
 
 ## Commands
 
@@ -87,8 +91,8 @@ In this repo, the main session-start documents are `README.md`, `docs/implementa
 | ------- | ----------- |
 | `steward version` | Show version information |
 | `steward init [--profile]` | Initialize .steward configuration |
-| `steward orient` | Show repository structure classified by artifact role |
-| `steward outline [path]` | Show directory file tree (pass a `.md` file to see its heading hierarchy) |
+| `steward orient` | Show a curated repository-start orientation (`--full` for the full inventory, `--tree` for a real tree view) |
+| `steward outline [path]` | Show a tree view of a directory or, for `.md`, a heading outline (`--counts`, `--sizes`, `--lines`) |
 | `steward status` | Show current repository state at a glance |
 | `steward check` | Validate repository against policy (`--scope full\|changed\|staged`, `--fix`, `--dry-run`) |
 | `steward maintain` | Preview or apply deterministic artifact maintenance (`--artifact <id>`, `--apply`, `--diff`) |

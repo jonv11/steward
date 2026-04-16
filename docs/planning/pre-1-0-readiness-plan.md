@@ -1,8 +1,8 @@
 ---
 type: planning
-source_baseline: v0.11.0
+source_baseline: v0.13.0
 status: Active
-last_updated: 2026-04-17
+last_updated: 2026-04-16
 ---
 
 # Pre-1.0 Readiness Plan
@@ -28,10 +28,10 @@ This document is the authoritative list of remaining work that is still useful b
 | Item | Rationale | Evidence / source | Partly implemented? | Work type | Home |
 |------|-----------|-------------------|---------------------|-----------|------|
 | ~~Broaden stable contract tests~~ | ~~Stable surfaces should have stronger command/output regression coverage.~~ | 10 stable-surface contract tests added in `StableSurfaceContractTests.cs` covering check JSON/text, status JSON/text, orient JSON, version, and B6 scoped regression. | **Completed in v0.11.0** | Tests | Milestone `v0.11.0` |
-| Decide the later pre-1.0 roadmap ordering explicitly | The repo now correctly stays on `0.x`, but later pre-stable scope still needs explicit sequencing as stable criteria are defined. | User guidance now places all future work on pre-`1.0.0` milestones; [milestone-plan.md](milestone-plan.md) captures the coarse retargeting with detailed v0.12.0 scope. | Yes | Planning, governance | Milestone planning update as criteria evolve |
-| Standardize preview/apply flag conventions | Three different preview/apply patterns across mutation commands (`--fix`/`--dry-run`, `--apply` default-preview, `--preview`+`--apply` required) erode CLI coherence. | CLI Full Assessment 2026-04-16 F2 | No | Code, docs | Milestone item (`v0.12.0`) |
-| Fix `md query --pattern` batch mode | Argument parsing ambiguity between positional `file` arg and `--pattern` option prevents multi-file structural queries. | CLI Full Assessment 2026-04-16 F4 | No | Code, tests | Milestone item (`v0.12.0`) |
-| Fix init scaffolding immediate-failure experience | Fresh `init --profile software` followed by `check` produces immediate errors for missing artifacts the scaffolded policy declares as required. | CLI Full Assessment 2026-04-16 F5 | No | Code | Milestone item (`v0.12.0`) |
+| Decide the later pre-1.0 roadmap ordering explicitly | The repo now correctly stays on `0.x`, but later pre-stable scope still needs explicit sequencing as stable criteria are defined. | User guidance now places all future work on pre-`1.0.0` milestones; [milestone-plan.md](milestone-plan.md) now captures delivered lineage through `v0.13.0` plus the planned `v0.14.0+` work. | Yes | Planning, governance | Milestone planning update as criteria evolve |
+| ~~Standardize preview/apply flag conventions~~ | ~~Three different preview/apply patterns across mutation commands (`--fix`/`--dry-run`, `--apply` default-preview, `--preview`+`--apply` required) erode CLI coherence.~~ | `check --fix` now previews by default, `--fix --apply` commits, and deprecated `--dry-run` remains hidden for compatibility. | **Completed in v0.12.0** | Code, docs | Delivered |
+| ~~Fix `md query --pattern` batch mode~~ | ~~Argument parsing ambiguity between positional `file` arg and `--pattern` option prevents multi-file structural queries.~~ | Batch-mode parsing now works correctly for multi-file structural queries. | **Completed in v0.12.0** | Code, tests | Delivered |
+| ~~Fix init scaffolding immediate-failure experience~~ | ~~Fresh `init --profile software` followed by `check` produces immediate errors for missing artifacts the scaffolded policy declares as required.~~ | `init --profile software` now scaffolds placeholder files for required artifacts so the first `check` does not fail immediately on STWD-001. | **Completed in v0.12.0** | Code | Delivered |
 | ~~Add exit code regression tests~~ | ~~Only 2 exit code tests existed.~~ | 7 exit-code regression tests added in `ExitCodeTests.cs` covering all 4 exit codes. | **Completed in v0.11.0** | Tests | Milestone `v0.11.0` |
 
 ## Optional Polish Before First Stable Shipment

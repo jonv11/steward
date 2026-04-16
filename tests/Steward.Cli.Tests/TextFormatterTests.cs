@@ -130,4 +130,26 @@ public class TextFormatterTests
         output.Should().NotContain("\x1b[");
         output.Should().Contain("[error]");
     }
+
+    [Fact]
+    public void Style_WithColor_AppliesAnsiCodes()
+    {
+        var formatter = new TextOutputFormatter(new StringWriter(), useColor: true);
+
+        var output = formatter.Style("Directory", CliTextStyle.Directory);
+
+        output.Should().Contain("\x1b[34m");
+        output.Should().Contain("\x1b[0m");
+        output.Should().Contain("Directory");
+    }
+
+    [Fact]
+    public void Style_NoColor_ReturnsPlainText()
+    {
+        var formatter = new TextOutputFormatter(new StringWriter(), useColor: false);
+
+        var output = formatter.Style("Heading", CliTextStyle.Heading);
+
+        output.Should().Be("Heading");
+    }
 }

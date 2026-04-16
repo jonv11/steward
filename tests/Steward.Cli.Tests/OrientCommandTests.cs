@@ -117,4 +117,61 @@ public class OrientCommandTests : IDisposable
         output.Should().Contain("README.md");
         output.Should().Contain("\"isStartHere\": true");
     }
+
+    [Fact]
+    public void Orient_DefaultTextOutput_UsesCompactCuratedView()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "config.yaml"), "profile: software\n");
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
+        for (int i = 0; i < 20; i++)
+        {
+            File.WriteAllText(Path.Combine(_tempDir, $"doc{i}.md"), $"# Doc {i}");
+        }
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("orient");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("Orientation");
+        var entryCount = output.Split('[').Count(part => part.StartsWith("documentation]") || part.StartsWith("authoritative]") || part.StartsWith("configuration]"));
+        entryCount.Should().BeLessThanOrEqualTo(15);
+    }
+
+    [Fact]
+    public void Orient_TreeMode_PreservesActualAncestors()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "config.yaml"), "profile: software\n");
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            repository:
+              name: demo
+            artifacts:
+              - path: .steward/policy.yaml
+                role: governance
+                required: false
+            """);
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("orient", "--tree");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("├── .steward/");
+        output.Should().Contain("│   └── policy.yaml");
+    }
+
+    [Fact]
+    public void Orient_Signals_ShowsNoneWhenHealthy()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            artifacts:
+              - path: README.md
+                role: authoritative
+                required: true
+            """);
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("orient", "--signals");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("Signals");
+        output.Should().Contain("none");
+    }
 }

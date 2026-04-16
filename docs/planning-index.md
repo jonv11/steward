@@ -14,7 +14,7 @@ Central navigation for the active product, planning, readiness, and decision art
 
 | Document | Purpose |
 |----------|---------|
-| [Implementation Status](implementation-status.md) | Current `0.10.0` baseline, delivered scope, and remaining pre-stable gaps |
+| [Implementation Status](implementation-status.md) | Current `0.13.0` baseline, delivered scope, and remaining pre-stable gaps |
 | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) | Categorized remaining work before the first stable shipment |
 
 ## Decisions
@@ -29,7 +29,7 @@ Central navigation for the active product, planning, readiness, and decision art
 | Document | Purpose |
 |----------|---------|
 | [Delivery Strategy](planning/delivery-strategy.md) | Sequencing principles and versioning strategy |
-| [Milestone Plan](planning/milestone-plan.md) | Delivered lineage through `v0.10.0` plus planned pre-1.0 milestones |
+| [Milestone Plan](planning/milestone-plan.md) | Delivered lineage through `v0.13.0` plus planned pre-1.0 milestones |
 | [Pre-Release Blockers](planning/pre-release-blockers.md) | Critical items that must be resolved before a first meaningful public release |
 | [Implementation Instructions](planning/implementation-instructions.md) | Contributor execution guide for the active pre-1.0 roadmap |
 | [RFC-007 Governance Enhancements Backlog](planning/rfc-007-governance-enhancements-backlog.md) | Status ledger for accepted governance-enhancement items |

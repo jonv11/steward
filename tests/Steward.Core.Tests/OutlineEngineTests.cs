@@ -77,6 +77,33 @@ public class OutlineEngineTests
     }
 
     [Fact]
+    public void BuildOutline_DirectoryEntries_IncludeRecursiveCountsAndAggregatedSize()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddDirectory("root")
+            .AddDirectory("root/src")
+            .AddDirectory("root/src/nested")
+            .AddFile("root/src/main.cs", "12345")
+            .AddFile("root/src/nested/helper.cs", "1234567");
+
+        var files = new List<DiscoveredFile>
+        {
+            new("src", 0, true),
+            new("src/nested", 0, true),
+            new("src/main.cs", 5, false),
+            new("src/nested/helper.cs", 7, false)
+        };
+
+        var engine = new OutlineEngine(fs);
+        var result = engine.BuildOutline("root", files, includeSizes: true, includeCounts: true);
+        var srcEntry = result.Entries.Single(entry => entry.Path == "src");
+
+        srcEntry.FileCount.Should().Be(2);
+        srcEntry.DirectoryCount.Should().Be(1);
+        srcEntry.Size.Should().Be(12);
+    }
+
+    [Fact]
     public void FormatSize_FormatsCorrectly()
     {
         OutlineEngine.FormatSize(500).Should().Be("500 B");

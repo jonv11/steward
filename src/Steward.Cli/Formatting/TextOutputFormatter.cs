@@ -7,6 +7,10 @@ public sealed class TextOutputFormatter : IOutputFormatter
     private const string Red = "\x1b[31m";
     private const string Yellow = "\x1b[33m";
     private const string Green = "\x1b[32m";
+    private const string Blue = "\x1b[34m";
+    private const string Cyan = "\x1b[36m";
+    private const string BrightCyan = "\x1b[1;36m";
+    private const string Gray = "\x1b[90m";
     private const string Reset = "\x1b[0m";
 
     private readonly TextWriter _stdout;
@@ -26,6 +30,26 @@ public sealed class TextOutputFormatter : IOutputFormatter
     public void WriteMessage(string message)
     {
         _stdout.WriteLine(message);
+    }
+
+    public string Style(string text, CliTextStyle style)
+    {
+        if (!_useColor || string.IsNullOrEmpty(text))
+            return text;
+
+        var color = style switch
+        {
+            CliTextStyle.Heading => BrightCyan,
+            CliTextStyle.Muted => Gray,
+            CliTextStyle.Directory => Blue,
+            CliTextStyle.Accent => Cyan,
+            CliTextStyle.Success => Green,
+            CliTextStyle.Warning => Yellow,
+            CliTextStyle.Error => Red,
+            _ => null
+        };
+
+        return color == null ? text : $"{color}{text}{Reset}";
     }
 
     public void WriteError(string message)

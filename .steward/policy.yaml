@@ -1,34 +1,39 @@
 repository:
   name: steward
-  description: Self-dogfooded .NET repository for the Steward CLI, its governing docs, and its test suite
+  description: Self-dogfooded .NET repository for the Steward CLI, including product docs, governance records, source code, and fixture repos
   type: tool
 
 artifacts:
-  # Structurally required entry points — these are the repo's orientation spine
+  # Session-start spine and high-trust entry points.
   - path: README.md
     role: authoritative
-    description: Project overview, contributor quick start, command reference, and primary entry point
+    description: Project overview, local usage, contributor quick start, and primary landing page
+    required: true
+    importance: required
+
+  - path: docs/planning-index.md
+    role: guide
+    description: Central navigation hub for requirements, decisions, planning, audits, and source material
+    index_of: docs/planning
     required: true
     importance: required
 
   - path: docs/implementation-status.md
     role: current-state
-    description: Authoritative pre-1.0 implementation snapshot, release-readiness state, and remaining gaps
+    description: "Current release-line truth: implemented scope, version posture, and remaining pre-1.0 work"
     required: true
     importance: required
     freshness:
       max_age_days: 30
 
-  - path: docs/planning-index.md
-    role: guide
-    description: Central navigation hub for requirements, decisions, planning, and audits
-    index_of: docs/planning
-    required: true
-    importance: required
+  - path: docs/planning/implementation-instructions.md
+    role: workflow
+    description: Contributor execution guide for the active pre-1.0 work and next-step priorities
+    importance: recommended
 
   - path: docs/requirements/PRD.md
     role: vision
-    description: Canonical product requirements document and living product contract
+    description: Canonical product requirements and repository purpose
     required: true
     importance: required
 
@@ -41,11 +46,17 @@ artifacts:
 
   - path: steward.sln
     role: workflow
-    description: .NET solution entry point for build, test, and IDE loading
+    description: Solution entry point for build, test, and IDE loading
     required: true
     importance: required
 
-  # Core requirements and repository contract
+  # Repo governance surfaces that matter when maintaining Steward-on-Steward.
+  - path: .steward/policy.yaml
+    role: governance
+    description: Repo-specific Steward contract for orientation, artifact roles, and maintenance behavior
+    importance: recommended
+
+  # Core requirements and repository contract.
   - path: repository-steward-master-requirements.md
     role: requirements
     description: Original MRD source from which the PRD and traceability matrix are derived
@@ -66,17 +77,45 @@ artifacts:
     role: roadmap
     description: Active pre-1.0 readiness plan and categorized remaining work before first stable shipment
     importance: recommended
+    freshness:
+      max_age_days: 45
 
-  # Generated
+  # Generated orientation surfaces.
   - path: STRUCTURE.md
     role: generated
     description: Generated repository map refreshed by steward maintain after structural changes
     importance: recommended
 
-  # Note: Individual audit files, planning detail docs, and per-ADR/RFC entries are
-  # intentionally NOT listed here. They are discoverable by path convention and
-  # governed by artifact_families below (ADRs and RFCs) or frontmatter_requirements
-  # (requirements and planning). See RFC-008 §8 for the v0.13.0 scope.
+  # Optional directory anchors shape orientation without overloading status output.
+  - path: docs/requirements/
+    role: requirements
+    description: Requirements, assumptions, and traceability documents
+    importance: optional
+
+  - path: docs/decisions/
+    role: governance
+    description: Decision records root for indexes, ADRs, and RFCs
+    importance: optional
+
+  - path: docs/decisions/adrs/
+    role: governance
+    description: Architecture Decision Record collection
+    importance: optional
+
+  - path: docs/decisions/rfcs/
+    role: governance
+    description: Request for Comments collection
+    importance: optional
+
+  - path: docs/planning/
+    role: workflow
+    description: Active planning, execution guidance, release preparation, and roadmap material
+    importance: optional
+
+  - path: docs/audits/
+    role: audit
+    description: Assessments, review records, and supporting evidence for stewardship decisions
+    importance: optional
 
 artifact_families:
   - family: adr
@@ -103,13 +142,46 @@ artifact_families:
         type: [rfc]
         status: [Draft, Proposed, Accepted, Superseded, Deprecated]
 
+  - family: planning
+    display_name: Planning Document
+    match:
+      path_pattern: "docs/planning/*.md"
+    role: workflow
+    importance: optional
+    frontmatter_schema:
+      required: [type, status]
+      allowed_values:
+        type: [planning]
+        status: [Draft, Active, Accepted, Completed, Superseded]
+
+  - family: requirements
+    display_name: Requirements Supporting Document
+    match:
+      path_pattern: "docs/requirements/*.md"
+    role: requirements
+    importance: optional
+    frontmatter_schema:
+      required: [type, status]
+      allowed_values:
+        type: [requirements]
+        status: [Draft, Accepted, Active, Superseded]
+
+  - family: audit
+    display_name: Audit / Review Record
+    match:
+      path_pattern: "docs/audits/*.md"
+    role: audit
+    importance: optional
+
 governance:
   section_size_warning_threshold: 500
   start_here:
     - README.md
-    - docs/implementation-status.md
     - docs/planning-index.md
+    - docs/implementation-status.md
+    - docs/planning/implementation-instructions.md
     - docs/requirements/PRD.md
+    - steward.sln
   completion_policy:
     rules:
       - id: STWD-001
@@ -120,13 +192,19 @@ governance:
         description: broken internal link(s)
       - id: STWD-009
         description: broken artifact reference(s) in policy
+      - id: STWD-012
+        description: state or readiness document(s) stale -> refresh current repo truth
 
 validation:
   disabled_rules: []
+  path_overrides:
+    - pattern: "tests/Steward.TestFixtures/Repos/**"
+      disabled_rules:
+        - STWD-013
 
-  # Convention-based frontmatter enforcement by path pattern.
-  # ADRs and RFCs are now governed by artifact_families above (v0.13.0).
-  # Requirements and planning docs are still governed here by path pattern.
+  # Keep scoped path-based frontmatter enforcement for requirements and planning docs.
+  # In v0.13.0, explicit artifacts do not inherit artifact-family schemas, so these
+  # patterns still carry real governance weight for PRD, roadmap, and execution docs.
   #
   # Full required_sections enforcement is tracked as a later pre-1.0 gap
   # in pre-1-0-readiness-plan.md (v0.14.0+ per RFC-008 §3.3 and ADR-012).

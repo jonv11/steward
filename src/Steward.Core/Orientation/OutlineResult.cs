@@ -13,4 +13,6 @@ public sealed class OutlineEntry
     public required int Depth { get; init; }
     public long? Size { get; init; }
     public int? LineCount { get; init; }
+    public int? FileCount { get; init; }
+    public int? DirectoryCount { get; init; }
 }
