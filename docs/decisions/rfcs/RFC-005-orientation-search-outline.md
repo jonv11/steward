@@ -77,7 +77,7 @@ The requirements define three discovery surfaces—orient, outline, and search�
 **Filtering:**
 - .gitignore-aware (always)
 - Policy-aware filtering (respects `discovery.exclude`)
-- Scoping by area/role (`--scope docs`, `--scope authoritative`) — maps to policy-defined artifact roles
+- Scoping by role (`--role requirements`, `--role authoritative`) — maps to policy-defined artifact roles
 
 **Performance:**
 - Live-scan-first (REQ-SEARCH-009). Does not require pre-built indexes.

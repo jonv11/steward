@@ -1,5 +1,7 @@
 # CLI Usability and Configurability Review — 2026-04-15
 
+> Historical scope note (2026-04-16): This review is preserved as ergonomics/configuration evidence for the repo state at the time of review. Current authoritative state now lives in [implementation-status.md](../implementation-status.md) and the active planning docs under [docs/planning/](../planning-index.md).
+
 ## Scope
 
 Full usability, ergonomics, and configurability review. Emphasis on how the CLI feels to adopt and adapt, with attention to configuration design, command coherence, and ease of repo-specific tuning.

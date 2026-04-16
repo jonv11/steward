@@ -15,12 +15,12 @@ Validation is the core contract-enforcement surface. The requirements demand det
 
 | Scope | Trigger | Behavior |
 |-------|---------|----------|
-| `full` | `--scope full` or no git context | Evaluates all repository files against policy |
-| `changed` | `--scope changed` (default when git available) | Evaluates files changed since the merge base or last commit |
+| `full` | `--scope full` or default invocation | Evaluates all repository files against policy |
+| `changed` | `--scope changed` | Evaluates files changed relative to `HEAD`; falls back to full scope if git metadata is unavailable |
 | `staged` | `--scope staged` | Evaluates files in the git staging area |
 | `paths` | `--paths file1 file2 dir/` | Evaluates exactly the specified files/directories |
 
-The change set is determined via git integration when available. If git is not available, `full` scope is used.
+The change set is determined via git integration when available. If git is not available for `changed` or `staged`, full scope is used as a conservative fallback.
 
 ### Diagnostic model
 
@@ -28,7 +28,7 @@ Each diagnostic is a structured record:
 
 ```json
 {
-  "rule": "REQ-PATH-REQUIRED-001",
+  "ruleId": "STWD-001",
   "severity": "error",
   "category": "path-policy",
   "path": "README.md",
@@ -41,8 +41,8 @@ Each diagnostic is a structured record:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `rule` | Yes | Stable rule identifier |
-| `severity` | Yes | `error`, `warning`, `info` |
+| `ruleId` | Yes | Stable rule identifier |
+| `severity` | Yes | `error`, `warn`, `info` |
 | `category` | Yes | Functional category (e.g., `path-policy`, `frontmatter`, `managed-scope`, `stale-artifact`) |
 | `path` | Yes | File or directory path relative to repo root |
 | `line` | No | Line number when applicable |
@@ -90,15 +90,15 @@ WARN   frontmatter  docs/PRD.md:1
 {
   "summary": {
     "scope": "full",
-    "files_checked": 42,
+    "filesChecked": 42,
     "errors": 1,
     "warnings": 1,
     "infos": 0,
     "pass": false
   },
   "diagnostics": [
-    { "rule": "...", "severity": "error", ... },
-    { "rule": "...", "severity": "warning", ... }
+    { "ruleId": "...", "severity": "error", ... },
+    { "ruleId": "...", "severity": "warn", ... }
   ]
 }
 ```
@@ -115,10 +115,10 @@ WARN   frontmatter  docs/PRD.md:1
 Completion-policy rules are evaluated as part of `steward check` and reported as `completion-policy` category diagnostics. These rules answer "is the work done?" per the repository's definition of done.
 
 Examples:
-- All required artifacts present
-- No governed index is stale
-- No managed section has unresolved drift
-- Frontmatter freshness within threshold
+- STWD-001 (`required artifact(s) missing`)
+- STWD-007 (`maintained artifact(s) stale`)
+- STWD-008 (`broken internal link(s)`)
+- STWD-009 (`broken artifact reference(s) in policy`)
 
 ### Secret filtering
 

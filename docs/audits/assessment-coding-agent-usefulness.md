@@ -6,6 +6,8 @@
 
 ---
 
+> Historical scope note (2026-04-16): This assessment is preserved as input evidence for later product and ADR work. It does not override the current state and readiness artifacts in [implementation-status.md](../implementation-status.md) and [docs/planning/](../planning-index.md).
+
 ## 1. Assessment Lens
 
 This assessment evaluates Steward through the lens of a coding agent's most common terminal workflow:

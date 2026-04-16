@@ -1,6 +1,6 @@
 # RFC-007 Governance Enhancements — Status Ledger
 
-- **Source:** [RFC-007 Maintainer Governance and Stewardship Enhancements](../decisions/rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements-draft.md)
+- **Source:** [RFC-007 Maintainer Governance and Stewardship Enhancements](../decisions/rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements.md)
 - **Status:** Accepted and substantially delivered in the current pre-1.0 baseline
 - **Last updated:** 2026-04-15
 

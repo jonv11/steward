@@ -2,16 +2,25 @@
 
 ```
 ├── .editorconfig
+├── .github/
+│   ├── dependabot.yml
+│   └── workflows/
+│       └── ci.yml
 ├── .gitignore
 ├── .steward
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/
 │   ├── audits/
+│   │   ├── artifact-hygiene-cleanup-review-2026-04-16.md
 │   │   ├── assessment-coding-agent-usefulness.md
 │   │   ├── maintainer-review.md
 │   │   ├── maintainer-usecase-expectations.md
 │   │   ├── maintainer-usecase-ideas.md
+│   │   ├── profile-readiness-review-2026-04-16.md
+│   │   ├── release-governance-conformance-review-2026-04-16.md
+│   │   ├── release-readiness-assessment-2026-04-15.md
+│   │   ├── repo-actionability-pass-2026-04-16.md
 │   │   ├── repository-audit-2026-04-14.md
 │   │   ├── review-requirements.md
 │   │   ├── usability-review-2026-04-15.md
@@ -27,6 +36,7 @@
 │   │   ├── implementation-instructions.md
 │   │   ├── milestone-plan.md
 │   │   ├── pre-1-0-readiness-plan.md
+│   │   ├── pre-release-blockers.md
 │   │   └── rfc-007-governance-enhancements-backlog.md
 │   ├── planning-index.md
 │   └── requirements/
@@ -81,6 +91,7 @@
     │   ├── MdEditCommandTests.cs
     │   ├── OrientCommandTests.cs
     │   ├── OutlineCommandTests.cs
+    │   ├── ProfileReadinessTests.cs
     │   ├── RefsCommandTests.cs
     │   ├── SearchCommandTests.cs
     │   ├── StagedCompletenessTests.cs
@@ -127,5 +138,7 @@
     │   └── WellKnownRolesTests.cs
     └── Steward.TestFixtures/
         ├── InMemoryFileSystem.cs
+        ├── Repos
+        ├── RepositoryFixture.cs
         └── Steward.TestFixtures.csproj
 ```

@@ -1,5 +1,7 @@
 # Repository Audit — 2026-04-14
 
+> Historical scope note (2026-04-16): This audit is preserved as evidence of the repository state on 2026-04-14. Current authoritative state now lives in [implementation-status.md](../implementation-status.md) and the active planning documents under [docs/planning/](../planning-index.md).
+
 ## 1. Repository Understanding
 
 Steward is intended to be a repository stewardship CLI, not just a validator. The accepted PRD and RFCs position it as a dual-audience tool for repository maintainers, human contributors, and AI coding agents who need orientation, validation, structural Markdown operations, deterministic maintenance, and explainability from the same contract-driven surface.

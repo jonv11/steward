@@ -121,6 +121,32 @@ public class ExplainCommandTests
     }
 
     [Fact]
+    public void ExplainPath_WithInvalidConfiguration_ReturnsUsageError()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "steward-explain-" + Guid.NewGuid().ToString("N")[..8]);
+        Directory.CreateDirectory(tempDir);
+        Directory.CreateDirectory(Path.Combine(tempDir, ".git"));
+        Directory.CreateDirectory(Path.Combine(tempDir, ".steward"));
+        File.WriteAllText(Path.Combine(tempDir, ".steward", "config.yaml"), "profile: definitely-not-valid\n");
+        var originalDirectory = Directory.GetCurrentDirectory();
+
+        try
+        {
+            Directory.SetCurrentDirectory(tempDir);
+
+            var (exitCode, _, error) = InvokeExplain("explain", "path", "README.md");
+
+            exitCode.Should().Be(2);
+            error.Should().Contain("Run 'steward config validate' for details.");
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalDirectory);
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
     public void ExplainPath_ResolveEffectivePolicy_ReturnsAllLayers()
     {
         var policy = new Steward.Core.Configuration.RepositoryPolicy
@@ -145,6 +171,7 @@ public class ExplainCommandTests
             },
             Validation = new Steward.Core.Configuration.ValidationConfig
             {
+                RequiredFrontmatterFields = ["owner"],
                 DisabledRules = ["STWD-004"],
                 PathOverrides =
                 [
@@ -191,6 +218,7 @@ public class ExplainCommandTests
         info.Artifact.IndexOf.Should().Be("docs/decisions");
         info.SuppressedRules.Should().Contain("STWD-004");
         info.SuppressedRules.Should().Contain("STWD-002");
+        info.RequiredFrontmatterFields.Should().Contain("owner");
         info.RequiredFrontmatterFields.Should().Contain("title");
         info.RequiredFrontmatterFields.Should().Contain("status");
         info.AllowedValues.Should().ContainKey("status");

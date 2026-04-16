@@ -16,6 +16,8 @@
 >
 > Remaining findings about policy schema gaps, md edit flags, and state documents remain accurate and are tracked in the post-v1.0.0 milestone plan.
 
+> **Historical scope note (2026-04-16):** This review reflects an earlier repo snapshot and earlier declared version posture. It remains useful as historical evidence, but current truth now lives in [implementation-status.md](../implementation-status.md) and the active planning artifacts under [docs/planning/](../planning-index.md).
+
 ---
 
 ## 1. Scope and Review Basis

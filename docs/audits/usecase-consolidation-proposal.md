@@ -13,6 +13,8 @@
 
 ---
 
+> Historical scope note (2026-04-16): This proposal is preserved as roadmap and ADR input evidence. It is not an active current-state document; current release/readiness truth lives in [implementation-status.md](../implementation-status.md) and the active planning docs under [docs/planning/](../planning-index.md).
+
 ## 1. Purpose
 
 Both use-case files describe the needs of a maintainer operating a story/worldbuilding/adaptation repository and express what Steward must do to serve as the operational stewardship tool for that domain.

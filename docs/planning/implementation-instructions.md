@@ -2,7 +2,7 @@
 
 - **Version:** 0.10.0
 - **Status:** Active
-- **Last updated:** 2026-04-15
+- **Last updated:** 2026-04-16
 
 ---
 
@@ -22,7 +22,7 @@ This guide tells contributors what to do next from the current `v0.10.0` baselin
 
 Implement the smallest set of work that materially improves confidence in a first stable shipment:
 
-- Add cross-platform build/test/pack automation.
+- Confirm the new cross-platform build/test/pack workflow goes green on Windows, macOS, and Linux.
 - Stabilize release-critical dependencies away from preview/beta packages where feasible.
 - Expand stable-surface contract tests for the most user-visible command/output contracts.
 - Write the publication and verification steps that would be used for an intentional stable release.
@@ -31,7 +31,6 @@ Implement the smallest set of work that materially improves confidence in a firs
 
 Use this milestone for remaining operator-facing improvements that strengthen day-to-day stewardship loops without changing the release-governance story:
 
-- richer effective-policy surfacing
 - fit-and-finish for readiness/status/reporting views
 - any still-open ergonomics improvements that stay within the accepted product direction
 

@@ -67,13 +67,13 @@ maintenance:
 steward maintain
 
 # Preview a specific artifact
-steward maintain --scope structure-doc
+steward maintain --artifact structure-doc
 
 # Apply all maintenance
 steward maintain --apply
 
 # Apply specific artifact maintenance
-steward maintain --scope decision-index --apply
+steward maintain --artifact decision-index --apply
 
 # Machine-readable output
 steward maintain --output json
@@ -108,19 +108,15 @@ Policy can declare artifacts with explicit memory/state roles:
 
 ```yaml
 artifacts:
-  roles:
-    vision:
-      path: docs/VISION.md
-      role: memory
-      required: false
-    roadmap:
-      path: docs/planning/milestone-plan.md
-      role: memory
-      required: false
-    current-state:
-      path: docs/CURRENT-STATE.md
-      role: memory
-      required: false
+  - path: docs/VISION.md
+    role: vision
+    required: false
+  - path: docs/planning/milestone-plan.md
+    role: milestones
+    required: false
+  - path: docs/implementation-status.md
+    role: current-state
+    required: false
 ```
 
 These roles affect:

@@ -185,7 +185,7 @@ public static class ExplainCommand
             if (!CommandSetup.TryBuild(parseResult, out var ctx) || ctx == null)
             {
                 formatter.WriteError("Could not load steward configuration. Run from a steward-managed repository.");
-                return ExitCodes.InternalError;
+                return ExitCodes.UsageError;
             }
 
             var info = ResolveEffectivePolicy(filePath, ctx);
@@ -302,7 +302,21 @@ public static class ExplainCommand
         suppressedRules = suppressedRules.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
         // 5. Effective frontmatter requirements
-        var requiredFields = new List<string>(ctx.Policy?.Governance?.Frontmatter?.RequiredFields ?? []);
+        var requiredFields = new List<string>();
+        if (ctx.Policy?.Validation?.RequiredFrontmatterFields != null)
+        {
+            requiredFields.AddRange(ctx.Policy.Validation.RequiredFrontmatterFields);
+        }
+
+        if (ctx.Policy?.Governance?.Frontmatter?.RequiredFields != null)
+        {
+            foreach (var field in ctx.Policy.Governance.Frontmatter.RequiredFields)
+            {
+                if (!requiredFields.Contains(field, StringComparer.OrdinalIgnoreCase))
+                    requiredFields.Add(field);
+            }
+        }
+
         var allowedValues = new Dictionary<string, List<string>>();
 
         if (ctx.Policy?.Validation?.FrontmatterRequirements != null)

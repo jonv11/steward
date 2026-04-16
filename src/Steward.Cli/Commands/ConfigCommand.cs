@@ -90,7 +90,7 @@ public static class ConfigCommand
 
     private static Command CreateShowCommand()
     {
-        var command = new Command("show", "Print raw config files and (with --effective) the resolved runtime defaults");
+        var command = new Command("show", "Print raw config files and (with --effective) the resolved runtime defaults plus merged policy");
 
         var effectiveOption = new Option<bool>("--effective")
         {
@@ -171,6 +171,17 @@ public static class ConfigCommand
                         ctx.Formatter.WriteMessage("  discovery.exclude:");
                         foreach (var pattern in ctx.EffectiveDiscoveryExcludes)
                             ctx.Formatter.WriteMessage($"    - {pattern}");
+                    }
+
+                    ctx.Formatter.WriteMessage("");
+                    ctx.Formatter.WriteMessage("Effective policy (profile defaults merged):");
+                    if (ctx.Policy == null)
+                    {
+                        ctx.Formatter.WriteMessage("  (none)");
+                    }
+                    else
+                    {
+                        ctx.Formatter.WriteMessage(ConfigLoader.SerializePolicy(ctx.Policy).TrimEnd());
                     }
                 }
             }
@@ -261,7 +272,18 @@ public static class ConfigCommand
             }
         }
 
-        // 2. Artifact declarations matching no existing file
+        // 2. Overlapping global frontmatter requirement sources
+        var legacyRequiredFrontmatter = ctx.Policy?.Validation?.RequiredFrontmatterFields;
+        var governanceRequiredFrontmatter = ctx.Policy?.Governance?.Frontmatter?.RequiredFields;
+        if (legacyRequiredFrontmatter is { Count: > 0 } && governanceRequiredFrontmatter is { Count: > 0 })
+        {
+            findings.Add(new DoctorFinding(
+                "overlapping-frontmatter-globals",
+                "Both validation.required_frontmatter_fields and governance.frontmatter.required_fields are configured. Steward currently treats them as additive global requirements.",
+                "Prefer governance.frontmatter.required_fields as the canonical location, or leave only one global required-fields declaration to avoid confusion."));
+        }
+
+        // 3. Artifact declarations matching no existing file
         if (ctx.Policy?.Artifacts != null)
         {
             foreach (var artifact in ctx.Policy.Artifacts)
@@ -278,7 +300,7 @@ public static class ConfigCommand
             }
         }
 
-        // 3. Path-policy rulesets matching no files
+        // 4. Path-policy rulesets matching no files
         if (ctx.PathPolicy?.Rulesets != null)
         {
             foreach (var ruleset in ctx.PathPolicy.Rulesets)
@@ -310,7 +332,7 @@ public static class ConfigCommand
             }
         }
 
-        // 4. Maintenance sources matching nothing
+        // 5. Maintenance sources matching nothing
         if (ctx.Policy?.Maintenance?.Artifacts != null)
         {
             foreach (var maint in ctx.Policy.Maintenance.Artifacts)

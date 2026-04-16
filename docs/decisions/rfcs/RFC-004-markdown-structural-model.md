@@ -66,14 +66,14 @@ Managed regions use HTML comment markers:
 
 | Operation | Command | Behavior |
 |-----------|---------|----------|
-| `ensure-section` | `steward md edit <file> ensure-section --heading "Section Name" --under "Parent"` | Creates the heading and empty section if it doesn't exist; no-op if it does |
-| `set-section` | `steward md edit <file> set-section --heading "Section Name" --content <file-or-stdin>` | Replaces section content under the heading |
-| `insert-section` | `steward md edit <file> insert-section --heading "New" --after "Existing"` | Inserts a new section as a sibling after the named heading |
-| `append-block` | `steward md edit <file> append-block --under "Section" --content <text>` | Appends content at the end of the named section |
-| `prepend-block` | `steward md edit <file> prepend-block --under "Section" --content <text>` | Prepends content at the start of the named section |
-| `fm-set` | `steward md edit <file> fm-set --key status --value draft` | Sets a frontmatter field |
-| `fm-merge` | `steward md edit <file> fm-merge --input <yaml-file>` | Merges YAML into existing frontmatter |
-| `fm-validate` | `steward md edit <file> fm-validate` | Validates frontmatter against policy |
+| `ensure-section` | `steward md edit ensure-section <file> --heading "Section Name" --under "Parent"` | Creates the heading and empty section if it doesn't exist; no-op if it does |
+| `set-section` | `steward md edit set-section <file> --heading "Section Name" --content <file-or-stdin>` | Replaces section content under the heading |
+| `insert-section` | `steward md edit insert-section <file> --heading "New" --after "Existing"` | Inserts a new section as a sibling after the named heading |
+| `append-block` | `steward md edit append-block <file> --under "Section" --content <text>` | Appends content at the end of the named section |
+| `prepend-block` | `steward md edit prepend-block <file> --under "Section" --content <text>` | Prepends content at the start of the named section |
+| `fm-set` | `steward md edit fm-set <file> --key status --value draft` | Sets a frontmatter field |
+| `fm-merge` | `steward md edit fm-merge <file> --input <yaml-file>` | Merges YAML into existing frontmatter |
+| `fm-validate` | `steward md edit fm-validate <file>` | Validates frontmatter against policy |
 
 ### Heading level inference
 
@@ -89,8 +89,8 @@ When inserting headings, the level is inferred from context (REQ-MD-005):
 
 All edit operations default to **preview mode** unless `--apply` is specified.
 
-- `steward md edit <file> <op> [args]` → Shows what would change (unified diff).
-- `steward md edit <file> <op> [args] --apply` → Applies the change.
+- `steward md edit <op> <file> [args]` → Shows what would change (unified diff).
+- `steward md edit <op> <file> [args] --apply` → Applies the change.
 
 Preview output is a standard unified diff by default, or structured JSON with `--output json`.
 

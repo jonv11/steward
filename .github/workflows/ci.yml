@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test-pack:
+    name: build-test-pack (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+          - macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore steward.sln
+
+      - name: Build
+        run: dotnet build steward.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test steward.sln -c Release --no-build
+
+      - name: Pack
+        run: dotnet pack src/Steward.Cli/Steward.Cli.csproj -c Release --no-build

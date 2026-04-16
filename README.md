@@ -11,7 +11,7 @@ Current repository baseline: **`0.10.0`**. Steward is still on a pre-`1.0.0` lin
 - **Markdown structural editing** — Query, edit, and manage Markdown documents with section and frontmatter operations
 - **Deterministic maintenance** — Auto-generate structure documents, indexes, and managed sections
 - **Broken link detection** — Find internal Markdown links that don't resolve
-- **Full explainability** — Every rule is explainable with remediation guidance
+- **Rule explainability** — Every validation rule is explainable with remediation guidance
 - **Multi-format output** — Text and JSON output for human and agent consumption
 
 ## Installation
@@ -34,6 +34,10 @@ dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.
 ### Public feed install
 
 Use a public-feed install only when the project intentionally publishes a release package. This repository does not treat public publication as an already-completed fact.
+
+### Dependency posture
+
+Steward currently pins exact prerelease CLI-stack versions in [Directory.Packages.props](Directory.Packages.props), including `System.CommandLine` beta5 and preview `Microsoft.Extensions.DependencyInjection` packages. That is an intentional pre-`1.0.0` tradeoff for the current repo line, not a claim that stable-release dependency hardening is already complete.
 
 ## Quick Start
 
@@ -96,7 +100,7 @@ In this repo, the main session-start documents are `README.md`, `docs/implementa
 | `steward md outline <file>` | Show Markdown heading hierarchy with line counts |
 | `steward md query <file> <selector>` | Extract content using an MdPath selector |
 | `steward md edit <operation> <file>` | Structural Markdown editing (sections, frontmatter, blocks) |
-| `steward config show [--effective]` | Print raw config files and (with `--effective`) the resolved runtime defaults |
+| `steward config show [--effective]` | Print raw config files and (with `--effective`) the resolved runtime defaults plus merged policy |
 | `steward config validate` | Check .steward/ YAML files for syntax and field errors |
 | `steward config doctor` | Detect valid-but-ineffective config: dead `start_here` entries, unmatched patterns |
 | `steward config suggest` | Analyze the repository and suggest artifact declarations for policy.yaml |
@@ -246,19 +250,21 @@ Settings are resolved in this order (highest to lowest):
 2. `config.yaml` setting (e.g. `output.format: json`)
 3. Built-in default (e.g. text output)
 
-`steward config validate` checks YAML syntax and semantic references such as rule ids, maintainer types, glob patterns, and `depends_on` links. `steward config show --effective` prints the resolved runtime defaults. `steward config doctor` detects silent problems like `start_here` entries that point to files that do not exist.
+`steward config validate` checks YAML syntax and semantic references such as rule ids, maintainer types, glob patterns, and `depends_on` links. `steward config show --effective` prints the resolved runtime defaults plus the merged effective policy. `steward config doctor` detects silent problems like `start_here` entries that point to files that do not exist.
+
+For global Markdown frontmatter requirements, `governance.frontmatter.required_fields` is the canonical location. Steward still accepts the legacy `validation.required_frontmatter_fields`; if both are present, they are treated additively and `steward config doctor` warns so the policy can be simplified.
 
 ### Built-in profiles
 
-`steward init --profile <name>` scaffolds reasonable defaults for common repository types. Profile defaults are applied wherever your `policy.yaml` does not specify a value.
+`steward init --profile <name>` scaffolds conservative starting-point defaults for common repository types. At runtime, profile defaults merge in shallowly: repository-local scalar/object values override profile values, while repository-local list sections such as `artifacts:` replace the corresponding profile list as a whole. The `software` profile is the only one exercised on this repository today; the other built-ins are intentionally lightweight starting points rather than battle-tested curated experiences.
 
-| Profile | Description |
-| ------- | ----------- |
-| `software` | Software project with README, LICENSE, CHANGELOG |
-| `docs` | Documentation repository |
-| `mixed` | Mixed code and documentation |
-| `knowledge` | Knowledge base or wiki |
-| `minimal` | Minimal setup, only README suggested |
+| Profile | Description | Readiness |
+| ------- | ----------- | --------- |
+| `software` | Software project with README, LICENSE, CHANGELOG | Exercised on this repository |
+| `docs` | Documentation repository | Starting-point default; not yet battle-tested here |
+| `mixed` | Mixed code and documentation | Starting-point default; not yet battle-tested here |
+| `knowledge` | Knowledge base or wiki | Starting-point default; not yet battle-tested here |
+| `minimal` | README-first baseline with minimal additional defaults | Starting-point default; intentionally sparse |
 
 ### Adapting to your repository
 
@@ -290,6 +296,10 @@ dotnet build steward.sln
 ```bash
 dotnet test steward.sln
 ```
+
+### CI
+
+The repository includes a GitHub Actions matrix in `.github/workflows/ci.yml` that runs `dotnet build`, `dotnet test`, and `dotnet pack src/Steward.Cli/Steward.Cli.csproj -c Release` on Windows, macOS, and Linux.
 
 ### Project Structure
 

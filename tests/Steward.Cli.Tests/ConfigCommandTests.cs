@@ -149,6 +149,43 @@ public class ConfigCommandTests : IDisposable
         output.Should().Contain("\"effectiveRuntime\"");
         output.Should().Contain("\"format\": \"json\"");
         output.Should().Contain("\"exclude\": [");
+        output.Should().Contain("\"path\": \"CHANGELOG.md\"");
+    }
+
+    [Fact]
+    public void ConfigShow_Effective_Text_IncludesMergedPolicy()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "config.yaml"), """
+            profile: software
+            """);
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            repository:
+              name: demo
+            """);
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("config", "show", "--effective");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("Effective runtime defaults:");
+        output.Should().Contain("Effective policy (profile defaults merged):");
+        output.Should().Contain("path: CHANGELOG.md");
+        output.Should().Contain("path: CONTRIBUTING.md");
+    }
+
+    [Fact]
+    public void ConfigSuggest_JsonOutput_ProducesSuggestionObject()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Demo");
+        Directory.CreateDirectory(Path.Combine(_tempDir, "docs", "requirements"));
+        File.WriteAllText(Path.Combine(_tempDir, "docs", "requirements", "PRD.md"), "# PRD");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("config", "suggest", "--output", "json");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("\"startHere\"");
+        output.Should().Contain("\"artifacts\"");
+        output.Should().Contain("\"path\": \"README.md\"");
+        output.Should().Contain("\"path\": \"docs/requirements/PRD.md\"");
     }
 
     [Fact]
@@ -197,6 +234,33 @@ public class ConfigCommandTests : IDisposable
 
         findings.Should().ContainSingle();
         findings[0].Category.Should().Be("missing-artifact");
+    }
+
+    [Fact]
+    public void ConfigDoctor_OverlappingGlobalFrontmatterKeys_ReportsIssue()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Governance = new GovernanceConfig
+            {
+                Frontmatter = new FrontmatterConfig
+                {
+                    RequiredFields = ["status"]
+                }
+            },
+            Validation = new ValidationConfig
+            {
+                RequiredFrontmatterFields = ["owner"]
+            }
+        };
+
+        var ctx = CreateDoctorContext(policy, pathPolicy: null,
+            files: [new DiscoveredFile("README.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().ContainSingle();
+        findings[0].Category.Should().Be("overlapping-frontmatter-globals");
     }
 
     [Fact]

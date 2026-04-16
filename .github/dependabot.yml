@@ -1,0 +1,19 @@
+version: 2
+
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    ignore:
+      # Intentionally pinned prerelease; see Directory.Packages.props and README "Dependency posture".
+      # Update manually when upgrading the CLI stack.
+      - dependency-name: System.CommandLine
+        update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday

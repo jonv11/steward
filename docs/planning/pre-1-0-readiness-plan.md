@@ -2,7 +2,7 @@
 
 - **Source baseline:** `v0.10.0`
 - **Status:** Active
-- **Last updated:** 2026-04-15
+- **Last updated:** 2026-04-16
 
 ---
 
@@ -14,22 +14,20 @@ This document is the authoritative list of remaining work that is still useful b
 
 | Item | Rationale | Evidence / source | Partly implemented? | Work type | Home |
 |------|-----------|-------------------|---------------------|-----------|------|
-| Cross-platform build/test/pack automation | A stable release needs reproducible validation on Windows, macOS, and Linux; local-only verification is not enough. | No `.github/` workflows are present; multi-platform support is a stated constraint in [ACD-0001](../requirements/assumptions-constraints.md). | Yes — local build/test/pack works | Workflow, tests, release | Direct implementation task on the active `0.x` line |
-| Dependency stabilization for stable release | Stable release posture should not depend on beta/preview packages where avoidable. | `Directory.Packages.props` still pins `System.CommandLine` beta and preview DI packages. | Yes — the current stack is functional | Dependency, code, release | Milestone item (`v0.11.0`) |
+| Cross-platform build/test/pack automation | A stable release needs reproducible validation on Windows, macOS, and Linux; local-only verification is not enough. | `.github/workflows/ci.yml` now runs build/test/pack on Windows, macOS, and Linux, but the first hosted green run is still pending; multi-platform support is a stated constraint in [ACD-0001](../requirements/assumptions-constraints.md). | Yes — workflow authored and local Windows build/test/pack works | Workflow, tests, release | Direct implementation task on the active `0.x` line until hosted validation is green |
+| Dependency stabilization for stable release | Stable release posture should not depend on beta/preview packages where avoidable. | `Directory.Packages.props` still pins `System.CommandLine` beta and preview DI packages, and the prerelease posture is now documented explicitly in `README.md`. | Yes — the current stack is functional and intentionally documented | Dependency, code, release | Milestone item (`v0.11.0`) |
 | Distribution/publication hardening | Packaging now works, but stable-release publication steps and verification should be explicit and repeatable before any public ship. | `dotnet pack` succeeds after this cleanup, but no publication workflow or stable-release checklist exists in-repo. | Yes — local package creation is clean | Docs, release, workflow | Milestone item (`v0.11.0`) |
 
 ## Strongly Recommended Before First Stable Shipment
 
 | Item | Rationale | Evidence / source | Partly implemented? | Work type | Home |
 |------|-----------|-------------------|---------------------|-----------|------|
-| Broaden stable contract tests | Stable surfaces should have stronger command/output regression coverage than the current targeted set. | The repo has strong unit/integration coverage, but active planning and audits still call for more stable-surface contract coverage. | Yes | Tests | Milestone item (`v0.11.0`) |
+| Broaden stable contract tests | Stable surfaces should have stronger command/output regression coverage than the current targeted set. | The repo has strong unit/integration coverage, and fixture-backed profile-readiness coverage now exercises `init`, `config validate`, `config show --effective`, `status`, `orient`, `check`, and `config doctor` for non-software profiles; active planning and audits still call for broader stable-surface contract coverage beyond that targeted slice. | Yes | Tests | Milestone item (`v0.11.0`) |
 | Decide the later pre-1.0 roadmap ordering explicitly | The repo now correctly stays on `0.x`, but later pre-stable scope still needs explicit sequencing as stable criteria are defined. | User guidance now places all future work on pre-`1.0.0` milestones; [milestone-plan.md](milestone-plan.md) captures the coarse retargeting. | Yes | Planning, governance | Milestone planning update as criteria evolve |
 
 ## Optional Polish Before First Stable Shipment
 
-| Item | Rationale | Evidence / source | Partly implemented? | Work type | Home |
-|------|-----------|-------------------|---------------------|-----------|------|
-| Richer merged-policy surfacing in `config show --effective` | Would make the effective governance model easier to inspect without opening multiple files. | JSON already includes merged policy objects; text mode still focuses on raw files plus runtime defaults. | Yes | Code, docs | Direct implementation task if time permits |
+No currently tracked optional-polish items remain after `config show --effective` gained merged-policy surfacing in text mode on 2026-04-16. Add new optional items here only when they are clearly below the stable-release bar.
 
 ## Later Pre-1.0 Candidates
 

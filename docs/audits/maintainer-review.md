@@ -6,6 +6,8 @@
 
 ---
 
+> Historical scope note (2026-04-16): This review is preserved as maintainer-perspective evidence that informed later governance work. Current authoritative state now lives in [implementation-status.md](../implementation-status.md) and the active planning docs under [docs/planning/](../planning-index.md).
+
 ## 1. Context and Purpose
 
 This review is written from the perspective of a maintainer who uses Steward as the primary tool for keeping this repository consistent, discoverable, and correctly governed. It is distinct from the existing audit documents:

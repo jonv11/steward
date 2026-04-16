@@ -23,6 +23,8 @@ The requirements specify many capabilities (check, orient, search, outline, mark
 | `steward maintain` | Deterministic maintenance of governed artifacts | v0.8.0 |
 | `steward status` | Lightweight current-state surface (no full validation) | v0.9.0 |
 | `steward explain` | Explain a rule, artifact role, or failure | v0.9.0 |
+| `steward refs` | Inspect inbound and outbound Markdown reference relationships | v0.10.0 |
+| `steward refactor` | Preview-first refactoring workflows for governed files | v0.10.0 |
 | `steward config` | Config/policy operations (subcommand: validate, show) | v0.3.0 |
 | `steward init` | Scaffold initial `.steward/` configuration | v0.3.0 |
 | `steward version` | Print version and runtime info | v0.1.0 |
@@ -31,20 +33,26 @@ The requirements specify many capabilities (check, orient, search, outline, mark
 
 ```
 steward
-├── check [--scope full|changed|staged] [--paths <path>...] [--output json|text] [--fix] [--dry-run]
-├── orient [--depth <n>] [--output json|text] [--signals]
+├── check [--scope full|changed|staged] [--paths <path>...] [--output json|text] [--fix] [--dry-run] [--quiet]
+├── orient [--depth <n>] [--output json|text] [--signals] [--compact]
 ├── outline [<path>] [--depth <n>] [--sizes] [--lines] [--headings] [--output json|text]
-├── search <query> [--mode content|headings|all] [--scope <area>] [--max <n>] [--output json|text]
+├── search <query> [--mode content|headings|all] [--role <artifact-role>] [--max <n>] [--regex] [--output json|text]
 ├── md
-│   ├── query <file> <selector> [--output json|text]
-│   ├── edit <file> <operation> [--preview] [--apply]
+│   ├── query [<file> <selector>] [--pattern <glob>] [--output json|text]
+│   ├── edit <operation> <file> [--apply]
 │   └── outline <file> [--output json|text]
-├── maintain [--scope <artifact>...] [--preview] [--apply] [--output json|text]
-├── status [--output json|text]
-├── explain <rule-id|artifact>
+├── maintain [--artifact <id>] [--apply] [--diff] [--output json|text]
+├── status [--coverage] [--output json|text]
+├── explain [<rule-id>]
+│   └── path <path>
+├── refs <path> [--to|--from]
+├── refactor
+│   └── move <old-path> <new-path> [--preview|--apply]
 ├── config
 │   ├── validate
-│   └── show [--effective] [--output json|text]
+│   ├── show [--effective] [--output json|text]
+│   ├── doctor
+│   └── suggest
 ├── init [--profile <name>]
 └── version
 ```
