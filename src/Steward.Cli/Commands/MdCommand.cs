@@ -22,7 +22,7 @@ public static class MdCommand
 
     private static Command CreateQueryCommand()
     {
-        var command = new Command("query", "Extract content using an MdPath selector");
+        var command = new Command("query", "Extract content using an MdPath selector (e.g., 'heading[Status]', 'frontmatter', 'heading[## Usage]')");
 
         var fileArg = new Argument<string?>("file") { Description = "Path to the Markdown file", Arity = ArgumentArity.ZeroOrOne };
         var selectorArg = new Argument<string>("selector") { Description = "MdPath selector expression" };

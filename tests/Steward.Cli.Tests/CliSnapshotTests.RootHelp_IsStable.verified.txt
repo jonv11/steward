@@ -23,6 +23,6 @@ Commands:
   search <query>     Search repository content and headings
   maintain           Deterministic maintenance of governed artifacts
   status             Show current repository state at a glance
-  explain <rule-id>  Explain a validation rule. Run without arguments to list all rules. []
+  explain <rule-id>  Explain a validation rule, or use 'explain path <file>' to show effective governance for a file. Run without arguments to list all rules. []
   refs <path>        Show inbound and outbound references for a file
   refactor           Refactoring operations for governed files

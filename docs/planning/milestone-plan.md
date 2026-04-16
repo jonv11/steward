@@ -30,8 +30,8 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 
 | Version | Theme | Primary outcome |
 |---------|-------|-----------------|
-| `v0.11.0` | Stable-release hardening | Cross-platform CI, dependency stabilization, broader contract tests, distribution verification |
-| `v0.12.0` | Workflow and explainability polish | Remaining operator-facing fit-and-finish that strengthens day-to-day stewardship loops |
+| `v0.11.0` | Stable-release hardening and trust fixes | Cross-platform CI, dependency stabilization, broader contract tests, distribution verification, **scoped validation fix (B6)**, **status JSON coverage parity (B7)**, exit code regression tests |
+| `v0.12.0` | Workflow polish and depth improvements | Preview/apply flag standardization, `md query --pattern` fix, init scaffolding fix, `explain path` applicability filtering, `config suggest` depth, `config doctor` depth, `fm-validate`, fixture coverage exclusion |
 | `v0.13.0` | Artifact type schema RFC and base implementation | Begin the accepted ADR-012 direction on the pre-1.0 line |
 | `v0.14.0` | Type-aware validation expansion | Field constraints, section expectations, and controlled vocabulary enforcement |
 | `v0.15.0` | Later pre-1.0 requirement families | Typed resource-address follow-on work, search/address alignment, split-extract evaluation |

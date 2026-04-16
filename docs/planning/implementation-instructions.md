@@ -18,21 +18,31 @@ This guide tells contributors what to do next from the current `v0.10.0` baselin
 
 ## Current Priority Stack
 
-### `v0.11.0` — Stable-Release Hardening
+### `v0.11.0` — Stable-Release Hardening And Trust Fixes
 
-Implement the smallest set of work that materially improves confidence in a first stable shipment:
+Implement the smallest set of work that materially improves confidence in a first stable shipment, plus the critical trust fixes identified in the 2026-04-16 CLI review cycle:
 
+- **Fix scoped validation false positives (B6).** Add `AllDiscoveredFiles` to `ValidationContext`. Repo-wide obligation rules (`STWD-001`, `STWD-007`, `STWD-009`) must check file existence against the full discovered set, not `TargetFiles`. Add regression tests for changed/staged scope on clean and single-file-changed repos. This is the single most critical product defect.
+- **Include governance coverage in status JSON output (B7).** Add a `coverage` object to JSON when `--coverage` is requested. Add a contract test.
+- **Add exit code regression tests.** Explicit tests for check-pass (0), check-fail (1), and bad-input (2) exit codes.
 - Confirm the new cross-platform build/test/pack workflow goes green on Windows, macOS, and Linux.
 - Stabilize release-critical dependencies away from preview/beta packages where feasible.
 - Expand stable-surface contract tests for the most user-visible command/output contracts.
 - Write the publication and verification steps that would be used for an intentional stable release.
 
-### `v0.12.0` — Workflow And Explainability Polish
+### `v0.12.0` — Workflow Polish And Depth Improvements
 
 Use this milestone for remaining operator-facing improvements that strengthen day-to-day stewardship loops without changing the release-governance story:
 
-- fit-and-finish for readiness/status/reporting views
-- any still-open ergonomics improvements that stay within the accepted product direction
+- **Standardize preview/apply flag conventions.** Align mutation commands toward a common `--apply` (default preview) pattern.
+- **Fix `md query --pattern` batch mode.** Resolve argument parsing ambiguity so multi-file structural queries work.
+- **Fix init scaffolding immediate-failure experience.** Scaffold `required: false` or equivalent for artifacts that don't exist yet.
+- **Improve `explain path` applicability filtering.** Filter to rules that can actually fire on the given file's governance context.
+- **Deepen `config suggest` heuristics.** Detect decisions, planning docs, indexes, state docs, and roles for mature-repo bootstrap.
+- **Deepen `config doctor` checks.** Add shadowed rules, dead suppressions, and no-effect declaration detection.
+- **Add `fm-validate` to `md edit`.** Implement the accepted RFC-004 frontmatter-validate operation.
+- **Exclude test fixtures from governance coverage.** Add coverage scoping or repo-zone ignore controls.
+- Fit-and-finish for readiness/status/reporting views.
 
 ### `v0.13.0+` — Later Pre-1.0 Expansion
 

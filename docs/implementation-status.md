@@ -45,6 +45,13 @@ Steward is currently on **`v0.10.0`**. The repository is **still pre-1.0**: `v1.
 - Non-software profile behavior now has fixture-backed CLI coverage across `init`, `config validate`, `config show --effective`, `status`, `orient`, `check`, and `config doctor`; the remaining B5 work is an explicit keep/narrow release decision, not missing execution evidence.
 - The accepted RFC-007 governance-enhancement work is materially present in the codebase and should be treated as part of the delivered pre-1.0 baseline, not as a hypothetical post-`1.0.0` future.
 
+## Known Defects In `v0.10.0`
+
+The following known defects were identified in the 2026-04-16 CLI review cycle and are tracked as pre-release blockers:
+
+- **Scoped validation false positives (B6).** `check --scope changed` and `check --scope staged` produce false missing-artifact and broken-reference diagnostics on a clean tree because repo-wide obligation rules evaluate `TargetFiles` instead of the full discovered file set. This is a critical workflow trust defect. Tracked in [pre-release blockers](planning/pre-release-blockers.md) as B6.
+- **JSON coverage parity gap (B7).** `status --coverage --output json` omits governance-coverage data even when `--coverage` is requested. This is an agent-facing parity gap. Tracked in [pre-release blockers](planning/pre-release-blockers.md) as B7.
+
 ## Remaining Before First Stable Shipment
 
 The detailed categorized list lives in [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md). At a high level, the remaining work is now concentrated in a smaller set of release-hardening items:

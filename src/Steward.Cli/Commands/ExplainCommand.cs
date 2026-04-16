@@ -14,7 +14,7 @@ public static class ExplainCommand
 
     public static Command Create()
     {
-        var command = new Command("explain", "Explain a validation rule. Run without arguments to list all rules.");
+        var command = new Command("explain", "Explain a validation rule, or use 'explain path <file>' to show effective governance for a file. Run without arguments to list all rules.");
 
         var ruleArg = new Argument<string?>("rule-id")
         {

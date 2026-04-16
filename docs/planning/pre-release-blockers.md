@@ -2,7 +2,7 @@
 
 - **Source:** [Release-Readiness Assessment 2026-04-15](../audits/release-readiness-assessment-2026-04-15.md)
 - **Status:** Active
-- **Last updated:** 2026-04-16
+- **Last updated:** 2026-04-16 (B6, B7 added from CLI review normalization)
 
 ---
 
@@ -83,6 +83,37 @@ These are not nice-to-haves. Each item, if left unresolved, would materially wea
   - `config doctor` should not raise confusing false positives immediately after scaffolding a representative kept profile
 - **Acceptance criteria:** Every profile offered in `init --profile` either produces demonstrated value or is not offered.
 - **Effort estimate:** Medium for option (a), small for option (b)
+
+### B6: Fix scoped validation false positives on clean tree
+
+- **Status:** Open
+- **Category:** Implementation — critical workflow trust defect
+- **Promise affected:** Scoped pre-commit/CI validation (PRD UC-02, REQ-VALIDATE-002/003, RFC-003)
+- **Evidence sources:** [CLI Expectation Fidelity Review — 2026-04-16](../audits/cli-expectation-fidelity-review-2026-04-16.md) EF-001, [CLI Expectation Fidelity Reassessment — 2026-04-16](../audits/cli-expectation-fidelity-reassessment-2026-04-16.md) F-01, [CLI Full Assessment — 2026-04-16](../audits/cli-full-assessment-2026-04-16.md) F1
+- **What is broken:**
+  - `steward check --scope changed` and `--scope staged` on a clean tree produce false missing-artifact, broken-reference, and stale-artifact diagnostics (`STWD-001`, `STWD-007`, `STWD-009`) while reporting `Files checked: 0`.
+  - Root cause: `RequiredArtifactRule`, `BrokenArtifactReferenceRule`, and `StaleArtifactRule` evaluate repository-wide obligations against `context.TargetFiles` instead of a full-repo file set.
+- **What must change:**
+  - Add an `AllDiscoveredFiles` (or equivalent) property to `ValidationContext` that represents the full repository file set regardless of scope.
+  - Repo-wide obligation rules (`STWD-001`, `STWD-009`, and the existence check in `STWD-007`) must check file existence against `AllDiscoveredFiles`, not `TargetFiles`.
+  - Content-scanning rules continue to use `TargetFiles` for scope sensitivity.
+  - Add regression tests: scoped check on a governed repo with zero changed files must produce zero false positives; scoped check with a single changed file must validate only that file's content rules.
+- **Acceptance criteria:** `steward check --scope changed` and `--scope staged` on a clean governed repo return clean PASS with no false diagnostics.
+- **Effort estimate:** Small-medium (validation context split, rule adjustments, regression tests)
+
+### B7: Include governance coverage in status JSON output
+
+- **Status:** Open
+- **Category:** Implementation — agent-facing parity gap
+- **Promise affected:** Dual-audience coverage reporting (PRD §3, REQ-WORKFLOW-005)
+- **Evidence sources:** [CLI Expectation Fidelity Review — 2026-04-16](../audits/cli-expectation-fidelity-review-2026-04-16.md) EF-002, [CLI Expectation Fidelity Reassessment — 2026-04-16](../audits/cli-expectation-fidelity-reassessment-2026-04-16.md) F-02, [CLI Full Assessment — 2026-04-16](../audits/cli-full-assessment-2026-04-16.md) F3
+- **What is broken:**
+  - `steward status --coverage --output json` returns the same JSON as `status --output json` — no `coverage` field is included even when `--coverage` is requested.
+- **What must change:**
+  - Include a `coverage` object in JSON output when `--coverage` is requested, containing at minimum: governed count, total Markdown count, percentage, and list of ungoverned paths.
+  - Add a contract test for `status --coverage --output json`.
+- **Acceptance criteria:** `steward status --coverage --output json` includes a `coverage` object with accurate governance-coverage data.
+- **Effort estimate:** Small
 
 ---
 

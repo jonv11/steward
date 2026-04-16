@@ -4,7 +4,7 @@
 - **Version:** 0.10.0
 - **Status:** Accepted
 - **Source:** Maps MRD-0001 requirements to milestones and PRD sections
-- **Last updated:** 2026-04-15
+- **Last updated:** 2026-04-16
 
 ---
 
@@ -29,8 +29,8 @@
 | REQ-CONFIG-008 | CONFIG | 8.2 | v0.10.0 | ✅ Implemented |
 | REQ-CONFIG-009 | CONFIG | 8.2 | v0.3.0 | ✅ Implemented |
 | REQ-VALIDATE-001 | VALIDATION | 8.3 | v0.4.0 | ✅ Implemented |
-| REQ-VALIDATE-002 | VALIDATION | 8.3 | v0.4.0 | ✅ Implemented |
-| REQ-VALIDATE-003 | VALIDATION | 8.3 | v0.4.0 | ✅ Implemented |
+| REQ-VALIDATE-002 | VALIDATION | 8.3 | v0.4.0 | ⚠️ Partial — scoped check semantics broken (B6) |
+| REQ-VALIDATE-003 | VALIDATION | 8.3 | v0.4.0 | ⚠️ Partial — scoped check semantics broken (B6) |
 | REQ-VALIDATE-004 | VALIDATION | 8.3 | v0.4.0–v0.9.0 | ✅ Implemented |
 | REQ-VALIDATE-005 | VALIDATION | 8.3 | v0.4.0 | ✅ Implemented |
 | REQ-VALIDATE-006 | VALIDATION | 8.3 | v0.4.0 | ✅ Implemented |
@@ -195,7 +195,7 @@
 
 ## Summary
 
-- **Implemented:** 135 requirements
-- **Partial:** 30 requirements
+- **Implemented:** 133 requirements
+- **Partial:** 32 requirements
 - **Planned on later pre-1.0 milestones:** 7 requirements
 - **Total:** 172 requirements

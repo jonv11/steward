@@ -1,8 +1,8 @@
 # RFC-007 Governance Enhancements — Status Ledger
 
 - **Source:** [RFC-007 Maintainer Governance and Stewardship Enhancements](../decisions/rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements.md)
-- **Status:** Accepted and substantially delivered in the current pre-1.0 baseline
-- **Last updated:** 2026-04-15
+- **Status:** Accepted and substantially delivered in the current pre-1.0 baseline; items marked "Implemented (baseline)" have working surfaces but not yet full RFC-anticipated depth
+- **Last updated:** 2026-04-16
 
 ---
 
@@ -18,9 +18,9 @@ This artifact is no longer a “post-v1” backlog. It is now a ledger showing w
 | G7-02 | Scoped frontmatter requirements per path pattern | Implemented | `validation.frontmatter_requirements` exists in schema and validation flow |
 | G7-03 | Naming convention enforcement in path-policy | Implemented | `NamingConventionRule` / `STWD-010` |
 | G7-04 | Post-fix and maintain diff output | Implemented | `MaintainCommand` supports `--diff`; fix/apply flows report concrete changes |
-| G7-05 | Rule scope transparency in explain | Implemented enough for current baseline | `explain` surfaces rule metadata and `explain path` closes the larger coverage gap |
+| G7-05 | Rule scope transparency in explain | Implemented (baseline) | `explain` surfaces rule metadata and `explain path` shows applicable rules; does not yet filter by actual governance applicability or show provenance/precedence detail |
 | G7-06 | Effective policy explanation for a path | Implemented | `steward explain path <path>` |
-| G7-07 | Configuration doctor for ineffective governance | Implemented | `steward config doctor` |
+| G7-07 | Configuration doctor for ineffective governance | Implemented (baseline) | `steward config doctor` covers dead start-here, missing artifacts, unmatched rules/sources, overlapping globals; deeper checks for shadowed rules, dead suppressions, and no-effect declarations remain for later depth work |
 | G7-08 | Index-completeness validation | Implemented | `IndexCompletenessRule` / `STWD-011` |
 | G7-09 | State-document freshness signaling | Implemented | `FreshnessRule` / `STWD-012` |
 | G7-10 | Directory-index generator | Implemented | `DirectoryIndexMaintainer` |
@@ -33,8 +33,14 @@ This artifact is no longer a “post-v1” backlog. It is now a ledger showing w
 | G7-17 | Staged-scope completeness checks | Implemented | `CheckCommand.ComputeStagedCompleteness` |
 | G7-18 | Reference graph queries | Implemented | `steward refs <path>` |
 | G7-19 | Safe move/rename workflow | Implemented | `steward refactor move` |
-| G7-20 | Bootstrap-by-analysis | Implemented | `BootstrapAnalyzer` and `config suggest` |
+| G7-20 | Bootstrap-by-analysis | Implemented (baseline) | `BootstrapAnalyzer` and `config suggest` provide narrow heuristic suggestions; mature-repo depth (inferring indexes, state docs, decisions, roles) is a follow-on item |
 
 ## Remaining Follow-On Work
 
-RFC-007 itself no longer carries the main unfinished stable-readiness load. Remaining work is tracked in [pre-1-0-readiness-plan.md](pre-1-0-readiness-plan.md) and later pre-1.0 milestones, with ADR-012 covering the larger artifact-type direction that extends beyond the original RFC-007 item set.
+RFC-007 itself no longer carries the main unfinished stable-readiness load. Items marked "Implemented (baseline)" above have useful working surfaces but do not yet reach the full depth anticipated by the RFC. Specifically:
+
+- **G7-05 (explain path):** Needs rule-applicability filtering and provenance/precedence detail for deep policy debugging. Tracked for `v0.12.0`.
+- **G7-07 (config doctor):** Needs broader ineffective-governance checks (shadowed rules, dead suppressions, no-effect declarations). Tracked for `v0.12.0`.
+- **G7-20 (bootstrap-by-analysis):** Needs richer repository analysis heuristics for mature repos. Tracked for `v0.12.0`.
+
+Remaining stable-readiness work is tracked in [pre-1-0-readiness-plan.md](pre-1-0-readiness-plan.md) and later pre-1.0 milestones, with ADR-012 covering the larger artifact-type direction that extends beyond the original RFC-007 item set.
