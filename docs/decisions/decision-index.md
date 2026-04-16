@@ -13,6 +13,7 @@ Index of all accepted RFCs and ADRs for the Repository Steward project.
 | [RFC-005](rfcs/RFC-005-orientation-search-outline.md) | Orientation, Search, and Outline | Accepted | Surface boundaries and responsibilities |
 | [RFC-006](rfcs/RFC-006-maintenance-and-memory.md) | Maintenance and Memory | Accepted | Maintenance flows, memory artifacts, anti-drift |
 | [RFC-007](rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements.md) | Maintainer Governance and Stewardship Enhancements | Accepted | Policy expressiveness, governance inspection, maintenance evolution, stewardship workflows |
+| [RFC-008](rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) | Convention-Based Discovery and Workflow Modeling | Proposed | Artifact families, path-based discovery, frontmatter-driven classification, workflow/session modeling |
 
 ## ADRs — Technical and Architectural Decisions
 

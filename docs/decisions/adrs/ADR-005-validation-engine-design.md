@@ -1,7 +1,10 @@
-# ADR-005: Validation Engine Design
+---
+type: adr
+status: Accepted
+category: Architecture
+---
 
-- **Status:** Accepted
-- **Category:** Architecture
+# ADR-005: Validation Engine Design
 
 ---
 

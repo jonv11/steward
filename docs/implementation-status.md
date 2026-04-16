@@ -76,6 +76,16 @@ The following known defects were identified in the 2026-04-16 CLI review cycle. 
 - **`fm-validate` added:** `md edit fm-validate <file>` validates frontmatter against policy requirements (global + scoped), completing the RFC-004 edit operation set.
 - **Mixed/knowledge profiles:** Remain deferred per ADR-014; no changes in this milestone.
 
+## Maintainer Review Pass (post-v0.12.0, in-progress)
+
+A comprehensive maintainer review pass addressed several cross-cutting concerns:
+
+- **Culture/locale fix:** `Program.Main()` now sets `InvariantCulture` before command parsing, ensuring deterministic output across all environments.
+- **JSON/text output parity:** `steward check --output json` now includes impact signals and staged completeness, matching the text output.
+- **Document frontmatter migration:** All ADR, RFC, PRD, planning, and requirements documents migrated from markdown-bullet metadata to YAML frontmatter blocks.
+- **Policy scalability:** `policy.yaml` refactored from 19 per-file artifact entries to 11 structurally essential ones, with convention-based `frontmatter_requirements` for document families.
+- **RFC-008 proposed:** [Convention-Based Discovery and Workflow Modeling](decisions/rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) captures remaining product gaps: artifact families, path-based discovery, workflow/session modeling.
+
 ## Remaining Before First Stable Shipment
 
 The detailed categorized list lives in [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md). At a high level, the remaining work is now concentrated in a smaller set of release-hardening items:
@@ -90,8 +100,9 @@ The detailed categorized list lives in [Pre-1.0 Readiness Plan](planning/pre-1-0
 
 ### Optional / Later Pre-1.0
 
-- Artifact type schema work and other deferred requirement families on later `0.x` milestones
+- Artifact type schema work and convention-based discovery per RFC-008
 - Re-enabling deferred profiles (`mixed`, `knowledge`) when their contracts are enriched (see [ADR-014](decisions/adrs/ADR-014-non-software-profile-scope.md))
+- Workflow/session modeling (RFC-008 Phase 3)
 
 ## Manual Follow-Up Outside The Repo
 

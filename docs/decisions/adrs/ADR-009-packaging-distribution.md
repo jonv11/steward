@@ -1,7 +1,10 @@
-# ADR-009: Packaging and Distribution
+---
+type: adr
+status: Accepted
+category: Distribution
+---
 
-- **Status:** Accepted
-- **Category:** Distribution
+# ADR-009: Packaging and Distribution
 
 ---
 

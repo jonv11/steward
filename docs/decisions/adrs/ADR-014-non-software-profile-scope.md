@@ -1,8 +1,11 @@
-# ADR-014: Non-Software Profile Scope for First Public Release
+---
+type: adr
+status: Accepted
+category: Product / Configuration
+date: 2026-04-16
+---
 
-- **Status:** Accepted
-- **Category:** Product / Configuration
-- **Date:** 2026-04-16
+# ADR-014: Non-Software Profile Scope for First Public Release
 
 ---
 

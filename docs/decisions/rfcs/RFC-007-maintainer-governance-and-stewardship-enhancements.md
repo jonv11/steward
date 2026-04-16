@@ -1,8 +1,14 @@
+---
+type: rfc
+status: Accepted
+accepted: 2026-04-15
+resolves: >-
+  Maintainer-governance gaps, policy explainability gaps, and stewardship workflow
+  improvements identified through repo-maintainer review and follow-up product analysis
+---
+
 # RFC-007: Maintainer Governance and Repository Stewardship Enhancements
 
-- **Status:** Accepted
-- **Accepted:** 2026-04-15
-- **Resolves:** Maintainer-governance gaps, policy explainability gaps, and stewardship workflow improvements identified through repo-maintainer review and follow-up product analysis
 - **Authoring intent:** Consolidate closely related product-level enhancements before any implementation-specific ADRs are created
 
 ---

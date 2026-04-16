@@ -1,8 +1,11 @@
-# ADR-013: Pre-1.0 Versioning and Release Authorization
+---
+type: adr
+status: Accepted
+category: Release Governance
+date: 2026-04-15
+---
 
-- **Status:** Accepted
-- **Category:** Release Governance
-- **Date:** 2026-04-15
+# ADR-013: Pre-1.0 Versioning and Release Authorization
 
 ---
 

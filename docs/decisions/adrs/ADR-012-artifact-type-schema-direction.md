@@ -1,7 +1,10 @@
-# ADR-012: Artifact Type Schema System Direction
+---
+type: adr
+status: Accepted
+category: Product Architecture
+---
 
-- **Status:** Accepted
-- **Category:** Product Architecture
+# ADR-012: Artifact Type Schema System Direction
 
 ---
 

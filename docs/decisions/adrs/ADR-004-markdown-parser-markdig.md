@@ -1,7 +1,10 @@
-# ADR-004: Markdown Parser — Markdig
+---
+type: adr
+status: Accepted
+category: Technical
+---
 
-- **Status:** Accepted
-- **Category:** Technical
+# ADR-004: Markdown Parser — Markdig
 
 ---
 

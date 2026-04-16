@@ -1,8 +1,12 @@
+---
+type: planning
+status: Active
+last_updated: 2026-04-16
+---
+
 # Pre-Release Blockers
 
 - **Source:** [Release-Readiness Assessment 2026-04-15](../audits/release-readiness-assessment-2026-04-15.md)
-- **Status:** Active
-- **Last updated:** 2026-04-16 (B6, B7 resolved; DI Abstractions upgraded to GA)
 
 ---
 

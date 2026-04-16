@@ -4,7 +4,7 @@ repository:
   type: tool
 
 artifacts:
-  # Session-start entry points
+  # Structurally required entry points — these are the repo's orientation spine
   - path: README.md
     role: authoritative
     description: Project overview, contributor quick start, command reference, and primary entry point
@@ -45,69 +45,38 @@ artifacts:
     required: true
     importance: required
 
-  # Requirements and repository contract
+  # Core requirements and repository contract
   - path: repository-steward-master-requirements.md
     role: requirements
     description: Original MRD source from which the PRD and traceability matrix are derived
-    required: false
     importance: recommended
 
   - path: docs/requirements/requirements-traceability.md
     role: requirements
     description: Traceability matrix from MRD requirements to milestones and current implementation status
-    required: false
     importance: recommended
 
-  - path: docs/requirements/assumptions-constraints.md
-    role: reference
-    description: Assumptions, constraints, dependencies, and risks that shape implementation
-    required: false
-    importance: recommended
-
-  # Roadmap and planning
-  - path: docs/planning/implementation-instructions.md
-    role: guide
-    description: Milestone-by-milestone implementation instructions for contributors continuing the roadmap
-    required: false
-    importance: recommended
-
+  # Key planning artifacts — only structurally essential ones, not every planning doc
   - path: docs/planning/milestone-plan.md
     role: milestones
     description: Delivered and planned pre-1.0 milestone sequencing from v0.1.0 onward
-    required: false
     importance: recommended
 
   - path: docs/planning/pre-1-0-readiness-plan.md
     role: roadmap
     description: Active pre-1.0 readiness plan and categorized remaining work before first stable shipment
-    required: false
-    importance: recommended
-
-  - path: docs/planning/rfc-007-governance-enhancements-backlog.md
-    role: roadmap
-    description: Actionable backlog for accepted governance enhancements from RFC-007
-    required: false
-    importance: recommended
-
-  # Audits
-  - path: docs/audits/usability-review-2026-04-15.md
-    role: audit
-    description: Steward-on-Steward usability and configurability review for contributor experience
-    required: false
-    importance: recommended
-
-  - path: docs/audits/repository-audit-2026-04-14.md
-    role: audit
-    description: Release-readiness audit and contract-alignment review for the current implementation
-    required: false
     importance: recommended
 
   # Generated
   - path: STRUCTURE.md
     role: generated
     description: Generated repository map refreshed by steward maintain after structural changes
-    required: false
     importance: recommended
+
+  # Note: Individual audit files, planning detail docs, and per-ADR/RFC entries are
+  # intentionally NOT listed here. They are discoverable by path convention and
+  # governed by frontmatter_requirements below. See RFC-008 for the product direction
+  # toward full convention-based artifact discovery.
 
 governance:
   section_size_warning_threshold: 500
@@ -129,6 +98,45 @@ governance:
 
 validation:
   disabled_rules: []
+
+  # Convention-based frontmatter enforcement by path pattern.
+  # This replaces per-file artifact entries for document families that share
+  # a common structure. Any new ADR, RFC, or planning doc automatically
+  # inherits these requirements without needing a new policy.yaml entry.
+  frontmatter_requirements:
+    - pattern: "docs/decisions/adrs/**"
+      required_fields:
+        - type
+        - status
+        - category
+      allowed_values:
+        type: [adr]
+        status: [Draft, Proposed, Accepted, Superseded, Deprecated]
+
+    - pattern: "docs/decisions/rfcs/**"
+      required_fields:
+        - type
+        - status
+        - resolves
+      allowed_values:
+        type: [rfc]
+        status: [Draft, Proposed, Accepted, Superseded, Deprecated]
+
+    - pattern: "docs/requirements/**"
+      required_fields:
+        - type
+        - status
+      allowed_values:
+        type: [prd, requirements]
+        status: [Draft, Accepted, Active, Superseded]
+
+    - pattern: "docs/planning/**"
+      required_fields:
+        - type
+        - status
+      allowed_values:
+        type: [planning]
+        status: [Draft, Active, Accepted, Completed, Superseded]
 
 maintenance:
   artifacts:

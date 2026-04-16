@@ -1,7 +1,10 @@
-# ADR-010: Agent-Usefulness Improvements
+---
+type: adr
+status: Accepted
+category: CLI Ergonomics
+---
 
-- **Status:** Accepted
-- **Category:** CLI Ergonomics
+# ADR-010: Agent-Usefulness Improvements
 
 ---
 

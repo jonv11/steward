@@ -1,7 +1,11 @@
-# RFC-003: Validation and Diagnostics
+---
+type: rfc
+status: Accepted
+resolves: >-
+  Check behavior, diagnostic schema, severity model, exit codes, remediation, scoping, dry-run
+---
 
-- **Status:** Accepted
-- **Resolves:** Check behavior, diagnostic schema, severity model, exit codes, remediation, scoping, dry-run
+# RFC-003: Validation and Diagnostics
 
 ---
 

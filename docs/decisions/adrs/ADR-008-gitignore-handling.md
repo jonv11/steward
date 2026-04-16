@@ -1,7 +1,10 @@
-# ADR-008: .gitignore Handling
+---
+type: adr
+status: Accepted
+category: Technical
+---
 
-- **Status:** Accepted
-- **Category:** Technical
+# ADR-008: .gitignore Handling
 
 ---
 

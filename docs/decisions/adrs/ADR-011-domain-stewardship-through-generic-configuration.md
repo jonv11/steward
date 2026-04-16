@@ -1,7 +1,10 @@
-# ADR-011: Domain-Specific Stewardship Through Generic Configuration
+---
+type: adr
+status: Accepted
+category: Product Direction
+---
 
-- **Status:** Accepted
-- **Category:** Product Direction
+# ADR-011: Domain-Specific Stewardship Through Generic Configuration
 
 ---
 

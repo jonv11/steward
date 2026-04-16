@@ -1,9 +1,12 @@
-# Delivery Strategy
+---
+type: planning
+document_id: PLAN-0001
+version: 0.10.0
+status: Accepted
+last_updated: 2026-04-15
+---
 
-- **Document ID:** PLAN-0001
-- **Version:** 0.10.0
-- **Status:** Accepted
-- **Last updated:** 2026-04-15
+# Delivery Strategy
 
 ---
 

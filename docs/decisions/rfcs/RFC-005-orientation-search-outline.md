@@ -1,7 +1,11 @@
-# RFC-005: Orientation, Search, and Outline Boundaries
+---
+type: rfc
+status: Accepted
+resolves: >-
+  How orient, outline, and search relate; what each surface owns; overlap management
+---
 
-- **Status:** Accepted
-- **Resolves:** How orient, outline, and search relate; what each surface owns; overlap management
+# RFC-005: Orientation, Search, and Outline Boundaries
 
 ---
 

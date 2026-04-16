@@ -1,7 +1,11 @@
-# RFC-002: Configuration Model
+---
+type: rfc
+status: Accepted
+resolves: >-
+  Config format, file layout, policy vs. runtime separation, profiles, layering, precedence, excludes
+---
 
-- **Status:** Accepted
-- **Resolves:** Config format, file layout, policy vs. runtime separation, profiles, layering, precedence, excludes
+# RFC-002: Configuration Model
 
 ---
 

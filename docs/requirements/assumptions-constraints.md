@@ -1,9 +1,12 @@
-# Assumptions, Constraints, Dependencies, and Risks
+---
+type: requirements
+document_id: ACD-0001
+version: 0.10.0
+status: Accepted
+last_updated: 2026-04-15
+---
 
-- **Document ID:** ACD-0001
-- **Version:** 0.10.0
-- **Status:** Accepted
-- **Last updated:** 2026-04-15
+# Assumptions, Constraints, Dependencies, and Risks
 
 ---
 

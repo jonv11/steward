@@ -1,7 +1,11 @@
-# Curation Notes
+---
+type: planning
+status: Active
+version: 0.10.0
+last_updated: 2026-04-15
+---
 
-- **Version:** 0.10.0
-- **Last updated:** 2026-04-15
+# Curation Notes
 
 ---
 

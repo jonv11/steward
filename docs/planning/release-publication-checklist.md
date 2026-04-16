@@ -1,3 +1,8 @@
+---
+type: planning
+status: Active
+---
+
 # Release Publication Checklist
 
 - **Applies to:** Any Steward release (pre-1.0 and stable)

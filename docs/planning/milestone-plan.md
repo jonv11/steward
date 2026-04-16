@@ -1,9 +1,12 @@
-# Milestone Plan — Pre-1.0 Mainline
+---
+type: planning
+document_id: PLAN-0002
+version: 0.11.0
+status: Active
+last_updated: 2026-04-16
+---
 
-- **Document ID:** PLAN-0002
-- **Version:** 0.11.0
-- **Status:** Active
-- **Last updated:** 2026-04-16
+# Milestone Plan — Pre-1.0 Mainline
 
 ---
 

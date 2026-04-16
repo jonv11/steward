@@ -41,6 +41,7 @@
 │   │   ├── milestone-plan.md
 │   │   ├── pre-1-0-readiness-plan.md
 │   │   ├── pre-release-blockers.md
+│   │   ├── release-publication-checklist.md
 │   │   └── rfc-007-governance-enhancements-backlog.md
 │   ├── planning-index.md
 │   └── requirements/
@@ -93,11 +94,13 @@
     │   ├── JsonFormatterTests.cs
     │   ├── MaintainCommandTests.cs
     │   ├── MdEditCommandTests.cs
+    │   ├── MdQueryCommandTests.cs
     │   ├── OrientCommandTests.cs
     │   ├── OutlineCommandTests.cs
     │   ├── ProfileReadinessTests.cs
     │   ├── RefsCommandTests.cs
     │   ├── SearchCommandTests.cs
+    │   ├── StableSurfaceContractTests.cs
     │   ├── StagedCompletenessTests.cs
     │   ├── StatusCommandTests.cs
     │   ├── Steward.Cli.Tests.csproj

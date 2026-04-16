@@ -1,7 +1,11 @@
-# RFC-001: CLI Command Structure
+---
+type: rfc
+status: Accepted
+resolves: >-
+  Product questions about command hierarchy, naming, global options, and CLI UX conventions
+---
 
-- **Status:** Accepted
-- **Resolves:** Product questions about command hierarchy, naming, global options, and CLI UX conventions
+# RFC-001: CLI Command Structure
 
 ---
 

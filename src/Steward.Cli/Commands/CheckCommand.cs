@@ -138,6 +138,17 @@ public static class CheckCommand
             // Compute completion data for output
             var completionData = ComputeCompletionData(ctx.Policy, result.Diagnostics);
 
+            // Compute impact and staged completeness for parity across formats
+            var impacts = ComputeImpactSignals(ctx.Policy, orderedDiagnostics);
+            List<(string ArtifactId, string ArtifactPath)>? stagedIncomplete = null;
+            if (string.Equals(scopeLabel, "staged", StringComparison.OrdinalIgnoreCase))
+            {
+                var stagedPaths = new HashSet<string>(
+                    targetFiles.Select(f => f.RelativePath.Replace('\\', '/')),
+                    StringComparer.OrdinalIgnoreCase);
+                stagedIncomplete = ComputeStagedCompleteness(ctx.Policy, stagedPaths);
+            }
+
             // Output
             if (ctx.OutputFormat == OutputFormat.Json)
             {
@@ -166,7 +177,22 @@ public static class CheckCommand
                             Remediation = diag.Remediation != null ? SecretFilter.Redact(diag.Remediation) : null,
                             Source = diag.Source
                         })
-                    ]
+                    ],
+                    ImpactSignals = impacts.Count > 0
+                        ? [.. impacts.Select(i => new CheckImpactSignalResponse
+                        {
+                            ArtifactId = i.ArtifactId,
+                            ArtifactPath = i.ArtifactPath,
+                            SourcePath = i.SourcePath
+                        })]
+                        : null,
+                    StagedCompleteness = stagedIncomplete is { Count: > 0 }
+                        ? [.. stagedIncomplete.Select(s => new CheckStagedCompletenessResponse
+                        {
+                            ArtifactId = s.ArtifactId,
+                            ArtifactPath = s.ArtifactPath
+                        })]
+                        : null
                 });
             }
             else
@@ -193,7 +219,6 @@ public static class CheckCommand
                 }
 
                 // Impact analysis
-                var impacts = ComputeImpactSignals(ctx.Policy, orderedDiagnostics);
                 if (impacts.Count > 0)
                 {
                     ctx.Formatter.WriteMessage("");
@@ -205,21 +230,13 @@ public static class CheckCommand
                 }
 
                 // Staged-scope completeness check
-                if (string.Equals(scopeLabel, "staged", StringComparison.OrdinalIgnoreCase))
+                if (stagedIncomplete is { Count: > 0 })
                 {
-                    var stagedPaths = new HashSet<string>(
-                        targetFiles.Select(f => f.RelativePath.Replace('\\', '/')),
-                        StringComparer.OrdinalIgnoreCase);
-
-                    var incomplete = ComputeStagedCompleteness(ctx.Policy, stagedPaths);
-                    if (incomplete.Count > 0)
+                    ctx.Formatter.WriteMessage("");
+                    ctx.Formatter.WriteMessage("Staging completeness:");
+                    foreach (var (artifactId, artifactPath) in stagedIncomplete)
                     {
-                        ctx.Formatter.WriteMessage("");
-                        ctx.Formatter.WriteMessage("Staging completeness:");
-                        foreach (var (artifactId, artifactPath) in incomplete)
-                        {
-                            ctx.Formatter.WriteMessage($"  [info] Maintained artifact '{artifactId}' ({artifactPath}) has staged sources but is not itself staged.");
-                        }
+                        ctx.Formatter.WriteMessage($"  [info] Maintained artifact '{artifactId}' ({artifactPath}) has staged sources but is not itself staged.");
                     }
                 }
 
@@ -428,6 +445,8 @@ internal sealed class CheckResponse
     public required CheckSummaryResponse Summary { get; init; }
     public CheckCompletionResponse? Completion { get; init; }
     public required List<CheckDiagnosticResponse> Diagnostics { get; init; }
+    public List<CheckImpactSignalResponse>? ImpactSignals { get; init; }
+    public List<CheckStagedCompletenessResponse>? StagedCompleteness { get; init; }
 }
 
 internal sealed class CheckSummaryResponse
@@ -469,3 +488,16 @@ internal sealed class CheckDiagnosticResponse
 }
 
 internal sealed record CompletionRuleDescriptor(string RuleId, string Description);
+
+internal sealed class CheckImpactSignalResponse
+{
+    public required string ArtifactId { get; init; }
+    public required string ArtifactPath { get; init; }
+    public required string SourcePath { get; init; }
+}
+
+internal sealed class CheckStagedCompletenessResponse
+{
+    public required string ArtifactId { get; init; }
+    public required string ArtifactPath { get; init; }
+}

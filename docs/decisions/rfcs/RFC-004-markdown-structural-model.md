@@ -1,7 +1,11 @@
-# RFC-004: Markdown Structural Model
+---
+type: rfc
+status: Accepted
+resolves: >-
+  Selector syntax, managed regions, edit operations, preview/apply, ownership enforcement
+---
 
-- **Status:** Accepted
-- **Resolves:** Selector syntax, managed regions, edit operations, preview/apply, ownership enforcement
+# RFC-004: Markdown Structural Model
 
 ---
 

@@ -34,6 +34,7 @@ Central navigation for the active product, planning, readiness, and decision art
 | [Implementation Instructions](planning/implementation-instructions.md) | Contributor execution guide for the active pre-1.0 roadmap |
 | [RFC-007 Governance Enhancements Backlog](planning/rfc-007-governance-enhancements-backlog.md) | Status ledger for accepted governance-enhancement items |
 | [Curation Notes](planning/curation-notes.md) | Provenance, superseded framing, and roadmap retargeting notes |
+| [Release Publication Checklist](planning/release-publication-checklist.md) | Local verification, tagging, NuGet publication, and self-contained binary steps |
 
 ## Reviews And Audit Evidence
 

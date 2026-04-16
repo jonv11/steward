@@ -1,7 +1,10 @@
-# ADR-001: .NET 10 CLI Architecture
+---
+type: adr
+status: Accepted
+category: Architecture
+---
 
-- **Status:** Accepted
-- **Category:** Architecture
+# ADR-001: .NET 10 CLI Architecture
 
 ---
 

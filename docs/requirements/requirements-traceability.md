@@ -1,10 +1,13 @@
-# Requirements Traceability
+---
+type: requirements
+document_id: TRACE-0001
+version: 0.10.0
+status: Accepted
+source: Maps MRD-0001 requirements to milestones and PRD sections
+last_updated: 2026-04-16
+---
 
-- **Document ID:** TRACE-0001
-- **Version:** 0.10.0
-- **Status:** Accepted
-- **Source:** Maps MRD-0001 requirements to milestones and PRD sections
-- **Last updated:** 2026-04-16
+# Requirements Traceability
 
 ---
 

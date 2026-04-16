@@ -1,7 +1,11 @@
-# RFC-006: Maintenance and Memory Artifacts
+---
+type: rfc
+status: Accepted
+resolves: >-
+  Maintenance flows, memory artifacts, auto-maintained documents, anti-drift, artifact roles
+---
 
-- **Status:** Accepted
-- **Resolves:** Maintenance flows, memory artifacts, auto-maintained documents, anti-drift, artifact roles
+# RFC-006: Maintenance and Memory Artifacts
 
 ---
 

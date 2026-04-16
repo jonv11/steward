@@ -1,8 +1,11 @@
-# Pre-1.0 Readiness Plan
+---
+type: planning
+source_baseline: v0.11.0
+status: Active
+last_updated: 2026-04-16
+---
 
-- **Source baseline:** `v0.11.0`
-- **Status:** Active
-- **Last updated:** 2026-04-16
+# Pre-1.0 Readiness Plan
 
 ---
 

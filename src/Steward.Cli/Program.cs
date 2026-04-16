@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Globalization;
 using Steward.Core;
 using Steward.Cli.Commands;
 
@@ -31,6 +32,10 @@ public static class Program
 
     public static async Task<int> Main(string[] args)
     {
+        // Ensure invariant culture for deterministic output regardless of system locale.
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
         var parseResult = CreateRootCommand().Parse(args);
         var exitCode = await parseResult.InvokeAsync(CancellationToken.None);
 

@@ -1,8 +1,11 @@
-# Implementation Instructions
+---
+type: planning
+version: 0.10.0
+status: Active
+last_updated: 2026-04-16
+---
 
-- **Version:** 0.10.0
-- **Status:** Active
-- **Last updated:** 2026-04-16
+# Implementation Instructions
 
 ---
 

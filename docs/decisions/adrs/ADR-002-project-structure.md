@@ -1,7 +1,10 @@
-# ADR-002: Project Structure
+---
+type: adr
+status: Accepted
+category: Architecture
+---
 
-- **Status:** Accepted
-- **Category:** Architecture
+# ADR-002: Project Structure
 
 ---
 

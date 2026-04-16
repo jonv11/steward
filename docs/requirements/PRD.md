@@ -1,10 +1,13 @@
-# Repository Steward — Product Requirements Document
+---
+type: prd
+document_id: PRD-0001
+version: 0.10.0
+status: Accepted
+source: Derived from MRD-0001 (repository-steward-master-requirements.md)
+last_updated: 2026-04-15
+---
 
-- **Document ID:** PRD-0001
-- **Version:** 0.10.0
-- **Status:** Accepted
-- **Source:** Derived from MRD-0001 (repository-steward-master-requirements.md)
-- **Last updated:** 2026-04-15
+# Repository Steward — Product Requirements Document
 
 ---
 

@@ -1,7 +1,10 @@
-# ADR-006: Output Formatting Strategy
+---
+type: adr
+status: Accepted
+category: Technical
+---
 
-- **Status:** Accepted
-- **Category:** Technical
+# ADR-006: Output Formatting Strategy
 
 ---
 

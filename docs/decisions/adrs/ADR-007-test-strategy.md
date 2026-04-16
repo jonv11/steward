@@ -1,7 +1,10 @@
-# ADR-007: Test Strategy
+---
+type: adr
+status: Accepted
+category: Quality
+---
 
-- **Status:** Accepted
-- **Category:** Quality
+# ADR-007: Test Strategy
 
 ---
 
