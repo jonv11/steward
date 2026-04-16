@@ -209,9 +209,10 @@ public static class CheckCommand
                             ? diag.Line.HasValue ? $"{diag.Path}:{diag.Line}" : diag.Path
                             : "";
 
+                        var severity = FormatSeverity(diag.Severity);
                         var message = SecretFilter.Redact(diag.Message);
                         var locationPart = location.Length > 0 ? $" {location}:" : ":";
-                        ctx.Formatter.WriteMessage($"[{FormatSeverity(diag.Severity),-5}] {diag.RuleId}{locationPart} {message}");
+                        ctx.Formatter.WriteDiagnostic(severity, $"[{severity,-5}] {diag.RuleId}{locationPart} {message}");
 
                         if (diag.Remediation != null)
                             ctx.Formatter.WriteMessage($"         fix: {SecretFilter.Redact(diag.Remediation)}");
@@ -246,7 +247,10 @@ public static class CheckCommand
                     $"Errors: {result.Summary.Errors}  Warnings: {result.Summary.Warnings}  Info: {result.Summary.Infos}");
                 if (scopeLabel != "full")
                     ctx.Formatter.WriteMessage($"Scope: {scopeLabel}");
-                ctx.Formatter.WriteMessage(result.Summary.Pass ? "Result: PASS" : "Result: FAIL");
+                if (result.Summary.Pass)
+                    ctx.Formatter.WriteSuccess("Result: PASS");
+                else
+                    ctx.Formatter.WriteDiagnostic("error", "Result: FAIL");
 
                 // Completion policy summary
                 WriteCompletionSummary(ctx, result.Diagnostics);

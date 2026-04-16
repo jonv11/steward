@@ -76,6 +76,16 @@ The following known defects were identified in the 2026-04-16 CLI review cycle. 
 - **`fm-validate` added:** `md edit fm-validate <file>` validates frontmatter against policy requirements (global + scoped), completing the RFC-004 edit operation set.
 - **Mixed/knowledge profiles:** Remain deferred per ADR-014; no changes in this milestone.
 
+## Incremental Pass (post-v0.12.0, in-progress)
+
+### Required-sections enforcement
+
+ADRs, RFCs, and PRDs have established section conventions (Context / Decision / Consequences for ADRs; numbered sections for RFCs and PRDs). These conventions are consistent across all existing documents and are documented in policy comments and the planning gap tracker. Current Steward has no mechanism to enforce section presence at the family level — RFC-008 §3.3 explicitly marks `required_sections` per family as a future capability dependent on the artifact type schema work (ADR-012, v0.13.0+). The gap is tracked in [pre-1-0-readiness-plan.md](planning/pre-1-0-readiness-plan.md) under "Later Pre-1.0 Candidates".
+
+### Color UX coherence
+
+`--no-color` was declared as a global option and plumbed into `TextOutputFormatter`, but previously only `WriteError` used color (red on stderr). The formatter interface now exposes `WriteSuccess` (green, stdout) and `WriteDiagnostic` (severity-colored, stdout) so that meaningful color is present for the PASS/FAIL result line and per-diagnostic severity labels (`error`=red, `warn`=yellow, `info`=plain). Color detection remains automatic (`Console.IsOutputRedirected` suppresses color when piped) and consistent with ADR-006. `--no-color` now has material effect on text-mode output.
+
 ## Maintainer Review Pass (post-v0.12.0, in-progress)
 
 A comprehensive maintainer review pass addressed several cross-cutting concerns:

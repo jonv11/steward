@@ -61,4 +61,73 @@ public class TextFormatterTests
             Console.SetError(originalErr);
         }
     }
+
+    [Fact]
+    public void WriteSuccess_NoColor_NoAnsiCodes()
+    {
+        var writer = new StringWriter();
+        var formatter = new TextOutputFormatter(writer, useColor: false);
+
+        formatter.WriteSuccess("Result: PASS");
+
+        var output = writer.ToString();
+        output.Should().NotContain("\x1b[");
+        output.Should().Contain("Result: PASS");
+    }
+
+    [Fact]
+    public void WriteSuccess_WithColor_ContainsGreenAnsiCode()
+    {
+        var writer = new StringWriter();
+        var formatter = new TextOutputFormatter(writer, useColor: true);
+
+        formatter.WriteSuccess("Result: PASS");
+
+        var output = writer.ToString();
+        output.Should().Contain("\x1b[32m");
+        output.Should().Contain("\x1b[0m");
+        output.Should().Contain("Result: PASS");
+    }
+
+    [Theory]
+    [InlineData("error", "\x1b[31m")]
+    [InlineData("warn", "\x1b[33m")]
+    public void WriteDiagnostic_WithColor_ColorCodeMatchesSeverity(string severity, string expectedCode)
+    {
+        var writer = new StringWriter();
+        var formatter = new TextOutputFormatter(writer, useColor: true);
+
+        formatter.WriteDiagnostic(severity, $"[{severity}] some diagnostic");
+
+        var output = writer.ToString();
+        output.Should().Contain(expectedCode);
+        output.Should().Contain("\x1b[0m");
+        output.Should().Contain($"[{severity}]");
+    }
+
+    [Fact]
+    public void WriteDiagnostic_InfoSeverity_WithColor_NoColorCode()
+    {
+        var writer = new StringWriter();
+        var formatter = new TextOutputFormatter(writer, useColor: true);
+
+        formatter.WriteDiagnostic("info", "[info ] some diagnostic");
+
+        var output = writer.ToString();
+        output.Should().NotContain("\x1b[");
+        output.Should().Contain("[info ]");
+    }
+
+    [Fact]
+    public void WriteDiagnostic_NoColor_NoAnsiCodes()
+    {
+        var writer = new StringWriter();
+        var formatter = new TextOutputFormatter(writer, useColor: false);
+
+        formatter.WriteDiagnostic("error", "[error] some diagnostic");
+
+        var output = writer.ToString();
+        output.Should().NotContain("\x1b[");
+        output.Should().Contain("[error]");
+    }
 }

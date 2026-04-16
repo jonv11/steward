@@ -37,4 +37,14 @@ public sealed class JsonOutputFormatter : IOutputFormatter
     {
         Console.Error.WriteLine(message);
     }
+
+    public void WriteSuccess(string message)
+    {
+        Console.Error.WriteLine(message);
+    }
+
+    public void WriteDiagnostic(string severity, string message)
+    {
+        Console.Error.WriteLine(message);
+    }
 }
