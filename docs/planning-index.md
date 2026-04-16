@@ -43,6 +43,7 @@ Historical audits are preserved for evidence and context. Active repository trut
 
 | Document | Purpose |
 | -------- | ------- |
+| [CLI Expectation Fidelity Review — 2026-04-16](audits/cli-expectation-fidelity-review-2026-04-16.md) | Principal-level assessment of whether Steward-on-Steward currently fulfills the repo's own CLI promise, workflows, and trust expectations |
 | [Release-Readiness Assessment — 2026-04-15](audits/release-readiness-assessment-2026-04-15.md) | End-user product review that feeds the active pre-release blocker list |
 | [Profile Readiness Review — 2026-04-16](audits/profile-readiness-review-2026-04-16.md) | Command-level release checklist and current evidence for non-software profile readiness |
 | [Release Governance Conformance Review — 2026-04-16](audits/release-governance-conformance-review-2026-04-16.md) | Current principal-engineering release-gate pass across accepted product/architecture artifacts and implementation |
