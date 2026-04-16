@@ -194,4 +194,86 @@ public class MdEditCommandTests : IDisposable
         var modified = File.ReadAllText(_testFile);
         modified.Should().Contain("### Deep");
     }
+
+    [Fact]
+    public void FmValidate_MissingField_ReportsError()
+    {
+        SetupStewardConfig("""
+            governance:
+              frontmatter:
+                required_fields:
+                  - title
+                  - status
+            """);
+
+        WriteTestFile("---\ntitle: Hello\n---\n# Hello\n");
+
+        var (exitCode, output, _) = InvokeEdit(
+            "md", "edit", "fm-validate", _testFile, "--config", Path.Combine(_tempDir, ".steward"));
+
+        exitCode.Should().Be(1);
+        output.Should().Contain("status");
+        output.Should().Contain("missing");
+    }
+
+    [Fact]
+    public void FmValidate_AllFieldsPresent_Passes()
+    {
+        SetupStewardConfig("""
+            governance:
+              frontmatter:
+                required_fields:
+                  - title
+            """);
+
+        WriteTestFile("---\ntitle: Hello\n---\n# Hello\n");
+
+        var (exitCode, output, _) = InvokeEdit(
+            "md", "edit", "fm-validate", _testFile, "--config", Path.Combine(_tempDir, ".steward"));
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("valid");
+    }
+
+    [Fact]
+    public void FmValidate_NoRequirements_Passes()
+    {
+        SetupStewardConfig("repository:\n  type: general\n");
+
+        WriteTestFile("# Hello\n");
+
+        var (exitCode, output, _) = InvokeEdit(
+            "md", "edit", "fm-validate", _testFile, "--config", Path.Combine(_tempDir, ".steward"));
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("No frontmatter requirements");
+    }
+
+    [Fact]
+    public void FmValidate_MissingFrontmatterBlock_ReportsError()
+    {
+        SetupStewardConfig("""
+            governance:
+              frontmatter:
+                required_fields:
+                  - title
+            """);
+
+        WriteTestFile("# Hello\n");
+
+        var (exitCode, output, _) = InvokeEdit(
+            "md", "edit", "fm-validate", _testFile, "--config", Path.Combine(_tempDir, ".steward"));
+
+        exitCode.Should().Be(1);
+        output.Should().Contain("missing");
+    }
+
+    private void SetupStewardConfig(string policyYaml)
+    {
+        var stewardDir = Path.Combine(_tempDir, ".steward");
+        var gitDir = Path.Combine(_tempDir, ".git");
+        if (!Directory.Exists(stewardDir)) Directory.CreateDirectory(stewardDir);
+        if (!Directory.Exists(gitDir)) Directory.CreateDirectory(gitDir);
+        File.WriteAllText(Path.Combine(stewardDir, "policy.yaml"), policyYaml);
+    }
 }

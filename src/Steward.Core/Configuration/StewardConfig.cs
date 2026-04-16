@@ -12,6 +12,9 @@ public sealed class StewardConfig
 
     [YamlMember(Alias = "discovery")]
     public DiscoveryConfig? Discovery { get; set; }
+
+    [YamlMember(Alias = "coverage")]
+    public CoverageConfig? Coverage { get; set; }
 }
 
 public sealed class OutputConfig
@@ -27,6 +30,12 @@ public sealed class OutputConfig
 }
 
 public sealed class DiscoveryConfig
+{
+    [YamlMember(Alias = "exclude")]
+    public List<string>? Exclude { get; set; }
+}
+
+public sealed class CoverageConfig
 {
     [YamlMember(Alias = "exclude")]
     public List<string>? Exclude { get; set; }

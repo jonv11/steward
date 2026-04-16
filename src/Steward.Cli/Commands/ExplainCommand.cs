@@ -343,10 +343,39 @@ public static class ExplainCommand
             }
         }
 
-        // 6. Applicable rules (not suppressed)
+        // 6. Applicable rules — filter by actual relevance to this path
         var suppressedSet = new HashSet<string>(suppressedRules, StringComparer.OrdinalIgnoreCase);
+        var isMarkdown = relativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase);
+        var isArtifact = artifactSummary != null;
+        var isIndex = artifactSummary?.IndexOf != null;
+        var hasFreshness = isArtifact && ctx.Policy?.Artifacts?.FirstOrDefault(a =>
+            string.Equals(a.Path?.Replace('\\', '/').TrimEnd('/'), relativePath, StringComparison.OrdinalIgnoreCase))
+            ?.Freshness?.MaxAgeDays > 0;
+        var isMaintained = ctx.Policy?.Maintenance?.Artifacts?.Any(m =>
+            string.Equals(m.Path?.Replace('\\', '/'), relativePath, StringComparison.OrdinalIgnoreCase)) == true;
+        var hasFrontmatterReqs = requiredFields.Count > 0;
+        var hasManagedRegions = ctx.Policy?.Governance?.ManagedRegions != null;
+        var hasPathPolicy = ctx.PathPolicy?.Rulesets is { Count: > 0 };
+
         var applicableRules = AllRules
             .Where(r => !suppressedSet.Contains(r.RuleId))
+            .Where(r => r.RuleId switch
+            {
+                "STWD-001" => isArtifact,                       // required-artifact: only for declared artifacts
+                "STWD-002" => true,                             // forbidden-path: any file
+                "STWD-003" => isMarkdown && hasFrontmatterReqs, // required-frontmatter: md files with fm requirements
+                "STWD-004" => isMarkdown,                       // section-size: md files
+                "STWD-005" => isMarkdown && hasManagedRegions,  // managed-region-integrity: md with managed regions
+                "STWD-006" => isMarkdown && hasManagedRegions,  // managed-scope-violation: md under managed scopes
+                "STWD-007" => isMaintained,                     // stale-artifact: maintained artifacts
+                "STWD-008" => isMarkdown,                       // broken-internal-link: md files
+                "STWD-009" => isMarkdown,                       // broken-artifact-reference: md files
+                "STWD-010" => hasPathPolicy,                    // naming-convention: if path-policy rules exist
+                "STWD-011" => isIndex,                          // index-completeness: index artifacts
+                "STWD-012" => isArtifact && hasFreshness,       // freshness: artifacts with freshness config
+                "STWD-013" => isMarkdown,                       // orphaned-document: md files
+                _ => true
+            })
             .Select(r => r.RuleId)
             .ToList();
 

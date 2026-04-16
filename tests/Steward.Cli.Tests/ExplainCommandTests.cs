@@ -222,7 +222,42 @@ public class ExplainCommandTests
         info.RequiredFrontmatterFields.Should().Contain("title");
         info.RequiredFrontmatterFields.Should().Contain("status");
         info.AllowedValues.Should().ContainKey("status");
+        // Suppressed rules excluded
         info.ApplicableRules.Should().NotContain("STWD-004");
         info.ApplicableRules.Should().NotContain("STWD-002");
+        // Rules applicable to this markdown index artifact
+        info.ApplicableRules.Should().Contain("STWD-001");  // required-artifact (is an artifact)
+        info.ApplicableRules.Should().Contain("STWD-003");  // required-frontmatter (has fm requirements)
+        info.ApplicableRules.Should().Contain("STWD-008");  // broken-internal-link (is .md)
+        info.ApplicableRules.Should().Contain("STWD-011");  // index-completeness (has IndexOf)
+        // Rules not applicable to this file
+        info.ApplicableRules.Should().NotContain("STWD-007"); // stale-artifact (not maintained)
+        info.ApplicableRules.Should().NotContain("STWD-012"); // freshness (no freshness config)
+    }
+
+    [Fact]
+    public void ExplainPath_NonMarkdownFile_ExcludesMarkdownRules()
+    {
+        var ctx = new CommandContext
+        {
+            RootPath = "/repo",
+            FileSystem = new Steward.TestFixtures.InMemoryFileSystem(),
+            Formatter = new Steward.Cli.Formatting.TextOutputFormatter(TextWriter.Null, false),
+            OutputFormat = Steward.Core.OutputFormat.Text,
+            Verbosity = Steward.Core.Verbosity.Normal,
+            NoColor = true,
+            Policy = new Steward.Core.Configuration.RepositoryPolicy(),
+            PathPolicy = null,
+            Files = [new Steward.Core.Discovery.DiscoveredFile("LICENSE", 100, false)]
+        };
+
+        var info = ExplainCommand.ResolveEffectivePolicy("LICENSE", ctx);
+
+        // Non-markdown file should not have markdown-only rules
+        info.ApplicableRules.Should().NotContain("STWD-003");
+        info.ApplicableRules.Should().NotContain("STWD-004");
+        info.ApplicableRules.Should().NotContain("STWD-008");
+        info.ApplicableRules.Should().NotContain("STWD-011");
+        info.ApplicableRules.Should().NotContain("STWD-013");
     }
 }

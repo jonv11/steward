@@ -40,10 +40,11 @@ public class CheckFixTests : IDisposable
             """);
         File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
 
-        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--dry-run");
+        // --fix alone = preview (no apply)
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--fix");
 
         // STWD-007 fires, so exit code is validation failure (warnings present)
-        output.Should().Contain("Dry run:");
+        output.Should().Contain("fix(es) available");
         output.Should().Contain("[fix]");
         output.Should().Contain("STWD-007");
 
@@ -52,7 +53,7 @@ public class CheckFixTests : IDisposable
     }
 
     [Fact]
-    public void Check_Fix_AppliesStaleArtifactFix()
+    public void Check_DeprecatedDryRun_StillWorks()
     {
         File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
             maintenance:
@@ -63,7 +64,26 @@ public class CheckFixTests : IDisposable
             """);
         File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
 
-        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--fix");
+        // Deprecated --dry-run still functions as preview
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--dry-run");
+
+        output.Should().Contain("[fix]");
+        File.Exists(Path.Combine(_tempDir, "STRUCTURE.md")).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Check_Fix_Apply_AppliesStaleArtifactFix()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            maintenance:
+              artifacts:
+                - id: structure
+                  path: STRUCTURE.md
+                  type: structure-document
+            """);
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--fix", "--apply");
 
         output.Should().Contain("Applied");
         output.Should().Contain("[fix]");

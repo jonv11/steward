@@ -270,4 +270,33 @@ artifacts:
         coverage.GovernedCount.Should().Be(4);
         coverage.Ungoverned.Should().BeEmpty();
     }
+
+    [Fact]
+    public void ComputeCoverage_RespectsExcludePatterns()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new ArtifactDefinition { Path = "README.md", Role = "authoritative", Required = true }
+            ]
+        };
+
+        IReadOnlyList<DiscoveredFile> files =
+        [
+            new("README.md", 10, false),
+            new("tests/fixtures/sample.md", 10, false),
+            new("tests/fixtures/other.md", 10, false),
+            new("docs/guide.md", 10, false)
+        ];
+
+        var coverage = StatusCommand.ComputeCoverage(
+            policy, files, coverageExcludes: ["tests/**"]);
+
+        // tests/ files excluded from count entirely
+        coverage.TotalMarkdownFiles.Should().Be(2);
+        coverage.GovernedCount.Should().Be(1); // README.md
+        coverage.Ungoverned.Should().Contain("docs/guide.md");
+        coverage.Ungoverned.Should().NotContain("tests/fixtures/sample.md");
+    }
 }

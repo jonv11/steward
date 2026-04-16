@@ -300,6 +300,69 @@ public class ConfigCommandTests : IDisposable
         findings.Should().BeEmpty();
     }
 
+    [Fact]
+    public void ConfigDoctor_DeadSuppression_UnknownRuleId()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Validation = new ValidationConfig
+            {
+                DisabledRules = ["STWD-999"]
+            }
+        };
+
+        var ctx = CreateDoctorContext(policy, pathPolicy: null,
+            files: [new DiscoveredFile("README.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().Contain(f => f.Category == "dead-suppression" && f.Message.Contains("STWD-999"));
+    }
+
+    [Fact]
+    public void ConfigDoctor_UnreachablePathOverride()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Validation = new ValidationConfig
+            {
+                PathOverrides =
+                [
+                    new PathOverride { Pattern = "nonexistent/**", DisabledRules = ["STWD-001"] }
+                ]
+            }
+        };
+
+        var ctx = CreateDoctorContext(policy, pathPolicy: null,
+            files: [new DiscoveredFile("README.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().Contain(f => f.Category == "unreachable-path-override" && f.Message.Contains("nonexistent/**"));
+    }
+
+    [Fact]
+    public void ConfigDoctor_UnreachableFrontmatterPattern()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Validation = new ValidationConfig
+            {
+                FrontmatterRequirements =
+                [
+                    new FrontmatterRequirement { Pattern = "archive/**", RequiredFields = ["status"] }
+                ]
+            }
+        };
+
+        var ctx = CreateDoctorContext(policy, pathPolicy: null,
+            files: [new DiscoveredFile("README.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().Contain(f => f.Category == "unreachable-frontmatter-pattern" && f.Message.Contains("archive/**"));
+    }
+
     private static CommandContext CreateDoctorContext(
         RepositoryPolicy? policy,
         PathPolicyDocument? pathPolicy,

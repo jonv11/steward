@@ -43,7 +43,7 @@ public static class StatusCommand
             {
                 if (showCoverage)
                 {
-                    var coverage = ComputeCoverage(ctx.Policy, ctx.Files!, ctx.FileSystem, ctx.RootPath);
+                    var coverage = ComputeCoverage(ctx.Policy, ctx.Files!, ctx.FileSystem, ctx.RootPath, ctx.Config?.Coverage?.Exclude);
                     ctx.Formatter.WriteObject(new RepositoryStatusWithCoverage
                     {
                         RepositoryName = status.RepositoryName,
@@ -159,7 +159,7 @@ public static class StatusCommand
 
                 if (showCoverage)
                 {
-                    var coverage = ComputeCoverage(ctx.Policy, ctx.Files!, ctx.FileSystem, ctx.RootPath);
+                    var coverage = ComputeCoverage(ctx.Policy, ctx.Files!, ctx.FileSystem, ctx.RootPath, ctx.Config?.Coverage?.Exclude);
                     ctx.Formatter.WriteMessage("");
                     ctx.Formatter.WriteMessage($"Governance coverage: {coverage.GovernedCount}/{coverage.TotalMarkdownFiles} Markdown files ({coverage.Percentage:F0}%)");
                     if (coverage.Ungoverned.Count > 0)
@@ -308,12 +308,24 @@ public static class StatusCommand
         RepositoryPolicy? policy,
         IReadOnlyList<DiscoveredFile> files,
         IFileSystem? fileSystem = null,
-        string? repositoryRoot = null)
+        string? repositoryRoot = null,
+        IReadOnlyList<string>? coverageExcludes = null)
     {
         var mdFiles = files
             .Where(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
             .Select(f => f.RelativePath.Replace('\\', '/'))
             .ToList();
+
+        // Apply coverage exclude patterns
+        if (coverageExcludes is { Count: > 0 })
+        {
+            var globs = coverageExcludes
+                .Select(DotNet.Globbing.Glob.Parse)
+                .ToList();
+            mdFiles = mdFiles
+                .Where(f => !globs.Any(g => g.IsMatch(f)))
+                .ToList();
+        }
 
         if (mdFiles.Count == 0)
             return new CoverageResult { TotalMarkdownFiles = 0, GovernedCount = 0, Percentage = 100, Ungoverned = [] };

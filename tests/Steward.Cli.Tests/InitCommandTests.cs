@@ -62,6 +62,29 @@ public class InitCommandTests : IDisposable
     }
 
     [Fact]
+    public void Init_SoftwareProfile_ScaffoldsRequiredArtifacts()
+    {
+        var (exitCode, output, _) = InvokeInit("init", "--profile", "software");
+
+        exitCode.Should().Be(0);
+        File.Exists(Path.Combine(_tempDir, "README.md")).Should().BeTrue();
+        File.Exists(Path.Combine(_tempDir, "LICENSE")).Should().BeTrue();
+        output.Should().Contain("Scaffolded required artifacts");
+        output.Should().Contain("README.md");
+        output.Should().Contain("LICENSE");
+    }
+
+    [Fact]
+    public void Init_DoesNotOverwriteExistingArtifacts()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Existing");
+        var (exitCode, _, _) = InvokeInit("init", "--profile", "software");
+
+        exitCode.Should().Be(0);
+        File.ReadAllText(Path.Combine(_tempDir, "README.md")).Should().Be("# Existing");
+    }
+
+    [Fact]
     public void Init_ShowsNextStepGuidance()
     {
         var (exitCode, output, _) = InvokeInit("init");

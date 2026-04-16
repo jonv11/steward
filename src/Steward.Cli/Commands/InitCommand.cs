@@ -48,10 +48,41 @@ public static class InitCommand
             if (policy != null)
                 File.WriteAllText(policyPath, ConfigLoader.SerializePolicy(policy));
 
+            // Scaffold placeholder files for required artifacts so that
+            // 'steward check' does not immediately fail after init.
+            var scaffolded = new List<string>();
+            if (policy?.Artifacts != null)
+            {
+                foreach (var artifact in policy.Artifacts)
+                {
+                    if (!artifact.Required || string.IsNullOrWhiteSpace(artifact.Path) || artifact.Path.EndsWith('/'))
+                        continue;
+
+                    var artifactFullPath = Path.Combine(rootPath, artifact.Path);
+                    if (File.Exists(artifactFullPath))
+                        continue;
+
+                    var artifactDir = Path.GetDirectoryName(artifactFullPath);
+                    if (artifactDir != null && !Directory.Exists(artifactDir))
+                        Directory.CreateDirectory(artifactDir);
+
+                    var placeholder = GeneratePlaceholder(artifact.Path, artifact.Role);
+                    File.WriteAllText(artifactFullPath, placeholder);
+                    scaffolded.Add(artifact.Path);
+                }
+            }
+
             formatter.WriteMessage($"Initialized .steward/ with profile '{profile}'.");
             formatter.WriteMessage($"  {Path.GetRelativePath(rootPath, configPath)}");
             if (policy != null)
                 formatter.WriteMessage($"  {Path.GetRelativePath(rootPath, policyPath)}");
+            if (scaffolded.Count > 0)
+            {
+                formatter.WriteMessage("");
+                formatter.WriteMessage("Scaffolded required artifacts:");
+                foreach (var path in scaffolded)
+                    formatter.WriteMessage($"  {path}");
+            }
             formatter.WriteMessage("");
             formatter.WriteMessage("Next steps:");
             formatter.WriteMessage("  1. Run 'steward config suggest' to get artifact and exclude suggestions for this repository.");
@@ -66,4 +97,13 @@ public static class InitCommand
         return command;
     }
 
+    internal static string GeneratePlaceholder(string path, string? role)
+    {
+        var name = Path.GetFileNameWithoutExtension(path);
+        if (path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            return $"# {name}\n\n> TODO: Add content.\n";
+
+        // Non-markdown files (e.g. LICENSE) get a minimal placeholder.
+        return $"TODO: Add {name} content.\n";
+    }
 }

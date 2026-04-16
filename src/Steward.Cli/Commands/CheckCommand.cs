@@ -24,11 +24,16 @@ public static class CheckCommand
         };
         var fixOption = new Option<bool>("--fix")
         {
-            Description = "Apply deterministic fixes for fixable rules"
+            Description = "Preview deterministic fixes for fixable rules (use --fix --apply to commit)"
+        };
+        var applyOption = new Option<bool>("--apply")
+        {
+            Description = "Apply fixes (requires --fix)"
         };
         var dryRunOption = new Option<bool>("--dry-run")
         {
-            Description = "Show what --fix would change without applying"
+            Description = "[Deprecated] Equivalent to --fix without --apply",
+            Hidden = true
         };
         var quietOption = new Option<bool>("--quiet")
         {
@@ -38,6 +43,7 @@ public static class CheckCommand
         command.Add(scopeOption);
         command.Add(pathsOption);
         command.Add(fixOption);
+        command.Add(applyOption);
         command.Add(dryRunOption);
         command.Add(quietOption);
 
@@ -48,8 +54,8 @@ public static class CheckCommand
 
             var scopeValue = parseResult.GetValue(scopeOption);
             var pathsValue = parseResult.GetValue(pathsOption);
-            var fixRequested = parseResult.GetValue(fixOption);
-            var dryRunRequested = parseResult.GetValue(dryRunOption);
+            var fixRequested = parseResult.GetValue(fixOption) || parseResult.GetValue(dryRunOption);
+            var applyFixes = parseResult.GetValue(applyOption);
             var quiet = parseResult.GetValue(quietOption);
 
             // Resolve scope
@@ -83,8 +89,8 @@ public static class CheckCommand
 
             var orderedDiagnostics = OrderDiagnostics(result.Diagnostics);
 
-            // Handle --fix / --dry-run
-            if (fixRequested || dryRunRequested)
+            // Handle --fix / --apply
+            if (fixRequested)
             {
                 var fixes = ComputeFixes(rules, context);
                 if (fixes.Count == 0)
@@ -102,7 +108,7 @@ public static class CheckCommand
                             ctx.Formatter.WriteMessage($"       {fix.FilePath}");
                         }
 
-                        if (fixRequested && !dryRunRequested)
+                        if (applyFixes)
                         {
                             var dir = Path.GetDirectoryName(Path.Combine(ctx.RootPath, fix.FilePath));
                             if (dir != null && !Directory.Exists(dir))
@@ -118,9 +124,9 @@ public static class CheckCommand
                         }
                     }
 
-                    if (!quiet && dryRunRequested && ctx.OutputFormat != OutputFormat.Json)
-                        ctx.Formatter.WriteMessage($"\nDry run: {fixes.Count} fix(es) would be applied. Use --fix to apply.");
-                    else if (!quiet && fixRequested && ctx.OutputFormat != OutputFormat.Json)
+                    if (!quiet && !applyFixes && ctx.OutputFormat != OutputFormat.Json)
+                        ctx.Formatter.WriteMessage($"\n{fixes.Count} fix(es) available. Run with --fix --apply to commit changes.");
+                    else if (!quiet && applyFixes && ctx.OutputFormat != OutputFormat.Json)
                         ctx.Formatter.WriteMessage($"\nApplied {fixes.Count} fix(es).");
                 }
             }
@@ -165,7 +171,7 @@ public static class CheckCommand
             }
             else
             {
-                if (orderedDiagnostics.Count == 0 && !fixRequested && !dryRunRequested)
+                if (orderedDiagnostics.Count == 0 && !fixRequested)
                 {
                     ctx.Formatter.WriteMessage("No issues found.");
                 }

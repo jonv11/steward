@@ -1,19 +1,19 @@
 # Implementation Status
 
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 ## Current Baseline
 
-Steward is currently on **`v0.10.0`**. The repository is **still pre-1.0**: `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Steward is currently on **`v0.12.0`**. The repository is **still pre-1.0**: `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
 | Area | Current state |
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
-| Current repo version | `0.10.0` |
-| Tests | 520 passing (`371` core, `149` CLI) |
+| Current repo version | `0.12.0` |
+| Tests | 539 passing (`375` core, `164` CLI) |
 | Validation rules | 13 (`STWD-001` through `STWD-013`) |
 | Maintainer types | 6 (`structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`) |
-| Packaging | `dotnet pack` succeeds cleanly for `Steward.Cli.0.10.0.nupkg` |
+| Packaging | `dotnet pack` succeeds cleanly for `Steward.Cli.0.12.0.nupkg` |
 | Active readiness tracker | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) |
 
 ## Delivered Lineage
@@ -30,7 +30,8 @@ Steward is currently on **`v0.10.0`**. The repository is **still pre-1.0**: `v1.
 | `v0.8.0` | Delivered | Deterministic maintenance and stale-artifact enforcement |
 | `v0.9.0` | Delivered | Workflow completeness surfaces |
 | `v0.10.0` | Delivered | Pre-1.0 governance hardening, version reset, semantic config validation, completion-policy wiring, and status/readiness surfacing cleanup |
-| `v0.11.0` | In progress | Stable-release hardening: B5 profile scope (ADR-014), B6 scoped validation fix, B7 status JSON coverage, contract tests, exit-code tests, dependency stabilization, publication checklist |
+| `v0.11.0` | Delivered | Stable-release hardening: B5 profile scope (ADR-014), B6 scoped validation fix, B7 status JSON coverage, contract tests, exit-code tests, dependency stabilization, publication checklist |
+| `v0.12.0` | Delivered | CLI fidelity, governance deepening, and Markdown subsystem completion (init scaffolding, md query --pattern fix, preview/apply standardization, coverage exclude, explain filtering, config suggest/doctor deepening, fm-validate) |
 
 ## What Is Already True In `v0.10.0`
 
@@ -60,8 +61,20 @@ Steward is currently on **`v0.10.0`**. The repository is **still pre-1.0**: `v1.
 
 The following known defects were identified in the 2026-04-16 CLI review cycle. Both have been resolved in the v0.11.0 work:
 
-- ~~**Scoped validation false positives (B6).**~~ Resolved. `AllDiscoveredFiles` added to `ValidationContext`; repo-wide obligation rules now check existence against the full file set regardless of scope.
-- ~~**JSON coverage parity gap (B7).**~~ Resolved. `status --coverage --output json` now includes a `coverage` object with governed count, total, percentage, and ungoverned paths.
+- ~~**Scoped validation false positives (B6).**~~ Resolved.
+- ~~**JSON coverage parity gap (B7).**~~ Resolved.
+
+## What Is New In v0.12.0
+
+- **Init scaffolding fix:** `init --profile software` now scaffolds placeholder files for required artifacts so that a subsequent `check` no longer fails immediately on STWD-001.
+- **`md query --pattern` fix:** Argument parsing ambiguity between positional file and `--pattern` resolved; batch mode now works correctly.
+- **Preview/apply standardization:** `check --fix` now previews fixes by default; `--fix --apply` commits changes. `--dry-run` is retained as a hidden deprecated alias.
+- **Coverage exclude support:** New `coverage.exclude` config section allows excluding paths (e.g., test fixtures) from `status --coverage` calculations.
+- **Explain path filtering:** `explain <path>` now filters rules to only those applicable to the target file based on type, artifact status, and config presence.
+- **Config suggest deepening:** `config suggest` now detects decision directories, planning documents, state documents, and subdirectory index files.
+- **Config doctor deepening:** `config doctor` now reports dead suppressions (unrecognized rule IDs in disabled_rules), unreachable path-override patterns, and unreachable frontmatter-requirement patterns.
+- **`fm-validate` added:** `md edit fm-validate <file>` validates frontmatter against policy requirements (global + scoped), completing the RFC-004 edit operation set.
+- **Mixed/knowledge profiles:** Remain deferred per ADR-014; no changes in this milestone.
 
 ## Remaining Before First Stable Shipment
 

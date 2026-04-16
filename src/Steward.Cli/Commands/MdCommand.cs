@@ -25,7 +25,7 @@ public static class MdCommand
         var command = new Command("query", "Extract content using an MdPath selector (e.g., 'heading[Status]', 'frontmatter', 'heading[## Usage]')");
 
         var fileArg = new Argument<string?>("file") { Description = "Path to the Markdown file", Arity = ArgumentArity.ZeroOrOne };
-        var selectorArg = new Argument<string>("selector") { Description = "MdPath selector expression" };
+        var selectorArg = new Argument<string?>("selector") { Description = "MdPath selector expression", Arity = ArgumentArity.ZeroOrOne };
         var patternOpt = new Option<string?>("--pattern") { Description = "Glob pattern to query multiple files (e.g. 'docs/**/*.md')" };
 
         command.Add(fileArg);
@@ -37,11 +37,26 @@ public static class MdCommand
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
             var file = parseResult.GetValue(fileArg);
-            var selector = parseResult.GetValue(selectorArg)!;
+            var selector = parseResult.GetValue(selectorArg);
             var pattern = parseResult.GetValue(patternOpt);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
             var fileSystem = new PhysicalFileSystem();
+
+            // Disambiguate: when --pattern is used, the single positional arg is the
+            // selector (not a file), because System.CommandLine assigns positionals
+            // left-to-right and "file" (ZeroOrOne) captures first.
+            if (pattern != null && selector == null && file != null)
+            {
+                selector = file;
+                file = null;
+            }
+
+            if (string.IsNullOrWhiteSpace(selector))
+            {
+                formatter.WriteError("A selector expression is required.");
+                return ExitCodes.UsageError;
+            }
 
             // Batch mode: --pattern glob
             if (pattern != null)

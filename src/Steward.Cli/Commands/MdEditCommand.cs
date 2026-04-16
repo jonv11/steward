@@ -1,5 +1,7 @@
 using System.CommandLine;
+using DotNet.Globbing;
 using Steward.Core;
+using Steward.Core.Configuration;
 using Steward.Core.Formatting;
 using Steward.Core.Markdown;
 
@@ -28,6 +30,7 @@ public static class MdEditCommand
         command.Add(CreatePrependBlockCommand());
         command.Add(CreateFmSetCommand());
         command.Add(CreateFmMergeCommand());
+        command.Add(CreateFmValidateCommand());
 
         return command;
     }
@@ -229,6 +232,134 @@ public static class MdEditCommand
 
             return ExecuteEdit(parseResult, file, apply,
                 doc => FrontmatterEditor.MergeFields(doc, yamlInput));
+        });
+
+        return command;
+    }
+
+    private static Command CreateFmValidateCommand()
+    {
+        var command = new Command("fm-validate", "Validate frontmatter against policy requirements");
+        var fileArg = new Argument<string>("file") { Description = "Path to the Markdown file" };
+        command.Add(fileArg);
+
+        command.SetAction(parseResult =>
+        {
+            var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
+            var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+            var formatter = CommandSetup.CreateFormatter(output, noColor);
+
+            var file = parseResult.GetValue(fileArg)!;
+            var fullPath = Path.GetFullPath(file);
+            if (!File.Exists(fullPath))
+            {
+                formatter.WriteError($"File not found: {file}");
+                return ExitCodes.UsageError;
+            }
+
+            if (!file.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            {
+                formatter.WriteError("fm-validate only supports Markdown (.md) files.");
+                return ExitCodes.UsageError;
+            }
+
+            // Load policy context for frontmatter requirements
+            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+                return ExitCodes.UsageError;
+
+            var policy = ctx!.Policy;
+
+            // Compute effective requirements
+            var globalRequired = (policy?.Validation?.RequiredFrontmatterFields ?? [])
+                .Union(policy?.Governance?.Frontmatter?.RequiredFields ?? [], StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var scopedRequirements = (policy?.Validation?.FrontmatterRequirements ?? [])
+                .Where(r => !string.IsNullOrWhiteSpace(r.Pattern))
+                .Select(r => (Glob: Glob.Parse(r.Pattern!), r.RequiredFields, r.AllowedValues))
+                .ToList();
+
+            // Compute relative path for pattern matching
+            var relativePath = ctx.RootPath != null
+                ? Path.GetRelativePath(ctx.RootPath, fullPath).Replace('\\', '/')
+                : file.Replace('\\', '/');
+
+            // Merge global + scoped required fields
+            var effectiveRequired = new HashSet<string>(globalRequired, StringComparer.OrdinalIgnoreCase);
+            var effectiveAllowed = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var req in scopedRequirements)
+            {
+                if (req.Glob.IsMatch(relativePath))
+                {
+                    if (req.RequiredFields != null)
+                        foreach (var f in req.RequiredFields) effectiveRequired.Add(f);
+                    if (req.AllowedValues != null)
+                        foreach (var (k, v) in req.AllowedValues) effectiveAllowed[k] = v;
+                }
+            }
+
+            if (effectiveRequired.Count == 0 && effectiveAllowed.Count == 0)
+            {
+                if (output == OutputFormat.Json)
+                    formatter.WriteObject(new { valid = true, issues = Array.Empty<object>(), message = "No frontmatter requirements apply to this file." });
+                else
+                    formatter.WriteMessage("No frontmatter requirements apply to this file.");
+                return ExitCodes.Success;
+            }
+
+            var content = File.ReadAllText(fullPath);
+            var doc = MarkdownParser.Parse(fullPath, content);
+            var issues = new List<string>();
+
+            if (doc.Frontmatter == null)
+            {
+                issues.Add("File is missing a frontmatter block.");
+            }
+            else
+            {
+                foreach (var field in effectiveRequired)
+                {
+                    if (!doc.Frontmatter.Fields.ContainsKey(field))
+                        issues.Add($"Required field '{field}' is missing.");
+                }
+
+                foreach (var (field, allowed) in effectiveAllowed)
+                {
+                    if (doc.Frontmatter.Fields.TryGetValue(field, out var rawValue) && rawValue != null)
+                    {
+                        var value = rawValue.ToString();
+                        if (value != null && !allowed.Any(v => string.Equals(v, value, StringComparison.OrdinalIgnoreCase)))
+                            issues.Add($"Field '{field}' has value '{value}' which is not in allowed set [{string.Join(", ", allowed)}].");
+                    }
+                }
+            }
+
+            if (output == OutputFormat.Json)
+            {
+                formatter.WriteObject(new
+                {
+                    valid = issues.Count == 0,
+                    issues,
+                    requiredFields = effectiveRequired.ToList(),
+                    allowedValues = effectiveAllowed
+                });
+            }
+            else
+            {
+                if (issues.Count == 0)
+                {
+                    formatter.WriteMessage("Frontmatter is valid.");
+                }
+                else
+                {
+                    formatter.WriteMessage($"Found {issues.Count} frontmatter issue(s):");
+                    foreach (var issue in issues)
+                        formatter.WriteMessage($"  - {issue}");
+                }
+            }
+
+            return issues.Count > 0 ? ExitCodes.ValidationFailure : ExitCodes.Success;
         });
 
         return command;

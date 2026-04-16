@@ -349,6 +349,58 @@ public static class ConfigCommand
             }
         }
 
+        // 6. Dead suppressions — disabled rules that would produce no violations anyway
+        if (ctx.Policy?.Validation?.DisabledRules is { Count: > 0 })
+        {
+            var allRuleIds = new HashSet<string>(
+                CheckCommand.AllRules.Select(r => r.RuleId), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var ruleId in ctx.Policy.Validation.DisabledRules)
+            {
+                if (!allRuleIds.Contains(ruleId))
+                {
+                    findings.Add(new DoctorFinding(
+                        "dead-suppression",
+                        $"Disabled rule '{ruleId}' is not a recognized rule id.",
+                        $"Remove '{ruleId}' from validation.disabled_rules."));
+                }
+            }
+        }
+
+        // 7. Unreachable path-override patterns
+        if (ctx.Policy?.Validation?.PathOverrides is { Count: > 0 })
+        {
+            foreach (var ov in ctx.Policy.Validation.PathOverrides)
+            {
+                if (string.IsNullOrWhiteSpace(ov.Pattern) || ov.DisabledRules == null) continue;
+                var glob = Glob.Parse(ov.Pattern);
+                if (!existingPaths.Any(p => glob.IsMatch(p)))
+                {
+                    findings.Add(new DoctorFinding(
+                        "unreachable-path-override",
+                        $"Path override pattern '{ov.Pattern}' matches no discovered files.",
+                        $"Update the pattern or remove the override from validation.path_overrides."));
+                }
+            }
+        }
+
+        // 8. Unreachable frontmatter-requirement patterns
+        if (ctx.Policy?.Validation?.FrontmatterRequirements is { Count: > 0 })
+        {
+            foreach (var req in ctx.Policy.Validation.FrontmatterRequirements)
+            {
+                if (string.IsNullOrWhiteSpace(req.Pattern)) continue;
+                var glob = Glob.Parse(req.Pattern);
+                if (!existingPaths.Any(p => glob.IsMatch(p)))
+                {
+                    findings.Add(new DoctorFinding(
+                        "unreachable-frontmatter-pattern",
+                        $"Frontmatter requirement pattern '{req.Pattern}' matches no discovered files.",
+                        $"Update the pattern or remove the requirement from validation.frontmatter_requirements."));
+                }
+            }
+        }
+
         return findings;
     }
 
