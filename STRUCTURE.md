@@ -1,6 +1,6 @@
 # Repository Structure
 
-```
+```text
 ├── .editorconfig
 ├── .github/
 │   ├── dependabot.yml
@@ -14,6 +14,7 @@
 │   ├── audits/
 │   │   ├── artifact-hygiene-cleanup-review-2026-04-16.md
 │   │   ├── assessment-coding-agent-usefulness.md
+│   │   ├── code-quality-pass-2026-04-16.md
 │   │   ├── maintainer-review.md
 │   │   ├── maintainer-usecase-expectations.md
 │   │   ├── maintainer-usecase-ideas.md

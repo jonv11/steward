@@ -57,6 +57,21 @@ public sealed class ArtifactDefinition
 
     [YamlMember(Alias = "freshness")]
     public FreshnessConfig? Freshness { get; set; }
+
+    /// <summary>
+    /// Returns the resolved importance for this artifact, applying the precedence chain:
+    /// explicit <c>importance:</c> field → <c>required: true</c> flag → role-linked default → "optional".
+    /// </summary>
+    public string ResolveImportance()
+    {
+        if (!string.IsNullOrWhiteSpace(Importance))
+            return Importance.ToLowerInvariant();
+
+        if (Required)
+            return "required";
+
+        return RoleDefaults.GetDefaultImportance(Role) ?? "optional";
+    }
 }
 
 public sealed class FreshnessConfig

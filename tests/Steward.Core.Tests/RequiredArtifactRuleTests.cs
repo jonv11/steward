@@ -248,9 +248,9 @@ public class RequiredArtifactRuleTests
     }
 
     [Fact]
-    public async Task ResolveImportance_ExplicitOverridesRequired()
+    public void ResolveImportance_ExplicitOverridesRequired()
     {
         var artifact = new ArtifactDefinition { Required = true, Importance = "recommended" };
-        RequiredArtifactRule.ResolveImportance(artifact).Should().Be("recommended");
+        artifact.ResolveImportance().Should().Be("recommended");
     }
 }

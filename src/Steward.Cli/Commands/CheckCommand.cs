@@ -7,7 +7,7 @@ namespace Steward.Cli.Commands;
 
 public static class CheckCommand
 {
-    internal static IValidationRule[] AllRules => RuleRegistry.CreateAllRules();
+    internal static readonly IValidationRule[] AllRules = RuleRegistry.CreateAllRules();
 
     public static Command Create()
     {

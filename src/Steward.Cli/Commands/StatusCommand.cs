@@ -6,6 +6,7 @@ using Steward.Core.Configuration;
 using Steward.Core.Discovery;
 using Steward.Core.Formatting;
 using Steward.Core.Maintenance;
+using Steward.Core.Markdown;
 using Steward.Core.Validation.Rules;
 
 namespace Steward.Cli.Commands;
@@ -425,7 +426,7 @@ public static class StatusCommand
         {
             Path = artifact.Path ?? "",
             Role = artifact.Role ?? "",
-            Importance = ResolveImportance(artifact),
+            Importance = artifact.ResolveImportance(),
             Present = IsArtifactPresent(artifact, fileSystem, rootPath, files)
         };
     }
@@ -467,17 +468,6 @@ public static class StatusCommand
         return RoleDefaults.GetDefaultFreshnessDays(artifact.Role);
     }
 
-    private static string ResolveImportance(ArtifactDefinition artifact)
-    {
-        if (!string.IsNullOrWhiteSpace(artifact.Importance))
-            return artifact.Importance.ToLowerInvariant();
-
-        if (artifact.Required)
-            return "required";
-
-        return RoleDefaults.GetDefaultImportance(artifact.Role) ?? "optional";
-    }
-
     private static bool IsFreshnessStale(ArtifactDefinition artifact, IFileSystem fileSystem, string rootPath)
     {
         var maxAgeDays = ResolveFreshnessDays(artifact);
@@ -488,45 +478,8 @@ public static class StatusCommand
         if (!fileSystem.FileExists(fullPath))
             return false;
 
-        var lastModified = TryGetFrontmatterDate(fileSystem, fullPath) ?? fileSystem.GetLastWriteTimeUtc(fullPath);
+        var lastModified = FrontmatterEditor.TryGetLastUpdatedDate(fileSystem, fullPath) ?? fileSystem.GetLastWriteTimeUtc(fullPath);
         return (DateTime.UtcNow - lastModified).TotalDays > maxAgeDays.Value;
     }
 
-    private static DateTime? TryGetFrontmatterDate(IFileSystem fileSystem, string fullPath)
-    {
-        try
-        {
-            var content = fileSystem.ReadAllText(fullPath);
-            if (!content.StartsWith("---", StringComparison.Ordinal))
-                return null;
-
-            var endIdx = content.IndexOf("---", 3, StringComparison.Ordinal);
-            if (endIdx < 0)
-                return null;
-
-            var yaml = content[3..endIdx];
-            foreach (var line in yaml.Split('\n'))
-            {
-                var trimmed = line.Trim();
-                if (!trimmed.StartsWith("last_updated:", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                var value = trimmed["last_updated:".Length..].Trim().Trim('"', '\'');
-                if (DateTime.TryParse(
-                    value,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal,
-                    out var parsed))
-                {
-                    return parsed;
-                }
-            }
-        }
-        catch
-        {
-            // Best-effort status display only.
-        }
-
-        return null;
-    }
 }

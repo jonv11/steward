@@ -1,3 +1,4 @@
+using Steward.Core.Abstractions;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -68,6 +69,48 @@ public static class FrontmatterEditor
         }
 
         return ReplaceFrontmatter(doc, lines, merged, "Merged fields into frontmatter.");
+    }
+
+    /// <summary>
+    /// Reads the <c>last_updated</c> frontmatter field from a Markdown file and returns it as a UTC DateTime.
+    /// Returns null when the file has no frontmatter, the field is absent, or the value cannot be parsed.
+    /// </summary>
+    public static DateTime? TryGetLastUpdatedDate(IFileSystem fileSystem, string fullPath)
+    {
+        try
+        {
+            var content = fileSystem.ReadAllText(fullPath);
+            if (!content.StartsWith("---", StringComparison.Ordinal))
+                return null;
+
+            var endIdx = content.IndexOf("---", 3, StringComparison.Ordinal);
+            if (endIdx < 0)
+                return null;
+
+            var yaml = content[3..endIdx];
+            foreach (var line in yaml.Split('\n'))
+            {
+                var trimmed = line.Trim();
+                if (!trimmed.StartsWith("last_updated:", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var value = trimmed["last_updated:".Length..].Trim().Trim('"', '\'');
+                if (DateTime.TryParse(
+                    value,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal,
+                    out var parsed))
+                {
+                    return parsed;
+                }
+            }
+        }
+        catch
+        {
+            // Best-effort; fall through to return null.
+        }
+
+        return null;
     }
 
     private static EditResult ReplaceFrontmatter(

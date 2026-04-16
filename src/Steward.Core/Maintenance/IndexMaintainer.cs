@@ -80,7 +80,7 @@ public sealed class IndexMaintainer : IArtifactMaintainer
         };
     }
 
-    private static MaintenanceAction UpdateManagedSection(
+    private MaintenanceAction UpdateManagedSection(
         MaintenanceArtifactConfig config, MaintenanceContext context, string expectedContent)
     {
         var targetPath = Path.Combine(context.RepositoryRoot, config.Path);
@@ -90,7 +90,7 @@ public sealed class IndexMaintainer : IArtifactMaintainer
             {
                 ArtifactId = config.Id,
                 ArtifactPath = config.Path,
-                Type = "index",
+                Type = Type,
                 Description = $"Target file '{config.Path}' does not exist.",
                 HasChanges = false
             };
@@ -105,7 +105,7 @@ public sealed class IndexMaintainer : IArtifactMaintainer
             {
                 ArtifactId = config.Id,
                 ArtifactPath = config.Path,
-                Type = "index",
+                Type = Type,
                 Description = $"Managed section '{config.ManagedSection}' not found in '{config.Path}'.",
                 HasChanges = false
             };
@@ -117,7 +117,7 @@ public sealed class IndexMaintainer : IArtifactMaintainer
         {
             ArtifactId = config.Id,
             ArtifactPath = config.Path,
-            Type = "index",
+            Type = Type,
             Description = hasChanges
                 ? $"Managed section '{config.ManagedSection}' needs updating."
                 : "Managed section is up to date.",

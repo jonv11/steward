@@ -20,7 +20,7 @@ public sealed class RequiredArtifactRule : IValidationRule
 
         foreach (var artifact in context.Policy.Artifacts.Where(a => a.Path != null))
         {
-            var importance = ResolveImportance(artifact);
+            var importance = artifact.ResolveImportance();
             if (importance == "optional")
                 continue;
 
@@ -57,18 +57,5 @@ public sealed class RequiredArtifactRule : IValidationRule
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
-    }
-
-    internal static string ResolveImportance(Configuration.ArtifactDefinition artifact)
-    {
-        if (!string.IsNullOrEmpty(artifact.Importance))
-            return artifact.Importance.ToLowerInvariant();
-
-        if (artifact.Required)
-            return "required";
-
-        // Fall back to role-linked default
-        var roleDefault = Configuration.RoleDefaults.GetDefaultImportance(artifact.Role);
-        return roleDefault ?? "optional";
     }
 }

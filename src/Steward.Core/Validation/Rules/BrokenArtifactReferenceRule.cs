@@ -40,8 +40,8 @@ public sealed class BrokenArtifactReferenceRule : IValidationRule
             }
 
             // Required artifacts are already reported by STWD-001 as errors.
-            // This rule only fires for non-required artifacts that don't resolve.
-            if (!found && !artifact.Required)
+            // Use the same resolved importance as STWD-001 to avoid double-reporting.
+            if (!found && artifact.ResolveImportance() != "required")
             {
                 diagnostics.Add(new Diagnostic(
                     RuleId: RuleId,

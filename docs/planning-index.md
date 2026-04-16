@@ -51,6 +51,7 @@ Historical audits are preserved for evidence and context. Active repository trut
 
 | Document | Purpose |
 | -------- | ------- |
+| [Code Quality Pass — 2026-04-16](audits/code-quality-pass-2026-04-16.md) | Closed correctness and consistency pass: `goto` refactor, STWD-009 double-report fix, `AllRules` field, `IndexMaintainer` type consistency |
 | [Repository Audit — 2026-04-14](audits/repository-audit-2026-04-14.md) | Historical requirement-driven audit and contract-alignment review against the earlier repo state |
 | [Requirements Implementation Review — 2026-04-14](audits/review-requirements.md) | Historical per-requirement review against the earlier repo state and earlier version posture |
 | [Coding-Agent Usefulness Assessment — 2026-04-14](audits/assessment-coding-agent-usefulness.md) | Historical agent-workflow review that informed later ergonomics decisions |

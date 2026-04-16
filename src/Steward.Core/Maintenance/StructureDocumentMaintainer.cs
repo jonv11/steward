@@ -51,7 +51,7 @@ public sealed class StructureDocumentMaintainer : IArtifactMaintainer
         var sb = new StringBuilder();
         sb.AppendLine("# Repository Structure");
         sb.AppendLine();
-        sb.AppendLine("```");
+        sb.AppendLine("```text");
         WriteTree(sb, nodes, "");
         sb.AppendLine("```");
         return sb.ToString();

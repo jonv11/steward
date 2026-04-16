@@ -105,18 +105,15 @@ public sealed class ConfigLoader
 
     private static void ValidateConfig(StewardConfig config, string path)
     {
-        if (string.IsNullOrWhiteSpace(config.Profile))
-            goto ValidateOutput;
+        if (!string.IsNullOrWhiteSpace(config.Profile) &&
+            ProfileDefaults.GetProfilePolicy(config.Profile) == null)
+        {
+            var validProfiles = string.Join(", ", ProfileDefaults.GetValidProfileNames());
+            throw new StewardConfigException(
+                $"Invalid profile '{config.Profile}' in '{path}'. Valid profiles: {validProfiles}.",
+                path);
+        }
 
-        if (ProfileDefaults.GetProfilePolicy(config.Profile) != null)
-            goto ValidateOutput;
-
-        var validProfiles = string.Join(", ", ProfileDefaults.GetValidProfileNames());
-        throw new StewardConfigException(
-            $"Invalid profile '{config.Profile}' in '{path}'. Valid profiles: {validProfiles}.",
-            path);
-
-    ValidateOutput:
         if (!string.IsNullOrWhiteSpace(config.Output?.Format) &&
             !Enum.TryParse<OutputFormat>(config.Output.Format, ignoreCase: true, out _))
         {
@@ -129,7 +126,7 @@ public sealed class ConfigLoader
             !Enum.TryParse<Verbosity>(config.Output.Verbosity, ignoreCase: true, out _))
         {
             throw new StewardConfigException(
-                $"Invalid output.verbosity '{config.Output.Verbosity}' in '{path}'. Valid values: quiet, normal, verbose.",
+                $"Invalid output.verbosity '{config.Output.Verbosity}' in '{path}'. Valid values: quiet, normal, verbose, debug.",
                 path);
         }
     }

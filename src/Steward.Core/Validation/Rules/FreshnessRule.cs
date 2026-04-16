@@ -1,4 +1,5 @@
 using Steward.Core.Abstractions;
+using Steward.Core.Markdown;
 
 namespace Steward.Core.Validation.Rules;
 
@@ -50,7 +51,7 @@ public sealed class FreshnessRule : IValidationRule
                 continue;
 
             // Try frontmatter 'last_updated' override first
-            DateTime? lastModified = TryGetFrontmatterDate(context, fullPath);
+            DateTime? lastModified = FrontmatterEditor.TryGetLastUpdatedDate(context.FileSystem, fullPath);
 
             // Fall back to filesystem timestamp
             lastModified ??= context.FileSystem.GetLastWriteTimeUtc(fullPath);
@@ -71,41 +72,5 @@ public sealed class FreshnessRule : IValidationRule
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
-    }
-
-    private static DateTime? TryGetFrontmatterDate(ValidationContext context, string fullPath)
-    {
-        try
-        {
-            var content = context.FileSystem.ReadAllText(fullPath);
-            if (!content.StartsWith("---"))
-                return null;
-
-            var endIdx = content.IndexOf("---", 3, StringComparison.Ordinal);
-            if (endIdx < 0)
-                return null;
-
-            var yaml = content[3..endIdx];
-            foreach (var line in yaml.Split('\n'))
-            {
-                var trimmed = line.Trim();
-                if (trimmed.StartsWith("last_updated:", StringComparison.OrdinalIgnoreCase))
-                {
-                    var value = trimmed["last_updated:".Length..].Trim().Trim('"', '\'');
-                    if (DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture,
-                        System.Globalization.DateTimeStyles.AssumeUniversal |
-                        System.Globalization.DateTimeStyles.AdjustToUniversal, out var dt))
-                    {
-                        return dt;
-                    }
-                }
-            }
-        }
-        catch
-        {
-            // If we can't parse frontmatter, fall through
-        }
-
-        return null;
     }
 }

@@ -146,6 +146,40 @@ public class BrokenArtifactReferenceRuleTests
     }
 
     [Fact]
+    public async Task Evaluate_ImportanceRequiredArtifactMissing_NotReported()
+    {
+        // Artifacts with importance: required (without required: true) must also be
+        // suppressed from STWD-009, since STWD-001 already reports them.
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new ArtifactDefinition
+                {
+                    Path = "README.md",
+                    Role = "readme",
+                    Required = false,
+                    Importance = "required"
+                }
+            ]
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [],
+            FileSystem = new InMemoryFileSystem(),
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new BrokenArtifactReferenceRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Evaluate_MultipleOptionalMissing_ReportsAll()
     {
         var policy = new RepositoryPolicy
