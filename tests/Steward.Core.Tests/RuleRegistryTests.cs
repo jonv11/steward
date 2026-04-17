@@ -8,10 +8,10 @@ namespace Steward.Core.Tests;
 public class RuleRegistryTests
 {
     [Fact]
-    public void CreateAllRules_ReturnsTwelveRules()
+    public void CreateAllRules_ReturnsSixteenRules()
     {
         var rules = RuleRegistry.CreateAllRules();
-        rules.Should().HaveCount(13);
+        rules.Should().HaveCount(16);
     }
 
     [Fact]
@@ -31,6 +31,10 @@ public class RuleRegistryTests
         rules.Should().ContainSingle(r => r is NamingConventionRule);
         rules.Should().ContainSingle(r => r is IndexCompletenessRule);
         rules.Should().ContainSingle(r => r is FreshnessRule);
+        rules.Should().ContainSingle(r => r is OrphanedDocumentRule);
+        rules.Should().ContainSingle(r => r is RequiredSectionsRule);
+        rules.Should().ContainSingle(r => r is FamilyMinCountRule);
+        rules.Should().ContainSingle(r => r is FamilyNamingPatternRule);
     }
 
     [Fact]

@@ -22,6 +22,9 @@ public static class RuleRegistry
         new NamingConventionRule(),
         new IndexCompletenessRule(),
         new FreshnessRule(),
-        new OrphanedDocumentRule()
+        new OrphanedDocumentRule(),
+        new RequiredSectionsRule(),
+        new FamilyMinCountRule(),
+        new FamilyNamingPatternRule()
     ];
 }

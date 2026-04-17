@@ -332,6 +332,41 @@ public sealed class ConfigLoader
                     }
                 }
             }
+
+            if (family.RequiredSections != null)
+            {
+                foreach (var section in family.RequiredSections)
+                {
+                    if (string.IsNullOrWhiteSpace(section))
+                    {
+                        throw new StewardConfigException(
+                            $"artifact_families['{family.Family}'].required_sections entries must not be blank in '{path}'.",
+                            path);
+                    }
+                }
+            }
+
+            if (family.DirectoryExpectations != null && family.DirectoryExpectations.MinCount < 0)
+            {
+                throw new StewardConfigException(
+                    $"artifact_families['{family.Family}'].directory_expectations.min_count must not be negative in '{path}'.",
+                    path);
+            }
+
+            if (!string.IsNullOrWhiteSpace(family.NamingPattern))
+            {
+                try
+                {
+                    _ = new Regex(family.NamingPattern, RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new StewardConfigException(
+                        $"Invalid naming_pattern regex '{family.NamingPattern}' for artifact family '{family.Family}' in '{path}': {ex.Message}",
+                        path,
+                        ex);
+                }
+            }
         }
     }
 

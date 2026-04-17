@@ -161,6 +161,9 @@ public static class ExplainCommand
             "STWD-011" => "Add a link to the missing file in the index artifact, or move the file outside the indexed directory.",
             "STWD-012" => "Update the document and set the 'last_updated' frontmatter field to the current date.",
             "STWD-013" => "Link to this file from an index or navigation document, or add 'standalone: true' to its frontmatter.",
+            "STWD-014" => "Add the missing heading section to the document as declared in the artifact family's required_sections.",
+            "STWD-015" => "Add more files matching the artifact family pattern to meet the declared minimum count.",
+            "STWD-016" => "Rename the file to satisfy the naming_pattern regex declared for its artifact family.",
             _ => "No specific remediation guidance available."
         };
     }

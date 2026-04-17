@@ -247,9 +247,28 @@ public sealed class ArtifactFamilyDefinition
     [YamlMember(Alias = "frontmatter_schema")]
     public ArtifactFamilyFrontmatterSchema? FrontmatterSchema { get; set; }
 
-    /// <summary>Naming pattern (stored for future enforcement; not validated in v0.13.0).</summary>
+    /// <summary>Naming pattern regex enforced against the filename of matched files (e.g. "ADR-\\d{3}-.+\\.md").</summary>
     [YamlMember(Alias = "naming_pattern")]
     public string? NamingPattern { get; set; }
+
+    /// <summary>Required heading sections that must be present in matched files.</summary>
+    [YamlMember(Alias = "required_sections")]
+    public List<string>? RequiredSections { get; set; }
+
+    /// <summary>Directory-level expectations for this family (e.g. min_count).</summary>
+    [YamlMember(Alias = "directory_expectations")]
+    public DirectoryExpectations? DirectoryExpectations { get; set; }
+}
+
+public sealed class DirectoryExpectations
+{
+    /// <summary>Minimum number of files that must match this family.</summary>
+    [YamlMember(Alias = "min_count")]
+    public int MinCount { get; set; }
+
+    /// <summary>Optional description shown in diagnostic messages.</summary>
+    [YamlMember(Alias = "description")]
+    public string? Description { get; set; }
 }
 
 public sealed class ArtifactFamilyMatch
