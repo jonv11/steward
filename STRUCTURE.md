@@ -14,6 +14,7 @@
 │   ├── audits/
 │   │   ├── artifact-hygiene-cleanup-review-2026-04-16.md
 │   │   ├── assessment-coding-agent-usefulness.md
+│   │   ├── cli-expectation-fidelity-assessment-2026-04-17.md
 │   │   ├── cli-expectation-fidelity-reassessment-2026-04-16.md
 │   │   ├── cli-expectation-fidelity-review-2026-04-16.md
 │   │   ├── cli-full-assessment-2026-04-16.md

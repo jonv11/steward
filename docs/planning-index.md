@@ -44,6 +44,7 @@ Historical audits are preserved for evidence and context. Active repository trut
 
 | Document | Purpose |
 | -------- | ------- |
+| [CLI Expectation Fidelity Assessment - 2026-04-17](audits/cli-expectation-fidelity-assessment-2026-04-17.md) | Current evidence-based assessment of whether Steward-on-Steward fulfills the repo's stated CLI promise, workflows, and trust expectations |
 | [End-User Documentation Path Audit — 2026-04-17](audits/end-user-documentation-path-audit-2026-04-17.md) | Persona-based audit and remediation of the end-user documentation path for maintainers and contributors |
 | [CLI Full Assessment — 2026-04-16](audits/cli-full-assessment-2026-04-16.md) | Comprehensive end-to-end product assessment: build, exercise, cross-reference, diagnose, score |
 | [CLI Expectation Fidelity Reassessment — 2026-04-16](audits/cli-expectation-fidelity-reassessment-2026-04-16.md) | Deep evidence-based reassessment of Steward-on-Steward promise fidelity, workflow trust, and release-line credibility |
