@@ -52,7 +52,8 @@
 │   │   ├── pre-release-blockers.md
 │   │   ├── release-process.md
 │   │   ├── release-publication-checklist.md
-│   │   └── rfc-007-governance-enhancements-backlog.md
+│   │   ├── rfc-007-governance-enhancements-backlog.md
+│   │   └── v0-15-draft-preparation.md
 │   ├── planning-index.md
 │   └── requirements/
 │       ├── assumptions-constraints.md

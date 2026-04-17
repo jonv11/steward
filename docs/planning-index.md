@@ -32,10 +32,21 @@ Central navigation for the active product, planning, readiness, and decision art
 | [Milestone Plan](planning/milestone-plan.md) | Delivered lineage through `v0.14.0` plus planned pre-1.0 milestones |
 | [Pre-Release Blockers](planning/pre-release-blockers.md) | Critical items that must be resolved before a first meaningful public pre-1.0 release |
 | [Implementation Instructions](planning/implementation-instructions.md) | Contributor execution guide for the active pre-1.0 roadmap |
+| [v0.15.0 Draft Preparation](planning/v0-15-draft-preparation.md) | Evidence-backed preparation memo for the next milestone: scope boundary, sequencing, and open review questions |
 | [RFC-007 Governance Enhancements Backlog](planning/rfc-007-governance-enhancements-backlog.md) | Status ledger for accepted governance-enhancement items |
 | [Curation Notes](planning/curation-notes.md) | Provenance, superseded framing, and roadmap retargeting notes |
 | [Release Process](planning/release-process.md) | Authoritative operator guide for intentional public pre-1.0 releases, labels, changelog policy, tagging, and GitHub Releases |
 | [Release Publication Checklist](planning/release-publication-checklist.md) | Local verification, tagging, NuGet publication, and self-contained binary steps |
+
+## Draft Decisions Under Review
+
+The [Decision Index](decisions/decision-index.md) lists accepted RFCs and ADRs only. The following draft RFCs capture the current `v0.15.0` design work that is ready for maintainer review:
+
+| Document | Purpose |
+|----------|---------|
+| [RFC-009 Typed Resource Addresses and Search Alignment](decisions/rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md) | Draft typed-address model for file and Markdown resources plus first search/alignment consumers |
+| [RFC-010 Consistent JSON Output Envelope](decisions/rfcs/RFC-010-consistent-json-output-envelope.md) | Draft additive JSON envelope for machine-facing consistency without breaking current consumers |
+| [RFC-011 Markdown Split and Extract Workflows](decisions/rfcs/RFC-011-markdown-split-and-extract-workflows.md) | Draft narrow split-planning and extract-section workflow for the Markdown subsystem |
 
 ## Reviews And Audit Evidence
 

@@ -1,6 +1,6 @@
 # Decision Index
 
-Index of all accepted RFCs and ADRs for the Repository Steward project.
+Index of the current decision artifacts for the Repository Steward project. Accepted RFCs and ADRs remain the authoritative decision record; draft RFCs under review are listed separately below.
 
 ## RFCs — Product and Requirement Decisions
 
@@ -14,6 +14,16 @@ Index of all accepted RFCs and ADRs for the Repository Steward project.
 | [RFC-006](rfcs/RFC-006-maintenance-and-memory.md) | Maintenance and Memory | Accepted | Maintenance flows, memory artifacts, anti-drift |
 | [RFC-007](rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements.md) | Maintainer Governance and Stewardship Enhancements | Accepted | Policy expressiveness, governance inspection, maintenance evolution, stewardship workflows |
 | [RFC-008](rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) | Convention-Based Discovery and Workflow Modeling | Accepted | Artifact families, path-based discovery, frontmatter-driven classification, workflow/session modeling; v0.13.0 scope narrowed in §8 |
+
+## Draft RFCs Under Review
+
+These draft RFCs are design inputs for the next pre-1.0 milestone. They are not accepted decisions yet.
+
+| ID | Title | Status | Summary |
+|----|-------|--------|---------|
+| [RFC-009](rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md) | Typed Resource Addresses and Search Alignment | Draft | Additive typed-address model for file and Markdown resources plus initial search/alignment consumers |
+| [RFC-010](rfcs/RFC-010-consistent-json-output-envelope.md) | Consistent JSON Output Envelope | Draft | Additive standard JSON envelope for machine-facing consistency while preserving legacy payloads |
+| [RFC-011](rfcs/RFC-011-markdown-split-and-extract-workflows.md) | Markdown Split and Extract Workflows | Draft | Narrow split-planning and extract-section workflow for the Markdown subsystem |
 
 ## ADRs — Technical and Architectural Decisions
 

@@ -39,6 +39,19 @@ The next planned milestone should return to product-surface expansion on the now
 - **Split/extract evaluation.** Revisit the deferred Markdown split/extract workflow work.
 - **JSON envelope consistency.** Improve machine-facing output consistency without destabilizing current consumers.
 
+Use the current draft preparation set before implementation starts:
+
+- [v0.15.0 Draft Preparation](v0-15-draft-preparation.md)
+- [RFC-009 Typed Resource Addresses and Search Alignment](../decisions/rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md)
+- [RFC-010 Consistent JSON Output Envelope](../decisions/rfcs/RFC-010-consistent-json-output-envelope.md)
+- [RFC-011 Markdown Split and Extract Workflows](../decisions/rfcs/RFC-011-markdown-split-and-extract-workflows.md)
+
+Recommended execution order inside `v0.15.0`:
+
+1. JSON envelope consistency
+2. Typed resource addresses and search alignment
+3. Split planning and extract-section work
+
 ### `v0.16.0+` — Later Pre-1.0 Expansion
 
 Treat the following as later pre-stable scope unless stable criteria explicitly pull them forward:
