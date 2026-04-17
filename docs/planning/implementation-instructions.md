@@ -31,26 +31,14 @@ Keep the current pre-1.0 line honest, stable, and reviewable:
 - Treat documentation/state drift as a real defect: update active planning and status artifacts in the same change when current repo truth changes.
 - Keep the release-publication checklist and readiness evidence believable; do not imply that stable publication already happened.
 
-### `v0.15.0` — Later Pre-1.0 Requirement Families
+### `v0.15.0` — Delivered
 
-The next planned milestone should return to product-surface expansion on the now-stabilized pre-1.0 release line:
+RFC-010 and RFC-011 are accepted and implemented:
 
-- **Typed resource-address follow-on work.** Continue the later pre-1.0 address/search alignment tracked in requirements and the milestone plan.
-- **Split/extract evaluation.** Revisit the deferred Markdown split/extract workflow work.
-- **JSON envelope consistency.** Improve machine-facing output consistency without destabilizing current consumers.
+- **JSON envelope consistency** ([RFC-010](../decisions/rfcs/RFC-010-consistent-json-output-envelope.md)) — `--json-envelope standard` wraps all JSON-producing commands in a `{ schemaVersion, command, toolVersion, success, exitCode, data }` envelope. Default is `legacy` for the `0.15.x` line.
+- **Markdown split and extract workflows** ([RFC-011](../decisions/rfcs/RFC-011-markdown-split-and-extract-workflows.md)) — `md split plan` (non-mutating) and `md edit extract-section` (preview/apply) are now available.
 
-Use the current draft preparation set before implementation starts:
-
-- [v0.15.0 Draft Preparation](v0-15-draft-preparation.md)
-- [RFC-009 Typed Resource Addresses and Search Alignment](../decisions/rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md)
-- [RFC-010 Consistent JSON Output Envelope](../decisions/rfcs/RFC-010-consistent-json-output-envelope.md)
-- [RFC-011 Markdown Split and Extract Workflows](../decisions/rfcs/RFC-011-markdown-split-and-extract-workflows.md)
-
-Recommended execution order inside `v0.15.0`:
-
-1. JSON envelope consistency
-2. Typed resource addresses and search alignment
-3. Split planning and extract-section work
+RFC-009 (typed resource addresses) was deferred to a later pre-1.0 milestone.
 
 ### `v0.16.0+` — Later Pre-1.0 Expansion
 

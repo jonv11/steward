@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Formatting;
 using Steward.Core.Search;
@@ -72,7 +73,7 @@ public static class SearchCommand
             // Output
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                ctx.Formatter.WriteObject(new
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "search", true, ExitCodes.Success, new
                 {
                     query = result.Query,
                     mode = result.Mode.ToString().ToLowerInvariant(),

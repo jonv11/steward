@@ -1,6 +1,6 @@
 ---
 type: rfc
-status: Draft
+status: Accepted
 resolves: >-
   Machine-readable output consistency across CLI commands without destabilizing current consumers
 last_updated: 2026-04-17

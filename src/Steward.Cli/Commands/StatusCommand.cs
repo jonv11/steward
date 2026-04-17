@@ -54,7 +54,7 @@ public static class StatusCommand
                     };
                 }
 
-                ctx.Formatter.WriteObject(status);
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "status", true, ExitCodes.Success, status);
             }
             else
             {

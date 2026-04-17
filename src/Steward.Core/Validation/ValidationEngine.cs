@@ -39,6 +39,20 @@ public sealed class ValidationEngine
             }
         }
 
+        var severityOverrides = context.Policy?.Validation?.SeverityOverrides;
+        if (severityOverrides != null && severityOverrides.Count > 0)
+        {
+            for (var i = 0; i < diagnostics.Count; i++)
+            {
+                var diag = diagnostics[i];
+                if (severityOverrides.TryGetValue(diag.RuleId, out var overrideSeverity) &&
+                    Enum.TryParse<DiagnosticSeverity>(overrideSeverity, ignoreCase: true, out var newSeverity))
+                {
+                    diagnostics[i] = diag with { Severity = newSeverity };
+                }
+            }
+        }
+
         var errors = diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error);
         var warnings = diagnostics.Count(d => d.Severity == DiagnosticSeverity.Warning);
         var infos = diagnostics.Count(d => d.Severity == DiagnosticSeverity.Info);

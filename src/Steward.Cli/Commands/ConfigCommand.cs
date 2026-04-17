@@ -1,5 +1,6 @@
 using System.CommandLine;
 using DotNet.Globbing;
+using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Configuration;
@@ -29,6 +30,7 @@ public static class ConfigCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var configPath = parseResult.GetValue(GlobalOptionsSetup.ConfigOption);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
@@ -57,11 +59,8 @@ public static class ConfigCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    formatter.WriteObject(new
-                    {
-                        valid = false,
-                        errors = errors
-                    });
+                    JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "config validate", false, ExitCodes.UsageError,
+                        new { valid = false, errors });
                 }
                 else
                 {
@@ -75,7 +74,8 @@ public static class ConfigCommand
 
             if (output == OutputFormat.Json)
             {
-                formatter.WriteObject(new { valid = true });
+                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "config validate", true, ExitCodes.Success,
+                    new { valid = true });
             }
             else
             {
@@ -117,7 +117,7 @@ public static class ConfigCommand
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                ctx.Formatter.WriteObject(new
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "config show", true, ExitCodes.Success, new
                 {
                     configDirectory = ctx.ConfigDirectory,
                     config = ctx.Config,
@@ -216,7 +216,8 @@ public static class ConfigCommand
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                ctx.Formatter.WriteObject(new
+                var doctorExitCode = findings.Count > 0 ? ExitCodes.ValidationFailure : ExitCodes.Success;
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "config doctor", findings.Count == 0, doctorExitCode, new
                 {
                     findings = findings.Select(f => new
                     {
@@ -454,7 +455,7 @@ public static class ConfigCommand
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                ctx.Formatter.WriteObject(suggestion);
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "config suggest", true, ExitCodes.Success, suggestion);
             }
             else
             {

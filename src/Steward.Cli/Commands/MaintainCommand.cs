@@ -2,6 +2,7 @@ using System.CommandLine;
 using DiffPlex;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
+using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Formatting;
 using Steward.Core.Maintenance;
@@ -85,7 +86,7 @@ public static class MaintainCommand
             // Output — single pass for both text and JSON
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                ctx.Formatter.WriteObject(new
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "maintain", true, ExitCodes.Success, new
                 {
                     hasChanges = plan.HasChanges,
                     applied = apply,

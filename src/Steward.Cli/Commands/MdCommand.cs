@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.Globalization;
+using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Formatting;
@@ -16,6 +17,7 @@ public static class MdCommand
         command.Add(CreateQueryCommand());
         command.Add(CreateOutlineCommand());
         command.Add(MdEditCommand.Create());
+        command.Add(MdSplitCommand.Create());
 
         return command;
     }
@@ -36,6 +38,7 @@ public static class MdCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var file = parseResult.GetValue(fileArg);
             var selector = parseResult.GetValue(selectorArg);
             var pattern = parseResult.GetValue(patternOpt);
@@ -61,7 +64,7 @@ public static class MdCommand
             // Batch mode: --pattern glob
             if (pattern != null)
             {
-                return ExecuteBatchQuery(formatter, fileSystem, output, selector, pattern);
+                return ExecuteBatchQuery(formatter, fileSystem, output, jsonEnvelope, selector, pattern);
             }
 
             if (file == null)
@@ -89,7 +92,7 @@ public static class MdCommand
 
             if (output == OutputFormat.Json)
             {
-                formatter.WriteObject(new
+                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md query", true, ExitCodes.Success, new
                 {
                     selector = result.Selector,
                     matchCount = result.Matches.Count,
@@ -124,7 +127,7 @@ public static class MdCommand
     }
 
     private static int ExecuteBatchQuery(IOutputFormatter formatter, IFileSystem fileSystem,
-        OutputFormat output, string selector, string pattern)
+        OutputFormat output, JsonEnvelopeMode jsonEnvelope, string selector, string pattern)
     {
         var root = Directory.GetCurrentDirectory();
         var glob = DotNet.Globbing.Glob.Parse(pattern);
@@ -178,7 +181,8 @@ public static class MdCommand
 
         if (output == OutputFormat.Json)
         {
-            formatter.WriteObject(new { pattern, selector, results = allResults });
+            JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md query", true, ExitCodes.Success,
+                new { pattern, selector, results = allResults });
         }
 
         return ExitCodes.Success;
@@ -195,6 +199,7 @@ public static class MdCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var file = parseResult.GetValue(fileArg)!;
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
@@ -212,7 +217,7 @@ public static class MdCommand
 
             if (output == OutputFormat.Json)
             {
-                formatter.WriteObject(new
+                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md outline", true, ExitCodes.Success, new
                 {
                     file = file,
                     totalLines = doc.TotalLines,

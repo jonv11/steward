@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Formatting;
 using Steward.Core.Markdown;
@@ -152,7 +153,8 @@ public static class CheckCommand
             // Output
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                ctx.Formatter.WriteObject(new CheckResponse
+                var checkExitCode = result.Summary.Pass ? ExitCodes.Success : ExitCodes.ValidationFailure;
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "check", result.Summary.Pass, checkExitCode, new CheckResponse
                 {
                     Summary = new CheckSummaryResponse
                     {

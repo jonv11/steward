@@ -1,5 +1,6 @@
 using System.CommandLine;
 using DotNet.Globbing;
+using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Configuration;
 using Steward.Core.Formatting;
@@ -31,6 +32,7 @@ public static class MdEditCommand
         command.Add(CreateFmSetCommand());
         command.Add(CreateFmMergeCommand());
         command.Add(CreateFmValidateCommand());
+        command.Add(CreateExtractSectionCommand());
 
         return command;
     }
@@ -247,6 +249,7 @@ public static class MdEditCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var formatter = CommandSetup.CreateFormatter(output, noColor);
 
             var file = parseResult.GetValue(fileArg)!;
@@ -302,7 +305,8 @@ public static class MdEditCommand
             if (effectiveRequired.Count == 0 && effectiveAllowed.Count == 0)
             {
                 if (output == OutputFormat.Json)
-                    formatter.WriteObject(new { valid = true, issues = Array.Empty<object>(), message = "No frontmatter requirements apply to this file." });
+                    JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md edit fm-validate", true, ExitCodes.Success,
+                        new { valid = true, issues = Array.Empty<object>(), message = "No frontmatter requirements apply to this file." });
                 else
                     formatter.WriteMessage("No frontmatter requirements apply to this file.");
                 return ExitCodes.Success;
@@ -337,9 +341,11 @@ public static class MdEditCommand
 
             if (output == OutputFormat.Json)
             {
-                formatter.WriteObject(new
+                var fmValid = issues.Count == 0;
+                var fmExitCode = fmValid ? ExitCodes.Success : ExitCodes.ValidationFailure;
+                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md edit fm-validate", fmValid, fmExitCode, new
                 {
-                    valid = issues.Count == 0,
+                    valid = fmValid,
                     issues,
                     requiredFields = effectiveRequired.ToList(),
                     allowedValues = effectiveAllowed
@@ -365,11 +371,117 @@ public static class MdEditCommand
         return command;
     }
 
+    private static Command CreateExtractSectionCommand()
+    {
+        var command = new Command("extract-section", "Extract a section into a new file (preview/apply workflow)");
+
+        var fileArg = new Argument<string>("file") { Description = "Path to the source Markdown file" };
+        var selectorOpt = new Option<string>("--selector") { Description = "MdPath selector for the section to extract (e.g. heading[Goals])" };
+        selectorOpt.Required = true;
+        var toOpt = new Option<string>("--to") { Description = "Target file path for the extracted section" };
+        toOpt.Required = true;
+        var replaceWithLinkOpt = new Option<bool>("--replace-with-link")
+        {
+            Description = "Replace the extracted section in the source with a link to the new file"
+        };
+        var applyOpt = new Option<bool>("--apply")
+        {
+            Description = "Write changes to disk (default is preview)"
+        };
+
+        command.Add(fileArg);
+        command.Add(selectorOpt);
+        command.Add(toOpt);
+        command.Add(replaceWithLinkOpt);
+        command.Add(applyOpt);
+
+        command.SetAction(parseResult =>
+        {
+            var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
+            var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
+            var file = parseResult.GetValue(fileArg)!;
+            var selector = parseResult.GetValue(selectorOpt)!;
+            var to = parseResult.GetValue(toOpt)!;
+            var replaceWithLink = parseResult.GetValue(replaceWithLinkOpt);
+            var apply = parseResult.GetValue(applyOpt);
+
+            var formatter = CommandSetup.CreateFormatter(output, noColor);
+
+            var fullSourcePath = Path.GetFullPath(file);
+            if (!File.Exists(fullSourcePath))
+            {
+                formatter.WriteError($"File not found: {file}");
+                return ExitCodes.UsageError;
+            }
+
+            var fullTargetPath = Path.GetFullPath(to);
+            if (apply && File.Exists(fullTargetPath) && new FileInfo(fullTargetPath).Length > 0)
+            {
+                formatter.WriteError($"Target file already exists and is non-empty: {to}");
+                return ExitCodes.UsageError;
+            }
+
+            var sourceContent = File.ReadAllText(fullSourcePath);
+            var doc = MarkdownParser.Parse(fullSourcePath, sourceContent);
+            var result = SectionExtractor.Extract(doc, selector, to, replaceWithLink);
+
+            if (result.IsError)
+            {
+                formatter.WriteError(result.ErrorMessage!);
+                return ExitCodes.UsageError;
+            }
+
+            if (output == OutputFormat.Json)
+            {
+                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md edit extract-section", true, ExitCodes.Success, new
+                {
+                    sourceFile = file,
+                    targetFile = to,
+                    extractedHeading = result.ExtractedHeading,
+                    replaceWithLink,
+                    applied = apply
+                });
+            }
+            else
+            {
+                formatter.WriteMessage($"Extract: {result.ExtractedHeading}");
+                formatter.WriteMessage($"  from: {file}");
+                formatter.WriteMessage($"  to:   {to}");
+                if (replaceWithLink)
+                    formatter.WriteMessage("  source section will be replaced with a link stub.");
+                else
+                    formatter.WriteMessage("  source section will be removed.");
+
+                if (!apply)
+                    formatter.WriteMessage("\nPreview only. Run with --apply to write changes.");
+            }
+
+            if (apply)
+            {
+                var targetDir = Path.GetDirectoryName(fullTargetPath);
+                if (targetDir != null && !Directory.Exists(targetDir))
+                    Directory.CreateDirectory(targetDir);
+
+                File.WriteAllText(fullTargetPath, result.TargetContent);
+                File.WriteAllText(fullSourcePath, result.NewSourceContent);
+
+                if (output != OutputFormat.Json)
+                    formatter.WriteMessage("Changes applied.");
+            }
+
+            return ExitCodes.Success;
+        });
+
+        return command;
+    }
+
     private static int ExecuteEdit(System.CommandLine.ParseResult parseResult,
         string file, bool apply, Func<StructuredDocument, EditResult> editFunc)
     {
         var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
         var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+        var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
         var formatter = CommandSetup.CreateFormatter(output, noColor);
 
         var fullPath = Path.GetFullPath(file);
@@ -391,7 +503,7 @@ public static class MdEditCommand
 
         if (output == OutputFormat.Json)
         {
-            formatter.WriteObject(new
+            JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md edit", true, ExitCodes.Success, new
             {
                 hasChanges = result.HasChanges,
                 message = result.Message,

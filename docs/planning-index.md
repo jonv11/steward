@@ -14,7 +14,7 @@ Central navigation for the active product, planning, readiness, and decision art
 
 | Document | Purpose |
 |----------|---------|
-| [Implementation Status](implementation-status.md) | Current `0.14.0` baseline, delivered scope, and remaining pre-stable gaps |
+| [Implementation Status](implementation-status.md) | Current `0.15.0` baseline, delivered scope, and remaining pre-stable gaps |
 | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) | Categorized remaining work before the first stable shipment |
 
 ## Decisions
@@ -38,15 +38,11 @@ Central navigation for the active product, planning, readiness, and decision art
 | [Release Process](planning/release-process.md) | Authoritative operator guide for intentional public pre-1.0 releases, labels, changelog policy, tagging, and GitHub Releases |
 | [Release Publication Checklist](planning/release-publication-checklist.md) | Local verification, tagging, NuGet publication, and self-contained binary steps |
 
-## Draft Decisions Under Review
-
-The [Decision Index](decisions/decision-index.md) lists accepted RFCs and ADRs only. The following draft RFCs capture the current `v0.15.0` design work that is ready for maintainer review:
+## Deferred RFCs
 
 | Document | Purpose |
 |----------|---------|
-| [RFC-009 Typed Resource Addresses and Search Alignment](decisions/rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md) | Draft typed-address model for file and Markdown resources plus first search/alignment consumers |
-| [RFC-010 Consistent JSON Output Envelope](decisions/rfcs/RFC-010-consistent-json-output-envelope.md) | Draft additive JSON envelope for machine-facing consistency without breaking current consumers |
-| [RFC-011 Markdown Split and Extract Workflows](decisions/rfcs/RFC-011-markdown-split-and-extract-workflows.md) | Draft narrow split-planning and extract-section workflow for the Markdown subsystem |
+| [RFC-009 Typed Resource Addresses and Search Alignment](decisions/rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md) | Deferred typed-address model for file and Markdown resources — revisit in a later pre-1.0 milestone |
 
 ## Reviews And Audit Evidence
 

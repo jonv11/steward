@@ -151,7 +151,7 @@ artifact_families:
       required: [type, status, resolves]
       allowed_values:
         type: [rfc]
-        status: [Draft, Proposed, Accepted, Superseded, Deprecated]
+        status: [Draft, Proposed, Accepted, Superseded, Deprecated, Deferred]
 
   - family: planning
     display_name: Planning Document

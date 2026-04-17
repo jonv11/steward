@@ -1,6 +1,6 @@
 ---
 type: rfc
-status: Draft
+status: Accepted
 resolves: >-
   REQ-MD-012 split/extract workflows in preview-first form for governed Markdown
 last_updated: 2026-04-17

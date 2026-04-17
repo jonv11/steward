@@ -9,7 +9,7 @@ Steward is currently on **`v0.14.0`**. The repository is **still pre-1.0**: inte
 | Area | Current state |
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
-| Current repo version | `0.14.0` |
+| Current repo version | `0.15.0` |
 | Tests | 627 passing (`436` core, `191` CLI) |
 | Validation rules | 16 (`STWD-001` through `STWD-016`) |
 | Artifact families | `artifact_families` section now supported in `policy.yaml`; ADRs and RFCs governed by families in this repo |
@@ -36,6 +36,7 @@ Steward is currently on **`v0.14.0`**. The repository is **still pre-1.0**: inte
 | `v0.12.0` | Delivered | CLI fidelity, governance deepening, and Markdown subsystem completion (init scaffolding, md query --pattern fix, preview/apply standardization, coverage exclude, explain filtering, config suggest/doctor deepening, fm-validate) |
 | `v0.13.0` | Delivered | Artifact type schema RFC and base implementation: `artifact_families` in policy, deterministic family classification, type-aware frontmatter validation, family awareness in `status`, `orient`, `explain path`, `config doctor` |
 | `v0.14.0` | Delivered | Release automation and public pre-1.0 distribution discipline: changelog-backed release notes, GitHub Release workflow and assets, release-intent labels, release docs, and publication metadata hardening |
+| `v0.15.0` | Delivered | JSON output envelope consistency (RFC-010), Markdown split/extract workflows (RFC-011), severity_overrides runtime implementation, explain path family-applicability fixes |
 
 ## What Was Established In `v0.10.0`
 
@@ -124,6 +125,13 @@ A comprehensive maintainer review pass also addressed several cross-cutting conc
 - **Policy scalability:** `policy.yaml` refactored from 19 per-file artifact entries to 11 structurally essential ones, with convention-based `frontmatter_requirements` for document families.
 - **RFC-008 accepted and partially delivered:** [Convention-Based Discovery and Workflow Modeling](decisions/rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) now governs the current artifact-family baseline and captures the deferred follow-on work.
 
+## What Is New In v0.15.0
+
+- **JSON output envelope (RFC-010):** All JSON-producing commands now support `--json-envelope standard`, which wraps payloads in `{ schemaVersion, command, toolVersion, success, exitCode, data }`. Default is `legacy` (existing behavior) for the `0.15.x` line.
+- **Markdown split/extract workflows (RFC-011):** `md split plan` provides a non-mutating analysis of candidate section splits for large Markdown files. `md edit extract-section` is a preview/apply operation that extracts a named section into a new target file, with optional link replacement and managed-region ownership enforcement.
+- **`validation.severity_overrides` implemented:** The `severity_overrides` config field was previously modeled and validated but never applied at runtime. Diagnostics are now rewritten to the configured severity level after all rules run, and pass/fail computation reflects the overridden severities.
+- **`explain path` family-applicability fixes:** Family classification now runs for all files including those in `artifacts[]` (explicit artifacts were previously excluded). STWD-014/015/016 now show as applicable only when the file matches a configured artifact family, not for every file.
+
 ## Remaining Before First Stable Shipment
 
 The detailed categorized list lives in [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md). At a high level, the remaining work is now concentrated in a smaller set of release-hardening items:
@@ -139,9 +147,9 @@ The detailed categorized list lives in [Pre-1.0 Readiness Plan](planning/pre-1-0
 ### Optional / Later Pre-1.0
 
 - Heading selector fuzzy matching in MdPath
-- JSON output envelope consistency
+- Typed resource addresses (RFC-009, deferred)
 - Re-enabling deferred profiles (`mixed`, `knowledge`) when their contracts are enriched (see [ADR-014](decisions/adrs/ADR-014-non-software-profile-scope.md))
-- Workflow/session modeling (RFC-008 Phase 3, v0.15.0+)
+- Workflow/session modeling (RFC-008 Phase 3, v0.16.0+)
 
 ## Manual Follow-Up Outside The Repo
 

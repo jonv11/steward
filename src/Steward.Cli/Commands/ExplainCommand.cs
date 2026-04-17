@@ -1,5 +1,6 @@
 using System.CommandLine;
 using DotNet.Globbing;
+using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Configuration;
 using Steward.Core.Discovery;
@@ -29,6 +30,7 @@ public static class ExplainCommand
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
             var verbosity = parseResult.GetValue(GlobalOptionsSetup.VerbosityOption);
+            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var ruleId = parseResult.GetValue(ruleArg);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
@@ -36,7 +38,7 @@ public static class ExplainCommand
             if (string.IsNullOrWhiteSpace(ruleId))
             {
                 // List all rules
-                return ListAllRules(formatter, output);
+                return ListAllRules(formatter, output, jsonEnvelope);
             }
 
             var rule = AllRules.FirstOrDefault(r =>
@@ -68,7 +70,7 @@ public static class ExplainCommand
                 if (filesEvaluated.HasValue)
                     jsonObj["filesEvaluated"] = filesEvaluated.Value;
 
-                formatter.WriteObject(jsonObj);
+                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "explain", true, ExitCodes.Success, jsonObj);
             }
             else
             {
@@ -120,17 +122,18 @@ public static class ExplainCommand
         }
     }
 
-    private static int ListAllRules(IOutputFormatter formatter, OutputFormat output)
+    private static int ListAllRules(IOutputFormatter formatter, OutputFormat output, JsonEnvelopeMode jsonEnvelope)
     {
         if (output == OutputFormat.Json)
         {
-            formatter.WriteObject(AllRules.Select(r => new
-            {
-                ruleId = r.RuleId,
-                category = r.Category,
-                severity = r.DefaultSeverity.ToString().ToLowerInvariant(),
-                description = r.Description
-            }).ToArray());
+            JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "explain", true, ExitCodes.Success,
+                AllRules.Select(r => new
+                {
+                    ruleId = r.RuleId,
+                    category = r.Category,
+                    severity = r.DefaultSeverity.ToString().ToLowerInvariant(),
+                    description = r.Description
+                }).ToArray());
         }
         else
         {
@@ -369,10 +372,10 @@ public static class ExplainCommand
             }
         }
 
-        // 5b. Family classification (only if not an explicit artifact)
+        // 5b. Family classification
         string? matchedFamily = null;
         string? familyDisplayName = null;
-        if (artifactSummary == null && ctx.Policy?.ArtifactFamilies is { Count: > 0 })
+        if (ctx.Policy?.ArtifactFamilies is { Count: > 0 })
         {
             IReadOnlyDictionary<string, object?>? frontmatterFields = null;
             var fullPath = System.IO.Path.Combine(ctx.RootPath, relativePath);
@@ -446,6 +449,9 @@ public static class ExplainCommand
                 "STWD-011" => isIndex,                          // index-completeness: index artifacts
                 "STWD-012" => isArtifact && hasFreshness,       // freshness: artifacts with freshness config
                 "STWD-013" => isMarkdown,                       // orphaned-document: md files
+                "STWD-014" => matchedFamily != null,            // family-naming-pattern: family members only
+                "STWD-015" => matchedFamily != null,            // family-min-count: family members only
+                "STWD-016" => matchedFamily != null,            // required-sections: family members only
                 _ => true
             })
             .Select(r => r.RuleId)

@@ -86,7 +86,7 @@ public static class OrientCommand
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                ctx.Formatter.WriteObject(result);
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "orient", true, ExitCodes.Success, result);
             }
             else
             {

@@ -13,3 +13,9 @@ public enum Verbosity
     Verbose,
     Debug
 }
+
+public enum JsonEnvelopeMode
+{
+    Legacy,
+    Standard
+}

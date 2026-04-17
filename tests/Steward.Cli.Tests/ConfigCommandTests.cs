@@ -374,6 +374,7 @@ public class ConfigCommandTests : IDisposable
             FileSystem = new Steward.TestFixtures.InMemoryFileSystem(),
             Formatter = new Steward.Cli.Formatting.TextOutputFormatter(TextWriter.Null, false),
             OutputFormat = Steward.Core.OutputFormat.Text,
+            JsonEnvelope = Steward.Core.JsonEnvelopeMode.Legacy,
             Verbosity = Steward.Core.Verbosity.Normal,
             NoColor = true,
             Policy = policy,

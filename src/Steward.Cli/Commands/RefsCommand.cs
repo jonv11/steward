@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Discovery;
 using Steward.Core.Validation.Rules;
@@ -54,7 +55,7 @@ public static class RefsCommand
                     Outbound = showFrom ? GetOutbound(graph, targetPath) : [],
                     Inbound = showTo ? GetInbound(graph, targetPath) : []
                 };
-                ctx.Formatter.WriteObject(response);
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "refs", true, ExitCodes.Success, response);
             }
             else
             {
