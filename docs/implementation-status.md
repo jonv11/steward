@@ -10,8 +10,8 @@ Steward is currently on **`v0.13.0`**. The repository is **still pre-1.0**: `v1.
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
 | Current repo version | `0.13.0` |
-| Tests | 598 passing (`407` core, `191` CLI) |
-| Validation rules | 13 (`STWD-001` through `STWD-013`) |
+| Tests | 627 passing (`436` core, `191` CLI) |
+| Validation rules | 16 (`STWD-001` through `STWD-016`) |
 | Artifact families | `artifact_families` section now supported in `policy.yaml`; ADRs and RFCs governed by families in this repo |
 | Maintainer types | 6 (`structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`) |
 | Packaging | `dotnet pack` succeeds cleanly for `Steward.Cli.0.13.0.nupkg` |
@@ -90,13 +90,12 @@ The following known defects were identified in the 2026-04-16 CLI review cycle. 
 - **`config validate` family validation:** Validates glob syntax, duplicate names, blank required fields, and invalid importance in `artifact_families`.
 - **`ProfileMerger` fix:** `ArtifactFamilies` is now preserved through profile merging (was silently dropped before this milestone).
 - **Dogfooding migration:** This repo's `.steward/policy.yaml` migrated ADR and RFC governance from `frontmatter_requirements` to `artifact_families`.
-- **RFC-008 accepted:** RFC-008 accepted with §8 narrowing the v0.13.0 scope. Deferred: `required_sections`, `min_count`, `naming_pattern` enforcement, workflow modeling.
+- **RFC-008 accepted:** RFC-008 accepted with §8 narrowing the v0.13.0 scope. Deferred: workflow modeling.
+- **STWD-014 (RequiredSectionsRule):** Files matched by an artifact family must contain all headings declared in `required_sections`.
+- **STWD-015 (FamilyMinCountRule):** Artifact families with `directory_expectations.min_count` must contain at least the declared number of files.
+- **STWD-016 (FamilyNamingPatternRule):** Files matched by an artifact family must satisfy the family's `naming_pattern` regex.
 
 ## Incremental Pass (post-v0.13.0, in-progress)
-
-### Required-sections enforcement
-
-ADRs, RFCs, and PRDs have established section conventions (Context / Decision / Consequences for ADRs; numbered sections for RFCs and PRDs). These conventions are consistent across all existing documents and are documented in policy comments and the planning gap tracker. Current Steward has no mechanism to enforce section presence at the family level — RFC-008 §3.3 explicitly marks `required_sections` per family as a future capability dependent on the artifact type schema work (ADR-012, v0.13.0+). The gap is tracked in [pre-1-0-readiness-plan.md](planning/pre-1-0-readiness-plan.md) under "Later Pre-1.0 Candidates".
 
 ### Session-start and text-UX coherence
 

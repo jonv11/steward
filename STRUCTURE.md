@@ -18,6 +18,8 @@
 │   │   ├── cli-expectation-fidelity-review-2026-04-16.md
 │   │   ├── cli-full-assessment-2026-04-16.md
 │   │   ├── code-quality-pass-2026-04-16.md
+│   │   ├── code-quality-review-2025-07-23.md
+│   │   ├── end-user-documentation-path-audit-2026-04-17.md
 │   │   ├── maintainer-review.md
 │   │   ├── maintainer-usecase-expectations.md
 │   │   ├── maintainer-usecase-ideas.md
@@ -71,6 +73,7 @@
 │       ├── Markdown
 │       ├── Models
 │       ├── Orientation
+│       ├── PathHelper.cs
 │       ├── Search
 │       ├── Steward.Core.csproj
 │       └── Validation
@@ -119,6 +122,8 @@
     │   ├── DiagnosticTests.cs
     │   ├── DirectoryIndexMaintainerTests.cs
     │   ├── ExitCodeConstantsTests.cs
+    │   ├── FamilyMinCountRuleTests.cs
+    │   ├── FamilyNamingPatternRuleTests.cs
     │   ├── FileDiscoveryServiceTests.cs
     │   ├── ForbiddenPathRuleTests.cs
     │   ├── FreshnessRuleTests.cs
@@ -139,6 +144,7 @@
     │   ├── PathPolicyEngineTests.cs
     │   ├── ProfileMergerTests.cs
     │   ├── RequiredArtifactRuleTests.cs
+    │   ├── RequiredSectionsRuleTests.cs
     │   ├── RoleDefaultsTests.cs
     │   ├── RuleRegistryTests.cs
     │   ├── SearchEngineTests.cs
