@@ -1,9 +1,9 @@
 ---
 type: planning
 document_id: PLAN-0002
-version: 0.14.0
+version: 0.15.0
 status: Active
-last_updated: 2026-04-17
+last_updated: 2026-04-18
 ---
 
 # Milestone Plan — Pre-1.0 Mainline
@@ -32,13 +32,14 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 | `v0.12.0` | CLI fidelity, governance deepening, and Markdown subsystem completion | Delivered |
 | `v0.13.0` | Artifact type schema RFC and base implementation | Delivered |
 | `v0.14.0` | Release automation and public pre-1.0 distribution discipline | Delivered |
+| `v0.15.0` | JSON envelope, Markdown split/extract, and config/explainability trust | Delivered |
 
 ## Planned Pre-1.0 Milestones
 
-| Version | Theme | Primary outcome |
-|---------|-------|-----------------|
-| `v0.15.0` | Later pre-1.0 requirement families | Typed resource-address follow-on work, search/address alignment, split-extract evaluation, JSON output envelope consistency |
-| `v0.16.0` | Optional pre-stable extensions | Host-integration exploration, workflow/session modeling, and remaining later-scope items if still justified |
+| Version   | Theme                                                          | Primary outcome                                                                                              |
+|-----------|----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `v0.16.0` | Bootstrap quality, config surface coherence, and help polish   | `config suggest` precision, clean `init` first-check, explicit-artifact/family inheritance, UX polish        |
+| `v0.17.0` | Optional pre-stable extensions                                 | Typed resource addresses (RFC-009), workflow/session modeling, and remaining later-scope items if justified  |
 
 ## First Stable Release
 
@@ -51,6 +52,20 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 - Former `v1.1.0` through `v1.6.0` planning has been logically retargeted to `v0.11.0` through `v0.16.0`.
 - The release-process completion work now lives on the active pre-1.0 line; it does not imply that `1.0.0` is scheduled or authorized.
 - The exact boundary between later pre-1.0 milestones may continue to move as stable-release criteria are clarified, but the roadmap must stay on the `0.x` line until that decision is made.
+
+---
+
+## v0.16.0 Planned Scope
+
+Primary outcome: bootstrap quality, config surface coherence, and CLI help polish. Grounded in findings 3, 5, 6, and 4 (partial) from the 2026-04-17 CLI expectation fidelity assessment.
+
+| # | Item | Source | Notes |
+|---|------|--------|--------|
+| 1 | Improve `config suggest` precision for mature repos | Assessment finding 3, G7-20 | Honor `validation.path_overrides` excludes; add confidence/heuristic scoring so test-fixture and sample files are not proposed as real artifact candidates |
+| 2 | Make `init` scaffold a clean first-check state | Assessment finding 5 | Fresh `check` on a new software-profile repo should not warn on optional artifacts; either scaffold them or relax default policy messaging for optional-only misses |
+| 3 | Fix help text: command name and value placeholders | Assessment finding 6 | Pin command display name to `steward` instead of `Steward.Cli`; restore value placeholders on `--config`, `--artifact`, `--role`, `--max` |
+| 4 | Resolve explicit-artifact / family-schema inheritance | Assessment finding 4, RFC-008 | Explicit artifacts currently do not inherit family `frontmatter_schema`, forcing duplicate `frontmatter_requirements` in policy; design and implement a clean inheritance or merge model |
+| 5 | Improve Markdown subsystem help and examples | Assessment finding, RFC-004 | Add operational selector examples to `md query` / `md edit` help; reduce "already know MdPath" assumption in subcommand descriptions |
 
 ---
 
