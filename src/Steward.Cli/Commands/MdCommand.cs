@@ -129,7 +129,7 @@ public static class MdCommand
         var root = Directory.GetCurrentDirectory();
         var glob = DotNet.Globbing.Glob.Parse(pattern);
         var allFiles = Directory.EnumerateFiles(root, "*.md", SearchOption.AllDirectories)
-            .Select(f => Path.GetRelativePath(root, f).Replace('\\', '/'))
+            .Select(f => PathHelper.NormalizeSeparators(Path.GetRelativePath(root, f)))
             .Where(f => glob.IsMatch(f))
             .OrderBy(f => f)
             .ToList();
@@ -252,7 +252,7 @@ public static class MdCommand
         }
     }
 
-    private static object[] FlattenForJson(IReadOnlyList<Section> sections)
+    internal static object[] FlattenForJson(IReadOnlyList<Section> sections)
     {
         var result = new List<object>();
         FlattenForJsonRecursive(sections, result);

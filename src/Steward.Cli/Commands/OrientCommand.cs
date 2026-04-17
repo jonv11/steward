@@ -298,14 +298,14 @@ public static class OrientCommand
 
         foreach (var entry in entries)
         {
-            var parentPath = Path.GetDirectoryName(entry.Path)?.Replace('\\', '/');
+            var parentPath = PathHelper.NormalizeSeparators(Path.GetDirectoryName(entry.Path) ?? "");
             while (!string.IsNullOrWhiteSpace(parentPath))
             {
                 if (!entryLookup.ContainsKey(parentPath))
                     break;
 
                 selectedPaths.Add(parentPath);
-                parentPath = Path.GetDirectoryName(parentPath)?.Replace('\\', '/');
+                parentPath = PathHelper.NormalizeSeparators(Path.GetDirectoryName(parentPath) ?? "");
             }
         }
 
@@ -325,7 +325,7 @@ public static class OrientCommand
             var node = new OrientationTreeNode(entry);
             lookup[entry.Path] = node;
 
-            var parentPath = Path.GetDirectoryName(entry.Path)?.Replace('\\', '/');
+            var parentPath = PathHelper.NormalizeSeparators(Path.GetDirectoryName(entry.Path) ?? "");
             if (string.IsNullOrWhiteSpace(parentPath) || !lookup.TryGetValue(parentPath, out var parent))
             {
                 roots.Add(node);

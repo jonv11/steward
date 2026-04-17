@@ -1,4 +1,5 @@
 using DotNet.Globbing;
+using Steward.Core;
 using Steward.Core.Configuration;
 using Steward.Core.Markdown;
 using Steward.Core.Validation;
@@ -179,7 +180,7 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
         foreach (var a in policy.Artifacts)
         {
             if (!string.IsNullOrWhiteSpace(a.Path))
-                set.Add(a.Path!.Replace('\\', '/').TrimEnd('/'));
+                set.Add(PathHelper.NormalizeAndTrim(a.Path!));
         }
         return set;
     }

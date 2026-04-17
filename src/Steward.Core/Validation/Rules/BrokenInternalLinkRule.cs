@@ -1,6 +1,7 @@
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
+using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Markdown;
 
@@ -20,7 +21,7 @@ public sealed class BrokenInternalLinkRule : IValidationRule
     {
         var diagnostics = new List<Diagnostic>();
         var existingPaths = new HashSet<string>(
-            context.TargetFiles.Select(f => f.RelativePath.Replace('\\', '/')),
+            context.TargetFiles.Select(f => PathHelper.NormalizeSeparators(f.RelativePath)),
             StringComparer.OrdinalIgnoreCase);
 
         foreach (var file in context.TargetFiles)
@@ -104,11 +105,11 @@ public sealed class BrokenInternalLinkRule : IValidationRule
         if (string.IsNullOrWhiteSpace(target)) return null;
 
         // Resolve relative to the source file's directory
-        var sourceDir = Path.GetDirectoryName(sourceFile.Replace('\\', '/'))?.Replace('\\', '/') ?? "";
+        var sourceDir = PathHelper.NormalizeSeparators(Path.GetDirectoryName(PathHelper.NormalizeSeparators(sourceFile)) ?? "");
         var combined = sourceDir.Length > 0 ? $"{sourceDir}/{target}" : target;
 
         // Normalize path segments
-        var parts = combined.Replace('\\', '/').Split('/').ToList();
+        var parts = PathHelper.NormalizeSeparators(combined).Split('/').ToList();
         var normalized = new List<string>();
 
         foreach (var part in parts)

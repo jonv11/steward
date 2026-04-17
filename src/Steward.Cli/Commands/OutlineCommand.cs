@@ -129,7 +129,7 @@ public static class OutlineCommand
                 file = Path.GetFileName(fullPath),
                 totalLines = doc.TotalLines,
                 hasFrontmatter = doc.Frontmatter != null,
-                sections = FlattenSectionsForJson(doc.Sections)
+                sections = MdCommand.FlattenForJson(doc.Sections)
             });
         }
         else
@@ -255,7 +255,7 @@ public static class OutlineCommand
             var node = new OutlineTreeNode(entry);
             nodeLookup[entry.Path] = node;
 
-            var parentPath = Path.GetDirectoryName(entry.Path)?.Replace('\\', '/');
+            var parentPath = PathHelper.NormalizeSeparators(Path.GetDirectoryName(entry.Path) ?? "");
             if (string.IsNullOrWhiteSpace(parentPath) || !nodeLookup.TryGetValue(parentPath, out var parent))
             {
                 rootNodes.Add(node);
@@ -275,25 +275,5 @@ public static class OutlineCommand
         public List<OutlineTreeNode> Children { get; } = [];
     }
 
-    private static object[] FlattenSectionsForJson(IReadOnlyList<Section> sections)
-    {
-        var result = new List<object>();
-        FlattenSectionsRecursive(sections, result);
-        return result.ToArray();
-    }
 
-    private static void FlattenSectionsRecursive(IReadOnlyList<Section> sections, List<object> result)
-    {
-        foreach (var s in sections)
-        {
-            result.Add(new
-            {
-                heading = s.Heading,
-                level = s.Level,
-                lineCount = s.LineCount,
-                range = new { start = s.Range.Start, end = s.Range.End }
-            });
-            FlattenSectionsRecursive(s.Children, result);
-        }
-    }
 }

@@ -1,3 +1,4 @@
+using Steward.Core;
 using Steward.Core.Abstractions;
 
 namespace Steward.Core.Validation.Rules;
@@ -29,8 +30,8 @@ public sealed class IndexCompletenessRule : IValidationRule
 
         foreach (var artifact in indexArtifacts)
         {
-            var indexPath = artifact.Path!.Replace('\\', '/');
-            var sourceDir = artifact.IndexOf!.Replace('\\', '/').TrimEnd('/') + "/";
+            var indexPath = PathHelper.NormalizeSeparators(artifact.Path!);
+            var sourceDir = PathHelper.NormalizeAndTrim(artifact.IndexOf!) + "/";
 
             var fullIndexPath = Path.Combine(context.RepositoryRoot, indexPath);
             if (!context.FileSystem.FileExists(fullIndexPath))
@@ -48,14 +49,14 @@ public sealed class IndexCompletenessRule : IValidationRule
             }
 
             var filesInScope = context.TargetFiles
-                .Where(f => f.RelativePath.Replace('\\', '/').StartsWith(sourceDir, StringComparison.OrdinalIgnoreCase))
+                .Where(f => PathHelper.NormalizeSeparators(f.RelativePath).StartsWith(sourceDir, StringComparison.OrdinalIgnoreCase))
                 .Where(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
-                .Where(f => !f.RelativePath.Replace('\\', '/').Equals(indexPath, StringComparison.OrdinalIgnoreCase))
+                .Where(f => !PathHelper.NormalizeSeparators(f.RelativePath).Equals(indexPath, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var file in filesInScope)
             {
-                var normalizedPath = file.RelativePath.Replace('\\', '/');
+                var normalizedPath = PathHelper.NormalizeSeparators(file.RelativePath);
                 if (!linkedPaths.Contains(normalizedPath))
                 {
                     diagnostics.Add(new Diagnostic(

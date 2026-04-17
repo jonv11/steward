@@ -281,8 +281,8 @@ public static class MdEditCommand
 
             // Compute relative path for pattern matching
             var relativePath = ctx.RootPath != null
-                ? Path.GetRelativePath(ctx.RootPath, fullPath).Replace('\\', '/')
-                : file.Replace('\\', '/');
+                ? PathHelper.NormalizeSeparators(Path.GetRelativePath(ctx.RootPath, fullPath))
+                : PathHelper.NormalizeSeparators(file);
 
             // Merge global + scoped required fields
             var effectiveRequired = new HashSet<string>(globalRequired, StringComparer.OrdinalIgnoreCase);

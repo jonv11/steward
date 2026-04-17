@@ -144,7 +144,7 @@ public static class CheckCommand
             if (string.Equals(scopeLabel, "staged", StringComparison.OrdinalIgnoreCase))
             {
                 var stagedPaths = new HashSet<string>(
-                    targetFiles.Select(f => f.RelativePath.Replace('\\', '/')),
+                    targetFiles.Select(f => PathHelper.NormalizeSeparators(f.RelativePath)),
                     StringComparer.OrdinalIgnoreCase);
                 stagedIncomplete = ComputeStagedCompleteness(ctx.Policy, stagedPaths);
             }
@@ -383,7 +383,7 @@ public static class CheckCommand
 
         // Collect unique file paths from diagnostics
         var diagnosticPaths = new HashSet<string>(
-            diagnostics.Where(d => d.Path != null).Select(d => d.Path!.Replace('\\', '/')),
+            diagnostics.Where(d => d.Path != null).Select(d => PathHelper.NormalizeSeparators(d.Path!)),
             StringComparer.OrdinalIgnoreCase);
 
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -393,7 +393,7 @@ public static class CheckCommand
             if (string.IsNullOrWhiteSpace(artifact.Source) || string.IsNullOrWhiteSpace(artifact.Id))
                 continue;
 
-            var source = artifact.Source.Replace('\\', '/').TrimEnd('/');
+            var source = PathHelper.NormalizeAndTrim(artifact.Source);
 
             foreach (var path in diagnosticPaths)
             {
@@ -426,8 +426,8 @@ public static class CheckCommand
             if (string.IsNullOrWhiteSpace(artifact.Source) || string.IsNullOrWhiteSpace(artifact.Id))
                 continue;
 
-            var source = artifact.Source.Replace('\\', '/').TrimEnd('/');
-            var artifactPath = (artifact.Path ?? "").Replace('\\', '/');
+            var source = PathHelper.NormalizeAndTrim(artifact.Source);
+            var artifactPath = PathHelper.NormalizeSeparators(artifact.Path ?? "");
 
             // Check if any staged path is under this source
             var hasSourceStaged = stagedPaths.Any(p =>

@@ -1,5 +1,6 @@
 using System.Text;
 using DotNet.Globbing;
+using Steward.Core;
 using Steward.Core.Markdown;
 
 namespace Steward.Core.Maintenance;
@@ -47,7 +48,7 @@ public sealed class IndexMaintainer : IArtifactMaintainer
                     title = doc.Sections[0].Heading;
             }
 
-            entries.Add($"- [{title}]({file.RelativePath.Replace('\\', '/')})");
+            entries.Add($"- [{title}]({PathHelper.NormalizeSeparators(file.RelativePath)})");
         }
 
         var expectedSection = string.Join('\n', entries);

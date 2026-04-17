@@ -1,5 +1,6 @@
 using System.Text;
 using DotNet.Globbing;
+using Steward.Core;
 using Steward.Core.Markdown;
 
 namespace Steward.Core.Maintenance;
@@ -51,7 +52,7 @@ public sealed class DirectoryIndexMaintainer : IArtifactMaintainer
                     description = d.ToString()!;
             }
 
-            rows.Add((title, file.RelativePath.Replace('\\', '/'), description));
+            rows.Add((title, PathHelper.NormalizeSeparators(file.RelativePath), description));
         }
 
         var tableContent = GenerateTable(rows);

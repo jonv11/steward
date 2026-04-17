@@ -33,7 +33,7 @@ public static class RefsCommand
             if (!CommandSetup.TryBuild(parseResult, out var ctx))
                 return ExitCodes.UsageError;
 
-            var targetPath = parseResult.GetValue(pathArg)?.Replace('\\', '/') ?? "";
+            var targetPath = PathHelper.NormalizeSeparators(parseResult.GetValue(pathArg) ?? "");
             var showTo = parseResult.GetValue(toOption);
             var showFrom = parseResult.GetValue(fromOption);
 
@@ -107,7 +107,7 @@ public static class RefsCommand
 
             var content = fileSystem.ReadAllText(fullPath);
             var links = BrokenInternalLinkRule.ExtractInternalLinks(content);
-            var relPath = file.RelativePath.Replace('\\', '/');
+            var relPath = PathHelper.NormalizeSeparators(file.RelativePath);
 
             var targets = new List<string>();
             foreach (var (target, _) in links)

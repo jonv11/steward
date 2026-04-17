@@ -11,7 +11,7 @@ namespace Steward.Cli.Commands;
 
 public static class ExplainCommand
 {
-    private static readonly IValidationRule[] AllRules = RuleRegistry.CreateAllRules();
+    private static IValidationRule[] AllRules => CheckCommand.AllRules;
 
     public static Command Create()
     {
@@ -179,7 +179,7 @@ public static class ExplainCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var filePath = parseResult.GetValue(pathArg)!.Replace('\\', '/');
+            var filePath = PathHelper.NormalizeSeparators(parseResult.GetValue(pathArg)!);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
 
@@ -279,7 +279,7 @@ public static class ExplainCommand
     {
         // 1. Orientation classification
         var discoveredFile = ctx.Files?.FirstOrDefault(f =>
-            string.Equals(f.RelativePath.Replace('\\', '/'), relativePath, StringComparison.OrdinalIgnoreCase));
+            string.Equals(PathHelper.NormalizeSeparators(f.RelativePath), relativePath, StringComparison.OrdinalIgnoreCase));
         var classification = discoveredFile != null
             ? OrientationEngine.Classify(discoveredFile, ctx.Policy)
             : "unknown";
@@ -294,7 +294,7 @@ public static class ExplainCommand
         {
             var matched = ctx.Policy.Artifacts.FirstOrDefault(a =>
                 !string.IsNullOrWhiteSpace(a.Path) &&
-                string.Equals(a.Path!.Replace('\\', '/').TrimEnd('/'), relativePath, StringComparison.OrdinalIgnoreCase));
+                string.Equals(PathHelper.NormalizeAndTrim(a.Path!), relativePath, StringComparison.OrdinalIgnoreCase));
             if (matched != null)
             {
                 artifactSummary = new ArtifactSummary
@@ -418,10 +418,10 @@ public static class ExplainCommand
         var isArtifact = artifactSummary != null;
         var isIndex = artifactSummary?.IndexOf != null;
         var hasFreshness = isArtifact && ctx.Policy?.Artifacts?.FirstOrDefault(a =>
-            string.Equals(a.Path?.Replace('\\', '/').TrimEnd('/'), relativePath, StringComparison.OrdinalIgnoreCase))
+            string.Equals(a.Path != null ? PathHelper.NormalizeAndTrim(a.Path) : null, relativePath, StringComparison.OrdinalIgnoreCase))
             ?.Freshness?.MaxAgeDays > 0;
         var isMaintained = ctx.Policy?.Maintenance?.Artifacts?.Any(m =>
-            string.Equals(m.Path?.Replace('\\', '/'), relativePath, StringComparison.OrdinalIgnoreCase)) == true;
+            string.Equals(m.Path != null ? PathHelper.NormalizeSeparators(m.Path) : null, relativePath, StringComparison.OrdinalIgnoreCase)) == true;
         var hasFrontmatterReqs = requiredFields.Count > 0;
         var hasManagedRegions = ctx.Policy?.Governance?.ManagedRegions != null;
         var hasPathPolicy = ctx.PathPolicy?.Rulesets is { Count: > 0 };

@@ -1,5 +1,6 @@
 using System.Text;
 using DotNet.Globbing;
+using Steward.Core;
 
 namespace Steward.Core.Maintenance;
 
@@ -76,7 +77,7 @@ public sealed class StructureDocumentMaintainer : IArtifactMaintainer
 
         foreach (var path in paths)
         {
-            var parts = path.Replace('\\', '/').Split('/');
+            var parts = PathHelper.NormalizeSeparators(path).Split('/');
             var current = root;
             var limit = Math.Min(parts.Length, maxDepth);
 

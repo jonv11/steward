@@ -1,3 +1,4 @@
+using Steward.Core;
 using Steward.Core.Abstractions;
 
 namespace Steward.Core.Validation.Rules;
@@ -25,7 +26,7 @@ public sealed class OrphanedDocumentRule : IValidationRule
         if (context.Policy?.Governance?.StartHere != null)
         {
             foreach (var s in context.Policy.Governance.StartHere)
-                referencedPaths.Add(s.Replace('\\', '/'));
+                referencedPaths.Add(PathHelper.NormalizeSeparators(s));
         }
 
         // 2. Artifact paths
@@ -34,7 +35,7 @@ public sealed class OrphanedDocumentRule : IValidationRule
             foreach (var a in context.Policy.Artifacts)
             {
                 if (!string.IsNullOrWhiteSpace(a.Path))
-                    referencedPaths.Add(a.Path.Replace('\\', '/').TrimEnd('/'));
+                    referencedPaths.Add(PathHelper.NormalizeAndTrim(a.Path));
             }
         }
 
@@ -63,7 +64,7 @@ public sealed class OrphanedDocumentRule : IValidationRule
         // 4. Check each Markdown file for orphan status
         foreach (var file in mdFiles)
         {
-            var relPath = file.RelativePath.Replace('\\', '/');
+            var relPath = PathHelper.NormalizeSeparators(file.RelativePath);
 
             if (referencedPaths.Contains(relPath))
                 continue;

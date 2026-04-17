@@ -1,3 +1,4 @@
+using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Markdown;
 
@@ -44,7 +45,7 @@ public sealed class FreshnessRule : IValidationRule
             if (string.IsNullOrWhiteSpace(artifact.Path))
                 continue;
 
-            var artifactPath = artifact.Path!.Replace('\\', '/');
+            var artifactPath = PathHelper.NormalizeSeparators(artifact.Path!);
             var fullPath = Path.Combine(context.RepositoryRoot, artifactPath);
 
             if (!context.FileSystem.FileExists(fullPath))

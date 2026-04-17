@@ -1,3 +1,4 @@
+using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Discovery;
 
@@ -48,7 +49,7 @@ public static class BootstrapAnalyzer
     {
         var suggestion = new Suggestion();
         var relPaths = new HashSet<string>(
-            files.Select(f => f.RelativePath.Replace('\\', '/')),
+            files.Select(f => PathHelper.NormalizeSeparators(f.RelativePath)),
             StringComparer.OrdinalIgnoreCase);
 
         // 1. Well-known files → artifact suggestions
@@ -71,9 +72,9 @@ public static class BootstrapAnalyzer
             suggestion.StartHere.Add("README.md");
 
         var docsIndex = files
-            .Where(f => f.RelativePath.Replace('\\', '/').Equals("docs/README.md", StringComparison.OrdinalIgnoreCase) ||
-                        f.RelativePath.Replace('\\', '/').Equals("docs/index.md", StringComparison.OrdinalIgnoreCase))
-            .Select(f => f.RelativePath.Replace('\\', '/'))
+            .Where(f => PathHelper.NormalizeSeparators(f.RelativePath).Equals("docs/README.md", StringComparison.OrdinalIgnoreCase) ||
+                        PathHelper.NormalizeSeparators(f.RelativePath).Equals("docs/index.md", StringComparison.OrdinalIgnoreCase))
+            .Select(f => PathHelper.NormalizeSeparators(f.RelativePath))
             .FirstOrDefault();
 
         if (docsIndex != null)
@@ -81,7 +82,7 @@ public static class BootstrapAnalyzer
 
         // 3. Docs directory artifacts
         var docsFiles = files
-            .Where(f => f.RelativePath.Replace('\\', '/').StartsWith("docs/", StringComparison.OrdinalIgnoreCase)
+            .Where(f => PathHelper.NormalizeSeparators(f.RelativePath).StartsWith("docs/", StringComparison.OrdinalIgnoreCase)
                         && f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
@@ -99,7 +100,7 @@ public static class BootstrapAnalyzer
         // 4. Requirements/PRD detection
         foreach (var f in files)
         {
-            var rel = f.RelativePath.Replace('\\', '/');
+            var rel = PathHelper.NormalizeSeparators(f.RelativePath);
             var name = Path.GetFileName(rel).ToLowerInvariant();
             if (name is "prd.md" or "requirements.md" or "spec.md" or "specification.md")
             {
@@ -132,7 +133,7 @@ public static class BootstrapAnalyzer
         foreach (var exclude in CommonExcludes)
         {
             var trimmed = exclude.TrimEnd('/');
-            if (files.Any(f => f.RelativePath.Replace('\\', '/').StartsWith(trimmed + "/", StringComparison.OrdinalIgnoreCase)))
+            if (files.Any(f => PathHelper.NormalizeSeparators(f.RelativePath).StartsWith(trimmed + "/", StringComparison.OrdinalIgnoreCase)))
             {
                 suggestion.ExcludePatterns.Add(exclude);
             }
@@ -150,7 +151,7 @@ public static class BootstrapAnalyzer
         foreach (var dir in decisionDirs)
         {
             var dirFiles = files.Where(f =>
-                f.RelativePath.Replace('\\', '/').StartsWith(dir + "/", StringComparison.OrdinalIgnoreCase) &&
+                PathHelper.NormalizeSeparators(f.RelativePath).StartsWith(dir + "/", StringComparison.OrdinalIgnoreCase) &&
                 f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase)).ToList();
 
             if (dirFiles.Count == 0) continue;
@@ -164,7 +165,7 @@ public static class BootstrapAnalyzer
 
             if (indexFile != null)
             {
-                var rel = indexFile.RelativePath.Replace('\\', '/');
+                var rel = PathHelper.NormalizeSeparators(indexFile.RelativePath);
                 if (!suggestion.Artifacts.Any(a => string.Equals(a.Path, rel, StringComparison.OrdinalIgnoreCase)))
                 {
                     suggestion.Artifacts.Add(new ArtifactSuggestion
@@ -193,7 +194,7 @@ public static class BootstrapAnalyzer
 
         foreach (var f in files)
         {
-            var rel = f.RelativePath.Replace('\\', '/');
+            var rel = PathHelper.NormalizeSeparators(f.RelativePath);
             var name = Path.GetFileName(rel).ToLowerInvariant();
 
             if (planningPatterns.TryGetValue(name, out var match))
@@ -217,14 +218,14 @@ public static class BootstrapAnalyzer
         {
             var planningIndex = files.FirstOrDefault(f =>
             {
-                var rel = f.RelativePath.Replace('\\', '/');
+                var rel = PathHelper.NormalizeSeparators(f.RelativePath);
                 return rel.StartsWith(dir + "/", StringComparison.OrdinalIgnoreCase) &&
                        Path.GetFileName(rel).ToLowerInvariant() is "index.md" or "readme.md" or "planning-index.md";
             });
 
             if (planningIndex != null)
             {
-                var rel = planningIndex.RelativePath.Replace('\\', '/');
+                var rel = PathHelper.NormalizeSeparators(planningIndex.RelativePath);
                 if (!suggestion.Artifacts.Any(a => string.Equals(a.Path, rel, StringComparison.OrdinalIgnoreCase)))
                 {
                     suggestion.Artifacts.Add(new ArtifactSuggestion
@@ -244,7 +245,7 @@ public static class BootstrapAnalyzer
         // Files with state-tracking patterns in their names
         foreach (var f in files)
         {
-            var rel = f.RelativePath.Replace('\\', '/');
+            var rel = PathHelper.NormalizeSeparators(f.RelativePath);
             if (!rel.EndsWith(".md", StringComparison.OrdinalIgnoreCase)) continue;
 
             var name = Path.GetFileNameWithoutExtension(rel).ToLowerInvariant();
@@ -272,7 +273,7 @@ public static class BootstrapAnalyzer
         var indexFiles = files
             .Where(f =>
             {
-                var rel = f.RelativePath.Replace('\\', '/');
+                var rel = PathHelper.NormalizeSeparators(f.RelativePath);
                 var name = Path.GetFileName(rel).ToLowerInvariant();
                 return name == "index.md" && rel.Contains('/');
             })
@@ -280,11 +281,11 @@ public static class BootstrapAnalyzer
 
         foreach (var f in indexFiles)
         {
-            var rel = f.RelativePath.Replace('\\', '/');
+            var rel = PathHelper.NormalizeSeparators(f.RelativePath);
             if (suggestion.Artifacts.Any(a => string.Equals(a.Path, rel, StringComparison.OrdinalIgnoreCase)))
                 continue;
 
-            var dir = Path.GetDirectoryName(rel)?.Replace('\\', '/');
+            var dir = PathHelper.NormalizeSeparators(Path.GetDirectoryName(rel) ?? "");
             if (string.IsNullOrEmpty(dir)) continue;
 
             suggestion.Artifacts.Add(new ArtifactSuggestion

@@ -1,3 +1,4 @@
+using Steward.Core;
 using Steward.Core.Abstractions;
 
 namespace Steward.Core.Discovery;
@@ -50,6 +51,6 @@ public sealed class FileDiscoveryService
 
     private static string GetRelativePath(string root, string fullPath)
     {
-        return Path.GetRelativePath(root, fullPath).Replace('\\', '/');
+        return PathHelper.NormalizeSeparators(Path.GetRelativePath(root, fullPath));
     }
 }

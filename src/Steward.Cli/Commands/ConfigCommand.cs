@@ -254,7 +254,7 @@ public static class ConfigCommand
     {
         var findings = new List<DoctorFinding>();
         var existingPaths = new HashSet<string>(
-            (ctx.Files ?? []).Select(f => f.RelativePath.Replace('\\', '/')),
+            (ctx.Files ?? []).Select(f => PathHelper.NormalizeSeparators(f.RelativePath)),
             StringComparer.OrdinalIgnoreCase);
 
         // 1. Dead start_here entries
@@ -262,7 +262,7 @@ public static class ConfigCommand
         {
             foreach (var entry in ctx.Policy.Governance.StartHere)
             {
-                if (!existingPaths.Contains(entry.Replace('\\', '/')))
+                if (!existingPaths.Contains(PathHelper.NormalizeSeparators(entry)))
                 {
                     findings.Add(new DoctorFinding(
                         "dead-start-here",
@@ -289,7 +289,7 @@ public static class ConfigCommand
             foreach (var artifact in ctx.Policy.Artifacts)
             {
                 if (string.IsNullOrWhiteSpace(artifact.Path)) continue;
-                var artifactPath = artifact.Path!.Replace('\\', '/').TrimEnd('/');
+                var artifactPath = PathHelper.NormalizeAndTrim(artifact.Path!);
                 if (!existingPaths.Contains(artifactPath))
                 {
                     findings.Add(new DoctorFinding(
@@ -313,7 +313,7 @@ public static class ConfigCommand
                     bool anyMatch;
                     if (rule.Exact)
                     {
-                        anyMatch = existingPaths.Contains(rule.Pattern.Replace('\\', '/'));
+                        anyMatch = existingPaths.Contains(PathHelper.NormalizeSeparators(rule.Pattern));
                     }
                     else
                     {

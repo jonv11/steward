@@ -1,3 +1,4 @@
+using Steward.Core;
 using Steward.Core.Abstractions;
 
 namespace Steward.Core.Discovery;
@@ -28,7 +29,7 @@ public sealed class GitIgnoreFilter : IIgnoreFilter
 
     public bool IsIgnored(string relativePath, bool isDirectory)
     {
-        var normalized = relativePath.Replace('\\', '/').TrimStart('/');
+        var normalized = PathHelper.NormalizeSeparators(relativePath).TrimStart('/');
         if (normalized.Length == 0) return false;
 
         // Always ignore .git
@@ -89,7 +90,7 @@ public sealed class GitIgnoreFilter : IIgnoreFilter
     private static string GetRelativePath(string root, string dir)
     {
         if (root == dir) return "";
-        var rel = Path.GetRelativePath(root, dir).Replace('\\', '/');
+        var rel = PathHelper.NormalizeSeparators(Path.GetRelativePath(root, dir));
         return rel == "." ? "" : rel;
     }
 

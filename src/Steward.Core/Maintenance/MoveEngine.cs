@@ -1,3 +1,4 @@
+using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Discovery;
 using Steward.Core.Validation.Rules;
@@ -24,8 +25,8 @@ public static class MoveEngine
         IFileSystem fileSystem,
         string repositoryRoot)
     {
-        oldPath = oldPath.Replace('\\', '/');
-        newPath = newPath.Replace('\\', '/');
+        oldPath = PathHelper.NormalizeSeparators(oldPath);
+        newPath = PathHelper.NormalizeSeparators(newPath);
 
         var edits = new List<MoveEdit>();
 
@@ -35,7 +36,7 @@ public static class MoveEngine
             if (!file.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            var relPath = file.RelativePath.Replace('\\', '/');
+            var relPath = PathHelper.NormalizeSeparators(file.RelativePath);
             var fullPath = Path.Combine(repositoryRoot, file.RelativePath);
             if (!fileSystem.FileExists(fullPath))
                 continue;
@@ -79,8 +80,8 @@ public static class MoveEngine
 
     internal static string ComputeRelativePath(string fromFile, string toFile)
     {
-        var fromDir = Path.GetDirectoryName(fromFile.Replace('\\', '/'))?.Replace('\\', '/') ?? "";
-        var toNormalized = toFile.Replace('\\', '/');
+        var fromDir = PathHelper.NormalizeSeparators(Path.GetDirectoryName(PathHelper.NormalizeSeparators(fromFile)) ?? "");
+        var toNormalized = PathHelper.NormalizeSeparators(toFile);
 
         if (string.IsNullOrEmpty(fromDir))
             return toNormalized;

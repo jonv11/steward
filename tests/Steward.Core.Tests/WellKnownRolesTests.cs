@@ -7,6 +7,7 @@ namespace Steward.Core.Tests;
 public class WellKnownRolesTests
 {
     [Theory]
+    [InlineData("state-document")]
     [InlineData("vision")]
     [InlineData("roadmap")]
     [InlineData("current-state")]
@@ -45,15 +46,15 @@ public class WellKnownRolesTests
     }
 
     [Fact]
-    public void StateDocumentRoles_ContainsFiveRoles()
+    public void StateDocumentRoles_ContainsSixRoles()
     {
-        WellKnownRoles.StateDocumentRoles.Should().HaveCount(5);
+        WellKnownRoles.StateDocumentRoles.Should().HaveCount(6);
     }
 
     [Fact]
-    public void AllRoles_ContainsTenRoles()
+    public void AllRoles_ContainsElevenRoles()
     {
-        WellKnownRoles.AllRoles.Should().HaveCount(10);
+        WellKnownRoles.AllRoles.Should().HaveCount(11);
     }
 
     [Fact]

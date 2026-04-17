@@ -1,3 +1,4 @@
+using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Discovery;
 
@@ -123,13 +124,13 @@ public sealed class OutlineEngine
 
     private static IEnumerable<string> EnumerateAncestorDirectories(string relativePath)
     {
-        var normalized = relativePath.Replace('\\', '/');
-        var current = Path.GetDirectoryName(normalized)?.Replace('\\', '/');
+        var normalized = PathHelper.NormalizeSeparators(relativePath);
+        var current = PathHelper.NormalizeSeparators(Path.GetDirectoryName(normalized) ?? "");
 
         while (!string.IsNullOrWhiteSpace(current))
         {
             yield return current;
-            current = Path.GetDirectoryName(current)?.Replace('\\', '/');
+            current = PathHelper.NormalizeSeparators(Path.GetDirectoryName(current) ?? "");
         }
     }
 

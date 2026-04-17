@@ -14,6 +14,7 @@ public static class WellKnownRoles
     public const string Workflow = "workflow";
 
     // State-document roles (REQ-STATE-001 through REQ-STATE-003)
+    public const string StateDocument = "state-document";
     public const string Vision = "vision";
     public const string Roadmap = "roadmap";
     public const string CurrentState = "current-state";
@@ -30,13 +31,13 @@ public static class WellKnownRoles
     public static readonly IReadOnlySet<string> StateDocumentRoles =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            Vision, Roadmap, CurrentState, Milestones, DecisionLog
+            StateDocument, Vision, Roadmap, CurrentState, Milestones, DecisionLog
         };
 
     public static readonly IReadOnlySet<string> AllRoles =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             Authoritative, Governance, Documentation, Changelog, Workflow,
-            Vision, Roadmap, CurrentState, Milestones, DecisionLog
+            StateDocument, Vision, Roadmap, CurrentState, Milestones, DecisionLog
         };
 }

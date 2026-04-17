@@ -45,36 +45,16 @@ public static class StatusCommand
                 if (showCoverage)
                 {
                     var coverage = ComputeCoverage(ctx.Policy, ctx.Files!, ctx.FileSystem, ctx.RootPath, ctx.Config?.Coverage?.Exclude);
-                    ctx.Formatter.WriteObject(new RepositoryStatusWithCoverage
+                    status.Coverage = new CoverageResponse
                     {
-                        RepositoryName = status.RepositoryName,
-                        RepositoryType = status.RepositoryType,
-                        Profile = status.Profile,
-                        FileCount = status.FileCount,
-                        RequiredArtifacts = status.RequiredArtifacts,
-                        RecommendedArtifacts = status.RecommendedArtifacts,
-                        StateDocuments = status.StateDocuments,
-                        MaintenanceArtifacts = status.MaintenanceArtifacts,
-                        StartHere = status.StartHere,
-                        PresentCount = status.PresentCount,
-                        RequiredCount = status.RequiredCount,
-                        RecommendedPresentCount = status.RecommendedPresentCount,
-                        RecommendedCount = status.RecommendedCount,
-                        StaleCount = status.StaleCount,
-                        ArtifactFamilies = status.ArtifactFamilies,
-                        Coverage = new CoverageResponse
-                        {
-                            GovernedCount = coverage.GovernedCount,
-                            TotalMarkdownFiles = coverage.TotalMarkdownFiles,
-                            Percentage = coverage.Percentage,
-                            Ungoverned = coverage.Ungoverned
-                        }
-                    });
+                        GovernedCount = coverage.GovernedCount,
+                        TotalMarkdownFiles = coverage.TotalMarkdownFiles,
+                        Percentage = coverage.Percentage,
+                        Ungoverned = coverage.Ungoverned
+                    };
                 }
-                else
-                {
-                    ctx.Formatter.WriteObject(status);
-                }
+
+                ctx.Formatter.WriteObject(status);
             }
             else
             {
@@ -221,7 +201,7 @@ public static class StatusCommand
                 var status = BuildArtifactStatus(artifact, fileSystem, rootPath, files);
                 artifactStatuses.Add(status);
 
-                if (IsStateDocumentRole(artifact.Role))
+                if (WellKnownRoles.IsStateDocumentRole(artifact.Role))
                 {
                     stateDocuments.Add(new StateDocumentStatus
                     {
@@ -303,7 +283,7 @@ public static class StatusCommand
         foreach (var a in policy?.Artifacts ?? [])
         {
             if (!string.IsNullOrWhiteSpace(a.Path))
-                explicitPaths.Add(a.Path!.Replace('\\', '/').TrimEnd('/'));
+                explicitPaths.Add(PathHelper.NormalizeAndTrim(a.Path!));
         }
 
         var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -350,6 +330,7 @@ public static class StatusCommand
         public int RecommendedCount { get; init; }
         public int StaleCount { get; init; }
         public List<ArtifactFamilySummary> ArtifactFamilies { get; init; } = [];
+        public CoverageResponse? Coverage { get; set; }
     }
 
     internal sealed class ArtifactFamilySummary
@@ -393,7 +374,7 @@ public static class StatusCommand
     {
         var mdFiles = files
             .Where(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
-            .Select(f => f.RelativePath.Replace('\\', '/'))
+            .Select(f => PathHelper.NormalizeSeparators(f.RelativePath))
             .ToList();
 
         // Apply coverage exclude patterns
@@ -419,7 +400,7 @@ public static class StatusCommand
             if (string.IsNullOrWhiteSpace(path))
                 return;
 
-            var normalized = path.Replace('\\', '/').TrimEnd('/');
+            var normalized = PathHelper.NormalizeAndTrim(path);
             if (!mdFileSet.Contains(normalized))
                 return;
 
@@ -432,7 +413,7 @@ public static class StatusCommand
             if (string.IsNullOrWhiteSpace(directoryPath))
                 return;
 
-            var normalizedDir = directoryPath.Replace('\\', '/').TrimEnd('/');
+            var normalizedDir = PathHelper.NormalizeAndTrim(directoryPath);
             foreach (var path in mdFiles)
             {
                 if (path.Equals(normalizedDir, StringComparison.OrdinalIgnoreCase) ||
@@ -448,7 +429,7 @@ public static class StatusCommand
             if (string.IsNullOrWhiteSpace(source))
                 return;
 
-            var normalized = source.Replace('\\', '/');
+            var normalized = PathHelper.NormalizeSeparators(source);
             var looksLikeGlob = normalized.IndexOfAny(['*', '?', '[']) >= 0;
             if (!looksLikeGlob)
             {
@@ -539,26 +520,6 @@ public static class StatusCommand
         public List<string> Ungoverned { get; init; } = [];
     }
 
-    internal sealed class RepositoryStatusWithCoverage
-    {
-        public string? RepositoryName { get; init; }
-        public string? RepositoryType { get; init; }
-        public string? Profile { get; init; }
-        public int FileCount { get; init; }
-        public List<ArtifactStatus> RequiredArtifacts { get; init; } = [];
-        public List<ArtifactStatus> RecommendedArtifacts { get; init; } = [];
-        public List<StateDocumentStatus> StateDocuments { get; init; } = [];
-        public List<MaintenanceStatus> MaintenanceArtifacts { get; init; } = [];
-        public List<string> StartHere { get; init; } = [];
-        public int PresentCount { get; init; }
-        public int RequiredCount { get; init; }
-        public int RecommendedPresentCount { get; init; }
-        public int RecommendedCount { get; init; }
-        public int StaleCount { get; init; }
-        public List<ArtifactFamilySummary> ArtifactFamilies { get; init; } = [];
-        public required CoverageResponse Coverage { get; init; }
-    }
-
     internal sealed class CoverageResponse
     {
         public int GovernedCount { get; init; }
@@ -591,7 +552,7 @@ public static class StatusCommand
         if (string.IsNullOrWhiteSpace(artifact.Path))
             return false;
 
-        var normalizedPath = artifact.Path.Replace('\\', '/').TrimEnd('/');
+        var normalizedPath = PathHelper.NormalizeAndTrim(artifact.Path);
         if (artifact.Path.EndsWith('/'))
         {
             return files.Any(file =>
@@ -603,12 +564,6 @@ public static class StatusCommand
             return true;
 
         return fileSystem.FileExists(Path.Combine(rootPath, normalizedPath));
-    }
-
-    private static bool IsStateDocumentRole(string? role)
-    {
-        return string.Equals(role, "state-document", StringComparison.OrdinalIgnoreCase) ||
-            WellKnownRoles.IsStateDocumentRole(role);
     }
 
     private static int? ResolveFreshnessDays(ArtifactDefinition artifact)
@@ -625,7 +580,7 @@ public static class StatusCommand
         if (maxAgeDays is null or <= 0 || string.IsNullOrWhiteSpace(artifact.Path))
             return false;
 
-        var fullPath = Path.Combine(rootPath, artifact.Path.Replace('\\', '/'));
+        var fullPath = Path.Combine(rootPath, PathHelper.NormalizeSeparators(artifact.Path));
         if (!fileSystem.FileExists(fullPath))
             return false;
 
