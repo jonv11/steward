@@ -203,9 +203,10 @@ public class StableSurfaceContractTests : IDisposable
     public void Version_ReportsVersionNumber()
     {
         var (exitCode, output, _) = CliTestHelper.InvokeCapture("version");
+        var expectedVersion = typeof(Steward.Cli.Commands.VersionCommand).Assembly.GetName().Version?.ToString(3);
 
         exitCode.Should().Be(ExitCodes.Success);
-        output.Should().Contain("0.13.0");
+        output.Should().Contain(expectedVersion);
         // Version output includes "steward X.Y.Z" prefix
         output.Should().MatchRegex(@"steward \d+\.\d+\.\d+");
     }
