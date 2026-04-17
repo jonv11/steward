@@ -16,6 +16,7 @@ The repository drifted into a premature `1.0.0` posture even though the project 
 Steward already has an active pre-stable lineage through `v0.9.0`, plus additional implemented scope that justifies a new pre-1.0 baseline. What was missing was an explicit governance rule describing:
 
 - when the project may leave the `0.x.y` line
+- when intentional public releases are allowed before `1.0.0`
 - where the canonical current version lives
 - which changes justify patch vs minor bumps before `1.0.0`
 - which artifacts must be updated whenever the version changes
@@ -26,7 +27,7 @@ Steward remains on the `0.x.y` line until a separate, explicit release-authoriza
 
 ### 1. Current baseline
 
-- The corrected current version is `0.10.0`.
+- The corrected current version is `0.14.0`.
 - `Directory.Build.props` is the source of truth for the repository version.
 - Assembly/package/version-command output must derive from that shared MSBuild property set.
 
@@ -39,7 +40,17 @@ Steward remains on the `0.x.y` line until a separate, explicit release-authoriza
 
 No README wording, package metadata, changelog entry, workflow, or tag reference may imply that `1.0.0` has happened before that decision exists.
 
-### 3. Pre-1.0 patch bumps
+### 3. Public pre-1.0 releases
+
+Intentional public releases on the `0.x.y` line are allowed before `1.0.0` provided that:
+
+1. The version bump follows the patch/minor rules in this ADR.
+2. The active readiness and release-process artifacts show green evidence for the intended public release.
+3. Release notes, release assets, and README wording describe the release as pre-stable rather than implying `1.0.0`.
+
+Public `0.x` publication does not authorize `1.0.0`, weaken the separate stable-release gate, or imply stable-support guarantees that the repo has not claimed.
+
+### 4. Pre-1.0 patch bumps
 
 Use `0.x.(y+1)` only for scoped corrections on the current pre-1.0 minor line, such as:
 
@@ -51,30 +62,31 @@ Use `0.x.(y+1)` only for scoped corrections on the current pre-1.0 minor line, s
 
 Patch bumps must not be used to silently introduce new roadmap scope.
 
-### 4. Pre-1.0 minor bumps
+### 5. Pre-1.0 minor bumps
 
 Use `0.(x+1).0` for intentional scope advancement on the pre-stable roadmap.
 
 Pre-1.0 minor bumps require written rationale in the active planning/state artifacts and should correspond to a meaningful delivered slice, not an arbitrary calendar tick.
 
-### 5. No casual bumping
+### 6. No casual bumping
 
 No one should silently advance the repo to a new pre-1.0 minor just because additional work landed. The planning artifacts must explain why the new baseline is the most coherent representation of delivered scope.
 
-### 6. Versioning and release readiness
+### 7. Versioning and release readiness
 
 Release readiness gates the right to publish or advertise a version, not just the mechanical ability to build or pack it.
 
 - Packaging success alone does not authorize `1.0.0`.
-- A future stable-release decision may still choose to ship from a later pre-1.0 baseline than `0.10.0`.
+- A future stable-release decision may still choose to ship from a later pre-1.0 baseline than `0.14.0`.
 - Until explicit stable criteria are accepted, outstanding future work remains planned on the `0.x` line rather than a `1.x` line.
 
-### 7. Required updates when the version changes
+### 8. Required updates when the version changes
 
 Every intentional version change must update, at minimum:
 
 - `Directory.Build.props`
 - package/project metadata that surfaces the version
+- `CHANGELOG.md`
 - install and release wording in `README.md`
 - `docs/implementation-status.md`
 - `docs/planning-index.md`

@@ -1,0 +1,55 @@
+name: pr-release-intent
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+      - unlabeled
+      - ready_for_review
+
+permissions:
+  pull-requests: read
+
+jobs:
+  require-release-intent:
+    if: github.event.pull_request.base.ref == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate release intent label
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const releaseLabels = ["release:none", "release:patch", "release:minor"];
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(label => label.name);
+            const matched = labels.filter(label => releaseLabels.includes(label));
+
+            if (pr.draft) {
+              core.notice("Draft pull request: release-intent enforcement is deferred until the PR is ready for review.");
+              return;
+            }
+
+            if (matched.length !== 1) {
+              const guidance = [
+                "Pull requests to the default branch must carry exactly one release-intent label.",
+                "",
+                "Allowed labels:",
+                "- release:none",
+                "- release:patch",
+                "- release:minor",
+                "",
+                `Current labels: ${labels.length > 0 ? labels.join(", ") : "(none)"}`
+              ].join("\n");
+
+              core.setFailed(guidance);
+              return;
+            }
+
+            core.summary
+              .addHeading("Release intent")
+              .addRaw(`Resolved release label: \`${matched[0]}\``)
+              .write();

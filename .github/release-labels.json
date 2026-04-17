@@ -1,0 +1,17 @@
+[
+  {
+    "name": "release:none",
+    "color": "cfd3d7",
+    "description": "Does not justify a standalone pre-1.0 version bump on its own."
+  },
+  {
+    "name": "release:patch",
+    "color": "fbca04",
+    "description": "Pre-1.0 patch-worthy correction: bug fix, packaging fix, docs fix, or compatibility fix."
+  },
+  {
+    "name": "release:minor",
+    "color": "0e8a16",
+    "description": "Pre-1.0 scope advancement that should land in the next minor release."
+  }
+]

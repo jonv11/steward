@@ -80,6 +80,17 @@ artifacts:
     freshness:
       max_age_days: 45
 
+  - path: docs/planning/release-process.md
+    role: workflow
+    description: Authoritative operator guide for intentional public pre-1.0 releases
+    importance: recommended
+
+  - path: CHANGELOG.md
+    role: changelog
+    description: Canonical release-notes source for intentional versioned releases
+    required: true
+    importance: recommended
+
   # Generated orientation surfaces.
   - path: STRUCTURE.md
     role: generated
@@ -203,11 +214,9 @@ validation:
         - STWD-013
 
   # Keep scoped path-based frontmatter enforcement for requirements and planning docs.
-  # In v0.13.0, explicit artifacts do not inherit artifact-family schemas, so these
-  # patterns still carry real governance weight for PRD, roadmap, and execution docs.
-  #
-  # Full required_sections enforcement is tracked as a later pre-1.0 gap
-  # in pre-1-0-readiness-plan.md (v0.14.0+ per RFC-008 §3.3 and ADR-012).
+  # Explicit artifact entries still take precedence over family classification, so these
+  # patterns continue to carry real governance weight for PRD, roadmap, and execution docs
+  # even after STWD-014 through STWD-016 landed on the active pre-1.0 line.
   frontmatter_requirements:
     - pattern: "docs/requirements/**"
       required_fields:
@@ -233,6 +242,7 @@ maintenance:
       options:
         depth: 3
         exclude:
+          - "artifacts/**"
           - ".git/**"
           - "**/bin/**"
           - "**/obj/**"

@@ -130,7 +130,7 @@ This RFC extends ADR-012's artifact type schema direction with concrete design:
 
 - `frontmatter_schema` per family replaces scattered `frontmatter_requirements` entries.
 - `naming_pattern` per family extends STWD-010 naming enforcement.
-- `required_sections` per family (future) enables section-presence validation.
+- `required_sections` per family enables section-presence validation.
 
 The existing `frontmatter_requirements` mechanism in `validation` remains supported as a lower-level fallback but should be considered secondary to family-level schema declarations.
 
@@ -231,7 +231,9 @@ This section narrows the RFC to the concrete contract implemented in v0.13.0. It
 - **Explicit `artifacts[]` entries always take precedence** over family matches; family classification applies only to files not explicitly declared.
 - **`frontmatter_schema:` with `required:` and `allowed_values:`** — enforced by STWD-003 (extended); required fields and controlled-vocabulary constraints per family.
 - **`role:` and `importance:`** on a family definition — informational in v0.13.0; surfaced in `status` and `orient` classification output.
-- **`naming_pattern:`** — stored in the model, not validated in v0.13.0.
+- **`required_sections:`** — enforced by STWD-014 for files matched by the family.
+- **`directory_expectations.min_count:`** — enforced by STWD-015 for families that declare a minimum count.
+- **`naming_pattern:`** — enforced by STWD-016 for files matched by the family.
 - **`display_name:`** — shown in `explain path`, `status`, and `orient` output.
 - **Deterministic classification** — declaration order determines precedence; first matching family wins.
 - **`steward check`** reports family-schema violations with `[family: <name>]` in the diagnostic message.
@@ -246,9 +248,6 @@ This section narrows the RFC to the concrete contract implemented in v0.13.0. It
 
 | Item | Target |
 | --- | --- |
-| `required_sections:` per family | v0.14.0+ |
-| `directory_expectations.min_count` | v0.14.0+ |
-| `naming_pattern` regex enforcement | v0.14.0+ |
 | Field type constraints (date, list, boolean, number) | v0.14.0+ |
 | Regex field-value constraints | v0.14.0+ |
 | `workflows:` section (RFC-008 Phase 3) | v0.15.0+ |

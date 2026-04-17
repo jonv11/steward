@@ -9,7 +9,13 @@
     <ToolCommandName>steward</ToolCommandName>
     <PackageId>Steward.Cli</PackageId>
     <Description>A configurable repository stewardship CLI for humans and AI agents.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/jonv11/steward</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>cli;repository;stewardship;markdown;governance</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/jonv11/steward</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

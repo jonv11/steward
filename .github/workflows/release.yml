@@ -1,0 +1,112 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing annotated tag to publish, for example v0.14.0
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolve target tag
+        id: tag
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $tag = "${{ inputs.tag }}".Trim()
+            if (-not $tag) {
+              throw "workflow_dispatch requires the 'tag' input."
+            }
+
+            git fetch --force origin "refs/tags/$tag:refs/tags/$tag"
+            git checkout --force $tag
+          }
+          else {
+            $tag = "${{ github.ref_name }}"
+          }
+
+          if ($tag -notmatch '^v\d+\.\d+\.\d+$') {
+            throw "Release tags must match v<major>.<minor>.<patch>. Received '$tag'."
+          }
+
+          $version = $tag.Substring(1)
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate version source of truth
+        shell: pwsh
+        run: |
+          [xml]$props = Get-Content Directory.Build.props
+          $repoVersion = $props.Project.PropertyGroup.Version
+          $tagVersion = "${{ steps.tag.outputs.version }}"
+
+          if ($repoVersion -ne $tagVersion) {
+            throw "Directory.Build.props version '$repoVersion' does not match release tag '$tagVersion'."
+          }
+
+      - name: Restore
+        run: dotnet restore steward.sln
+
+      - name: Build
+        run: dotnet build steward.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test steward.sln -c Release --no-build
+
+      - name: Build release assets
+        shell: pwsh
+        run: ./scripts/release/Build-ReleaseAssets.ps1 -Version "${{ steps.tag.outputs.version }}"
+
+      - name: Export release notes from changelog
+        shell: pwsh
+        run: ./scripts/release/Export-ReleaseNotes.ps1 -Version "${{ steps.tag.outputs.version }}" -OutputPath "artifacts/release/v${{ steps.tag.outputs.version }}/release-notes.md"
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.tag.outputs.tag }}"
+          $version = "${{ steps.tag.outputs.version }}"
+          $releaseDir = Join-Path $PWD "artifacts/release/v$version"
+          $notesFile = Join-Path $releaseDir "release-notes.md"
+          $assets = Get-ChildItem -Path $releaseDir -File | Where-Object { $_.Name -ne "release-notes.md" } | Sort-Object Name
+
+          if (-not $assets) {
+            throw "No release assets were produced in $releaseDir."
+          }
+
+          gh release view $tag *> $null
+          $exists = $LASTEXITCODE -eq 0
+
+          if (-not $exists) {
+            $assetArgs = $assets | ForEach-Object { $_.FullName }
+            & gh release create $tag $assetArgs --title $tag --notes-file $notesFile
+          }
+          else {
+            $assetArgs = $assets | ForEach-Object { $_.FullName }
+            $notes = Get-Content $notesFile -Raw
+            & gh release upload $tag $assetArgs --clobber
+            & gh release edit $tag --title $tag --notes $notes
+          }

@@ -1,8 +1,8 @@
 ---
 type: planning
-source_baseline: v0.13.0
+source_baseline: v0.14.0
 status: Active
-last_updated: 2026-04-16
+last_updated: 2026-04-17
 ---
 
 # Pre-1.0 Readiness Plan
@@ -11,15 +11,16 @@ last_updated: 2026-04-16
 
 ## Purpose
 
-This document is the authoritative list of remaining work that is still useful before the real first stable shipment. Until explicit `1.0.0` criteria are approved, all future work remains on the pre-1.0 `0.x` line.
+This document is the authoritative list of remaining work that is still useful before the real first stable shipment. Intentional public `0.x` releases may happen earlier under ADR-013 and the documented release process, but they do not authorize `1.0.0`. Until explicit `1.0.0` criteria are approved, all future work remains on the pre-1.0 `0.x` line.
 
 ## Required Before First Stable Shipment
 
 | Item | Rationale | Evidence / source | Partly implemented? | Work type | Home |
 |------|-----------|-------------------|---------------------|-----------|------|
 | Cross-platform build/test/pack automation | A stable release needs reproducible validation on Windows, macOS, and Linux; local-only verification is not enough. | `.github/workflows/ci.yml` now runs build/test/pack on Windows, macOS, and Linux, but the first hosted green run is still pending; multi-platform support is a stated constraint in [ACD-0001](../requirements/assumptions-constraints.md). | Yes — workflow authored and local Windows build/test/pack works | Workflow, tests, release | Direct implementation task on the active `0.x` line until hosted validation is green |
+| Hosted GitHub Release evidence | A credible public pre-1.0 release path needs at least one green hosted execution of the tag-driven release workflow before maintainers rely on it. | `.github/workflows/release.yml` now publishes changelog-backed GitHub Releases with attached `.nupkg`, self-contained bundles, and checksums, but no hosted run exists yet. | Yes — workflow authored and locally verifiable via scripts | Workflow, release | Direct implementation task on the active `0.x` line before the first intentional public `0.x` tag |
 | ~~Dependency stabilization for stable release~~ | ~~Stable release posture should not depend on beta/preview packages where avoidable.~~ | `Directory.Packages.props` now has only `System.CommandLine` beta (documented, intentional). DI Abstractions upgraded to GA 10.0.6. | **Completed in v0.11.0** | Dependency | Milestone `v0.11.0` |
-| ~~Distribution/publication hardening~~ | ~~Packaging now works, but stable-release publication steps and verification should be explicit and repeatable.~~ | [Release publication checklist](release-publication-checklist.md) created with explicit local verification, tagging, NuGet publication, and self-contained binary steps. | **Completed in v0.11.0** | Docs, release | Milestone `v0.11.0` |
+| ~~Distribution/publication hardening~~ | ~~Packaging now works, but stable-release publication steps and verification should be explicit and repeatable.~~ | [Release process](release-process.md), [release publication checklist](release-publication-checklist.md), `CHANGELOG.md`, `.github/workflows/release.yml`, and release helper scripts now define explicit pre-1.0 release preparation, GitHub Release asset publication, and optional NuGet publication. | **Completed in v0.14.0** | Docs, release | Milestone `v0.14.0` |
 | ~~Fix scoped validation false positives (B6)~~ | ~~`check --scope changed\|staged` produces false diagnostics on clean trees.~~ | `AllDiscoveredFiles` added to `ValidationContext`; `STWD-001`, `STWD-007`, `STWD-009` updated; 4 regression tests + 1 contract test. | **Completed in v0.11.0** | Code, tests | [Pre-release blocker B6](pre-release-blockers.md) |
 | ~~Include coverage in status JSON output (B7)~~ | ~~`status --coverage --output json` omits governance-coverage data.~~ | `RepositoryStatusWithCoverage` and `CoverageResponse` classes; 2 contract tests. | **Completed in v0.11.0** | Code, tests | [Pre-release blocker B7](pre-release-blockers.md) |
 
@@ -28,7 +29,7 @@ This document is the authoritative list of remaining work that is still useful b
 | Item | Rationale | Evidence / source | Partly implemented? | Work type | Home |
 |------|-----------|-------------------|---------------------|-----------|------|
 | ~~Broaden stable contract tests~~ | ~~Stable surfaces should have stronger command/output regression coverage.~~ | 10 stable-surface contract tests added in `StableSurfaceContractTests.cs` covering check JSON/text, status JSON/text, orient JSON, version, and B6 scoped regression. | **Completed in v0.11.0** | Tests | Milestone `v0.11.0` |
-| Decide the later pre-1.0 roadmap ordering explicitly | The repo now correctly stays on `0.x`, but later pre-stable scope still needs explicit sequencing as stable criteria are defined. | User guidance now places all future work on pre-`1.0.0` milestones; [milestone-plan.md](milestone-plan.md) now captures delivered lineage through `v0.13.0` plus the planned `v0.14.0+` work. | Yes | Planning, governance | Milestone planning update as criteria evolve |
+| Decide the later pre-1.0 roadmap ordering explicitly | The repo now correctly stays on `0.x`, but later pre-stable scope still needs explicit sequencing as stable criteria are defined. | User guidance now places all future work on pre-`1.0.0` milestones; [milestone-plan.md](milestone-plan.md) now captures delivered lineage through `v0.14.0` plus the planned `v0.15.0+` work. | Yes | Planning, governance | Milestone planning update as criteria evolve |
 | ~~Standardize preview/apply flag conventions~~ | ~~Three different preview/apply patterns across mutation commands (`--fix`/`--dry-run`, `--apply` default-preview, `--preview`+`--apply` required) erode CLI coherence.~~ | `check --fix` now previews by default, `--fix --apply` commits, and deprecated `--dry-run` remains hidden for compatibility. | **Completed in v0.12.0** | Code, docs | Delivered |
 | ~~Fix `md query --pattern` batch mode~~ | ~~Argument parsing ambiguity between positional `file` arg and `--pattern` option prevents multi-file structural queries.~~ | Batch-mode parsing now works correctly for multi-file structural queries. | **Completed in v0.12.0** | Code, tests | Delivered |
 | ~~Fix init scaffolding immediate-failure experience~~ | ~~Fresh `init --profile software` followed by `check` produces immediate errors for missing artifacts the scaffolded policy declares as required.~~ | `init --profile software` now scaffolds placeholder files for required artifacts so the first `check` does not fail immediately on STWD-001. | **Completed in v0.12.0** | Code | Delivered |

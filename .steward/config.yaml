@@ -2,6 +2,7 @@ profile: software
 
 discovery:
   exclude:
+    - "artifacts/**"
     - "**/bin/**"
     - "**/obj/**"
     - "**/publish/**"

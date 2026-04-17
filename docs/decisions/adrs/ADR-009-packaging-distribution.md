@@ -23,7 +23,7 @@ The CLI is packaged as a **.NET tool** and may be installed either from a locall
 dotnet pack src/Steward.Cli -c Release
 
 # Install from the local package source
-dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.Cli --version 0.10.0
+dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.Cli --version <VERSION>
 
 # When a public release is intentionally published, the same package id is used.
 ```
@@ -54,6 +54,7 @@ dotnet publish src/Steward.Cli -c Release -r osx-arm64 --self-contained -p:Publi
 - Package ID: `Steward.Cli`
 - Tool command name: `steward`
 - Public publication is optional and must be an explicit release action; active repo docs must not imply that publication already happened.
+- When GitHub Releases are used, the release page should attach the `.nupkg`, published binary bundles, and checksums so the page is directly useful as a download surface.
 
 ### Project configuration
 

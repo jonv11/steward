@@ -2,7 +2,7 @@
 
 A configurable repository stewardship CLI for humans and AI agents. Steward helps maintain documentation structure, enforce governance policies, and keep repository artifacts in sync — all driven by declarative YAML configuration.
 
-Current repository baseline: **`0.13.0`**. Steward is pre-`1.0.0`; public stable-release messaging and publication are intentionally not assumed yet. See [Current Status](#current-status) for what works today and what is still planned.
+Current repository baseline: **`0.14.0`**. Steward is pre-`1.0.0`: intentional public `0.x` releases are allowed when the documented release process is satisfied, but `1.0.0` remains separately gated by explicit stable-release authorization. See [Current Status](#current-status) for what works today and what is still planned.
 
 ## Who Is Steward For?
 
@@ -49,7 +49,7 @@ dotnet run --project src/Steward.Cli -- <command>
 
 ```bash
 dotnet pack src/Steward.Cli -c Release
-dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.Cli --version 0.13.0
+dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.Cli --version 0.14.0
 ```
 
 After installing globally, run commands using:
@@ -60,7 +60,17 @@ steward <command>
 
 ### Public feed install
 
-Not yet available. Use a public-feed install only when the project intentionally publishes a release package. This repository does not treat public publication as an already-completed fact.
+NuGet publication is not assumed. Use a public-feed install only when the project intentionally publishes a release package. This repository does not treat public publication as an already-completed fact.
+
+### GitHub Releases
+
+When Steward cuts an intentional public `0.x` release, the GitHub Releases page is the primary download surface. Each tagged release attaches:
+
+- the `.nupkg` for `dotnet tool install --add-source`
+- self-contained bundles for `win-x64`, `linux-x64`, and `osx-arm64`
+- a `SHA256SUMS.txt` checksum file
+
+The release operator path is documented in [docs/planning/release-process.md](docs/planning/release-process.md).
 
 ### Dependency posture
 
@@ -76,7 +86,7 @@ If you are setting up Steward for a repository, follow this path.
 steward init --profile software    # or: docs, minimal
 ```
 
-This creates a `.steward/` directory with starter `config.yaml`, `policy.yaml`, and `path-policy.yaml` files, plus placeholder files for required artifacts declared by the chosen profile.
+This creates a `.steward/` directory with starter `config.yaml` and `policy.yaml` files, plus placeholder files for required artifacts declared by the chosen profile. Add `path-policy.yaml` separately when you want explicit naming or forbidden-path rules.
 
 ### 2. Discover your repository
 
@@ -498,11 +508,13 @@ This was a known defect resolved in v0.11.0. If you see false positives for STWD
 
 ## Current Status
 
-Steward is at `v0.13.0` on a pre-`1.0.0` release line. The version `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) and has not been scheduled.
+Steward is at `v0.14.0` on a pre-`1.0.0` release line. Intentional public `0.x` releases are allowed when the repo is ready and the release process is followed. The version `1.0.0` still requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) and has not been scheduled.
 
 **What works today:** All 16 validation rules, all commands listed above, three built-in profiles, artifact family classification, deterministic maintenance, Markdown structural editing, and JSON output for automation.
 
-**Remaining before first stable release:** Cross-platform CI green run (workflow exists; hosted validation pending). See [implementation status](docs/implementation-status.md) for the full picture.
+**Release operations today:** The repo has a changelog-backed, tag-driven GitHub Release workflow and repo-managed release-intent labels for pre-`1.0.0` releases. See [docs/planning/release-process.md](docs/planning/release-process.md).
+
+**Remaining before first stable release:** Cross-platform CI and release-workflow green evidence from GitHub-hosted runs. See [implementation status](docs/implementation-status.md) for the full picture.
 
 **Planned for later pre-1.0 milestones:** Heading selector fuzzy matching in MdPath, JSON output envelope consistency, workflow/session modeling. See [pre-1.0 readiness plan](docs/planning/pre-1-0-readiness-plan.md) for the categorized list.
 
@@ -541,6 +553,10 @@ dotnet test steward.sln
 ### CI
 
 The repository includes a GitHub Actions matrix in `.github/workflows/ci.yml` that runs `dotnet build`, `dotnet test`, and `dotnet pack src/Steward.Cli/Steward.Cli.csproj -c Release` on Windows, macOS, and Linux.
+
+### Release Process
+
+Pre-`1.0.0` release operations are documented in [docs/planning/release-process.md](docs/planning/release-process.md) and summarized in [CHANGELOG.md](CHANGELOG.md). GitHub Release notes are sourced from changelog entries, and pull requests use repo-managed release-intent labels to make bump decisions reviewable.
 
 ### Project Structure
 

@@ -4,10 +4,15 @@
 ├── .editorconfig
 ├── .github/
 │   ├── dependabot.yml
+│   ├── release-labels.json
 │   └── workflows/
-│       └── ci.yml
+│       ├── ci.yml
+│       ├── pr-release-intent.yml
+│       ├── release-labels.yml
+│       └── release.yml
 ├── .gitignore
 ├── .steward
+├── CHANGELOG.md
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/
@@ -24,6 +29,7 @@
 │   │   ├── maintainer-review.md
 │   │   ├── maintainer-usecase-expectations.md
 │   │   ├── maintainer-usecase-ideas.md
+│   │   ├── pre-1-0-release-process-pass-2026-04-17.md
 │   │   ├── profile-readiness-review-2026-04-16.md
 │   │   ├── release-governance-conformance-review-2026-04-16.md
 │   │   ├── release-readiness-assessment-2026-04-15.md
@@ -44,6 +50,7 @@
 │   │   ├── milestone-plan.md
 │   │   ├── pre-1-0-readiness-plan.md
 │   │   ├── pre-release-blockers.md
+│   │   ├── release-process.md
 │   │   ├── release-publication-checklist.md
 │   │   └── rfc-007-governance-enhancements-backlog.md
 │   ├── planning-index.md
@@ -53,6 +60,11 @@
 │       └── requirements-traceability.md
 ├── README.md
 ├── repository-steward-master-requirements.md
+├── scripts/
+│   └── release/
+│       ├── Build-ReleaseAssets.ps1
+│       ├── Export-ReleaseNotes.ps1
+│       └── Sync-ReleaseLabels.ps1
 ├── SKILL.md
 ├── src/
 │   ├── Steward.Cli/

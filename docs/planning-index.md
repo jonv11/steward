@@ -14,7 +14,7 @@ Central navigation for the active product, planning, readiness, and decision art
 
 | Document | Purpose |
 |----------|---------|
-| [Implementation Status](implementation-status.md) | Current `0.13.0` baseline, delivered scope, and remaining pre-stable gaps |
+| [Implementation Status](implementation-status.md) | Current `0.14.0` baseline, delivered scope, and remaining pre-stable gaps |
 | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) | Categorized remaining work before the first stable shipment |
 
 ## Decisions
@@ -29,11 +29,12 @@ Central navigation for the active product, planning, readiness, and decision art
 | Document | Purpose |
 |----------|---------|
 | [Delivery Strategy](planning/delivery-strategy.md) | Sequencing principles and versioning strategy |
-| [Milestone Plan](planning/milestone-plan.md) | Delivered lineage through `v0.13.0` plus planned pre-1.0 milestones |
-| [Pre-Release Blockers](planning/pre-release-blockers.md) | Critical items that must be resolved before a first meaningful public release |
+| [Milestone Plan](planning/milestone-plan.md) | Delivered lineage through `v0.14.0` plus planned pre-1.0 milestones |
+| [Pre-Release Blockers](planning/pre-release-blockers.md) | Critical items that must be resolved before a first meaningful public pre-1.0 release |
 | [Implementation Instructions](planning/implementation-instructions.md) | Contributor execution guide for the active pre-1.0 roadmap |
 | [RFC-007 Governance Enhancements Backlog](planning/rfc-007-governance-enhancements-backlog.md) | Status ledger for accepted governance-enhancement items |
 | [Curation Notes](planning/curation-notes.md) | Provenance, superseded framing, and roadmap retargeting notes |
+| [Release Process](planning/release-process.md) | Authoritative operator guide for intentional public pre-1.0 releases, labels, changelog policy, tagging, and GitHub Releases |
 | [Release Publication Checklist](planning/release-publication-checklist.md) | Local verification, tagging, NuGet publication, and self-contained binary steps |
 
 ## Reviews And Audit Evidence
@@ -45,6 +46,7 @@ Historical audits are preserved for evidence and context. Active repository trut
 | Document | Purpose |
 | -------- | ------- |
 | [CLI Expectation Fidelity Assessment - 2026-04-17](audits/cli-expectation-fidelity-assessment-2026-04-17.md) | Current evidence-based assessment of whether Steward-on-Steward fulfills the repo's stated CLI promise, workflows, and trust expectations |
+| [Pre-1.0 Release Process Pass — 2026-04-17](audits/pre-1-0-release-process-pass-2026-04-17.md) | Release-governance and operator-process pass: labels, changelog, GitHub Release workflow, asset publication, and remaining deferred items |
 | [End-User Documentation Path Audit — 2026-04-17](audits/end-user-documentation-path-audit-2026-04-17.md) | Persona-based audit and remediation of the end-user documentation path for maintainers and contributors |
 | [CLI Full Assessment — 2026-04-16](audits/cli-full-assessment-2026-04-16.md) | Comprehensive end-to-end product assessment: build, exercise, cross-reference, diagnose, score |
 | [CLI Expectation Fidelity Reassessment — 2026-04-16](audits/cli-expectation-fidelity-reassessment-2026-04-16.md) | Deep evidence-based reassessment of Steward-on-Steward promise fidelity, workflow trust, and release-line credibility |

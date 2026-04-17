@@ -184,7 +184,7 @@ last_updated: 2026-04-16
 | REQ-TEST-004 | TESTING | 9.5 | v0.11.0 | ⚠️ Partial |
 | REQ-DIST-001 | DISTRIBUTION | 9.6 | v0.10.0 | ✅ Implemented |
 | REQ-DIST-002 | DISTRIBUTION | 9.6 | Later pre-1.0 | Planned pre-1.0 |
-| REQ-DIST-003 | DISTRIBUTION | 9.6 | v0.11.0 | ⚠️ Partial |
+| REQ-DIST-003 | DISTRIBUTION | 9.6 | v0.14.0 | ✅ Implemented |
 | REQ-POS-001 | POSITIONING | — | v0.10.0 | ✅ Implemented |
 | REQ-POS-002 | POSITIONING | — | v0.10.0 | ✅ Implemented |
 

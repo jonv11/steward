@@ -1,7 +1,7 @@
 ---
 type: planning
 document_id: PLAN-0002
-version: 0.13.0
+version: 0.14.0
 status: Active
 last_updated: 2026-04-17
 ---
@@ -31,14 +31,14 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 | `v0.11.0` | Stable-release hardening and trust fixes | Delivered |
 | `v0.12.0` | CLI fidelity, governance deepening, and Markdown subsystem completion | Delivered |
 | `v0.13.0` | Artifact type schema RFC and base implementation | Delivered |
+| `v0.14.0` | Release automation and public pre-1.0 distribution discipline | Delivered |
 
 ## Planned Pre-1.0 Milestones
 
 | Version | Theme | Primary outcome |
 |---------|-------|-----------------|
-| `v0.14.0` | Type-aware validation expansion | `required_sections` per family, `min_count` directory expectations, `naming_pattern` regex enforcement (deferred from v0.13.0 per RFC-008 §8) |
-| `v0.15.0` | Later pre-1.0 requirement families | Typed resource-address follow-on work, search/address alignment, split-extract evaluation |
-| `v0.16.0` | Optional pre-stable extensions | Host-integration exploration and remaining later-scope items if still justified |
+| `v0.15.0` | Later pre-1.0 requirement families | Typed resource-address follow-on work, search/address alignment, split-extract evaluation, JSON output envelope consistency |
+| `v0.16.0` | Optional pre-stable extensions | Host-integration exploration, workflow/session modeling, and remaining later-scope items if still justified |
 
 ## First Stable Release
 
@@ -49,7 +49,25 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 ## Notes
 
 - Former `v1.1.0` through `v1.6.0` planning has been logically retargeted to `v0.11.0` through `v0.16.0`.
+- The release-process completion work now lives on the active pre-1.0 line; it does not imply that `1.0.0` is scheduled or authorized.
 - The exact boundary between later pre-1.0 milestones may continue to move as stable-release criteria are clarified, but the roadmap must stay on the `0.x` line until that decision is made.
+
+---
+
+## v0.14.0 Delivered Scope
+
+All items planned for v0.14.0 have been implemented and are releaseable on the pre-1.0 line. The primary outcome: Steward now has a professional, documented, downloadable public `0.x` release path.
+
+| # | Item | Source | Status |
+|---|------|--------|--------|
+| 1 | Clarify ADR-013 to distinguish public `0.x` releases from separately gated `1.0.0` | ADR-013 | Done — public pre-1.0 release governance made explicit |
+| 2 | Add repo-managed release-intent labels | Release-process pass | Done — `release:none`, `release:patch`, `release:minor` codified and synchronized |
+| 3 | Enforce release-intent labels on non-draft PRs | Release-process pass | Done — `pr-release-intent.yml` |
+| 4 | Add tag-driven GitHub Release workflow | Release-process pass | Done — builds/tests, exports changelog-backed notes, uploads assets |
+| 5 | Attach useful downloadable release assets | ADR-009, release-process pass | Done — `.nupkg`, curated self-contained bundles, checksums |
+| 6 | Create canonical changelog policy and file | Release-process pass | Done — `CHANGELOG.md` introduced as release-notes source |
+| 7 | Add operator documentation for release execution | Release-process pass | Done — `release-process.md` and updated checklist/docs |
+| 8 | Harden package metadata for publication surfaces | Release-process pass | Done — license, repo URL, tags, and publication metadata added to `Steward.Cli.csproj` |
 
 ---
 
@@ -73,7 +91,7 @@ All items planned for v0.13.0 have been implemented and tested. The primary outc
 | 12 | Unit tests: classifier, validation, config loading | Plan | Done — 52 new tests across 3 test files |
 | 13 | CLI integration tests: all artifact-family commands | Plan | Done — 14 tests in `ArtifactFamiliesCommandTests` |
 | 14 | Dogfooding migration: `.steward/policy.yaml` | Plan | Done — ADR/RFC governance migrated from `frontmatter_requirements` to `artifact_families` |
-| 15 | Deferred: `required_sections`, `min_count`, `naming_pattern`, workflows | RFC-008 §8 | Deferred to v0.14.0+ |
+| 15 | Deferred: workflow/session modeling follow-on work | RFC-008 §8 | Deferred to v0.15.0+ |
 
 ## v0.12.0 Delivered Scope
 

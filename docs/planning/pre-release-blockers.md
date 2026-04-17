@@ -12,7 +12,7 @@ last_updated: 2026-04-17
 
 ## Purpose
 
-This document captures the specific items that must be resolved before a first meaningful public release of Steward. These were identified in the release-readiness assessment as items where the current product either overpromises, has a visible functional gap, or lacks minimum-viable validation for its primary use case.
+This document captures the specific items that must be resolved before a first meaningful public pre-`1.0.0` release of Steward. These were identified in the release-readiness assessment as items where the current product either overpromises, has a visible functional gap, or lacks minimum-viable validation for its primary use case.
 
 These are not nice-to-haves. Each item, if left unresolved, would materially weaken the first impression or undermine the product's core promises.
 
@@ -54,7 +54,7 @@ These are not nice-to-haves. Each item, if left unresolved, would materially wea
 - **What must change:**
   - Add a CI configuration (e.g., GitHub Actions) that runs `dotnet build`, `dotnet test`, and `dotnet pack` on Windows, macOS, and Linux
   - All tests must pass on all three platforms
-- **Acceptance criteria:** A green CI run on all three platforms before the release tag is created.
+- **Acceptance criteria:** A green CI run on all three platforms before the public `0.x` release tag is created.
 - **Effort estimate:** Medium (CI authoring + any cross-platform bug fixes discovered)
 
 ### B4: Document or mitigate System.CommandLine beta dependency risk
@@ -115,7 +115,7 @@ These are not nice-to-haves. Each item, if left unresolved, would materially wea
 
 ## Relationship to Other Planning Artifacts
 
-- The [Pre-1.0 Readiness Plan](pre-1-0-readiness-plan.md) captures broader stable-release requirements. Items B3 and B4 overlap with that plan's required items.
+- The [Pre-1.0 Readiness Plan](pre-1-0-readiness-plan.md) captures broader stable-release requirements. Item B3 overlaps with that plan's required items.
 - The [Milestone Plan](milestone-plan.md) sequences future work. These blockers should be resolved before or as part of `v0.11.0`.
 - The [Release-Readiness Assessment](../audits/release-readiness-assessment-2026-04-15.md) provides the full rationale for each blocker.
 
@@ -123,4 +123,4 @@ These are not nice-to-haves. Each item, if left unresolved, would materially wea
 
 1. Address each blocker and update its status in this document.
 2. When all blockers are resolved, update the release-readiness assessment with a re-assessment note.
-3. Proceed with the release-authorization decision per ADR-013.
+3. Proceed with the next intentional public `0.x` release using [release-process.md](release-process.md). `1.0.0` still requires a separate stable-release authorization decision per ADR-013.

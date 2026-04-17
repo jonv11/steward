@@ -1,20 +1,21 @@
 # Implementation Status
 
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 ## Current Baseline
 
-Steward is currently on **`v0.13.0`**. The repository is **still pre-1.0**: `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Steward is currently on **`v0.14.0`**. The repository is **still pre-1.0**: intentional public `0.x` releases are allowed when readiness evidence is green and the release process is followed, but `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
 | Area | Current state |
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
-| Current repo version | `0.13.0` |
+| Current repo version | `0.14.0` |
 | Tests | 627 passing (`436` core, `191` CLI) |
 | Validation rules | 16 (`STWD-001` through `STWD-016`) |
 | Artifact families | `artifact_families` section now supported in `policy.yaml`; ADRs and RFCs governed by families in this repo |
 | Maintainer types | 6 (`structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`) |
-| Packaging | `dotnet pack` succeeds cleanly for `Steward.Cli.0.13.0.nupkg` |
+| Packaging | `dotnet pack` succeeds cleanly for `Steward.Cli.0.14.0.nupkg` |
+| Public pre-1.0 release path | Tag-driven GitHub Release workflow, changelog-backed notes, `.nupkg` + curated binary bundles + checksums, optional manual NuGet publication |
 | Active readiness tracker | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) |
 
 ## Delivered Lineage
@@ -34,6 +35,7 @@ Steward is currently on **`v0.13.0`**. The repository is **still pre-1.0**: `v1.
 | `v0.11.0` | Delivered | Stable-release hardening: B5 profile scope (ADR-014), B6 scoped validation fix, B7 status JSON coverage, contract tests, exit-code tests, dependency stabilization, publication checklist |
 | `v0.12.0` | Delivered | CLI fidelity, governance deepening, and Markdown subsystem completion (init scaffolding, md query --pattern fix, preview/apply standardization, coverage exclude, explain filtering, config suggest/doctor deepening, fm-validate) |
 | `v0.13.0` | Delivered | Artifact type schema RFC and base implementation: `artifact_families` in policy, deterministic family classification, type-aware frontmatter validation, family awareness in `status`, `orient`, `explain path`, `config doctor` |
+| `v0.14.0` | Delivered | Release automation and public pre-1.0 distribution discipline: changelog-backed release notes, GitHub Release workflow and assets, release-intent labels, release docs, and publication metadata hardening |
 
 ## What Was Established In `v0.10.0`
 
@@ -95,15 +97,26 @@ The following known defects were identified in the 2026-04-16 CLI review cycle. 
 - **STWD-015 (FamilyMinCountRule):** Artifact families with `directory_expectations.min_count` must contain at least the declared number of files.
 - **STWD-016 (FamilyNamingPatternRule):** Files matched by an artifact family must satisfy the family's `naming_pattern` regex.
 
-## Incremental Pass (post-v0.13.0, in-progress)
+## What Is New In v0.14.0
 
 ### Session-start and text-UX coherence
 
 The text-mode entry surfaces are now more deliberate and trustworthy. `orient` is compact by default in text mode, `--full` restores the full classified inventory, and `--tree` renders actual hierarchy instead of mixing indentation with full paths. Compact tree views now preserve real ancestors rather than implying false parent-child relationships. `outline` now renders an actual tree by default, adds recursive folder counts via `--counts`, and shows aggregate directory sizes when `--sizes` is requested. `status`, `orient`, and `outline` now use semantic text styling for headings and key status/classification tokens, so `--no-color` has meaningful scope without changing machine-oriented JSON behavior.
 
-## Maintainer Review Pass (post-v0.13.0, in-progress)
+### Pre-1.0 release process completion
 
-A comprehensive maintainer review pass addressed several cross-cutting concerns:
+The repository now contains a coherent operator path for intentional public `0.x` releases:
+
+- `CHANGELOG.md` is now the canonical release-notes source.
+- `.github/release-labels.json` defines the repo-managed pre-1.0 release-intent labels (`release:none`, `release:patch`, `release:minor`).
+- `.github/workflows/pr-release-intent.yml` requires exactly one release-intent label on non-draft pull requests to the default branch.
+- `.github/workflows/release-labels.yml` plus `scripts/release/Sync-ReleaseLabels.ps1` keep the GitHub label set synchronized with the repo-managed manifest.
+- `.github/workflows/release.yml` publishes GitHub Releases from tags, validates the tag/version match, builds/tests, attaches the `.nupkg`, curated self-contained bundles, and `SHA256SUMS.txt`, and sources release notes from the matching changelog entry.
+- [Release Process](planning/release-process.md) now explains how version bumps, changelog updates, labels, tagging, GitHub Releases, and optional NuGet publication fit together.
+
+### Maintainer review hardening
+
+A comprehensive maintainer review pass also addressed several cross-cutting concerns:
 
 - **Culture/locale fix:** `Program.Main()` now sets `InvariantCulture` before command parsing, ensuring deterministic output across all environments.
 - **JSON/text output parity:** `steward check --output json` now includes impact signals and staged completeness, matching the text output.
@@ -117,15 +130,16 @@ The detailed categorized list lives in [Pre-1.0 Readiness Plan](planning/pre-1-0
 
 ### Required
 
-- First hosted green runs from the cross-platform build/test/pack automation
+- Explicit stable-release authorization for `v1.0.0` per ADR-013
 
 ### Strongly Recommended
 
-- An explicit later pre-1.0 roadmap ordering (v0.12.0 scope now detailed in [milestone-plan.md](planning/milestone-plan.md))
+- Keep the changelog, release-process doc, and versioned planning/status artifacts in sync whenever the next intentional `0.x` release is prepared
 
 ### Optional / Later Pre-1.0
 
-- **v0.14.0+:** `required_sections` per family, `min_count` directory expectations, `naming_pattern` regex enforcement (all deferred from v0.13.0 per RFC-008 §8)
+- Heading selector fuzzy matching in MdPath
+- JSON output envelope consistency
 - Re-enabling deferred profiles (`mixed`, `knowledge`) when their contracts are enriched (see [ADR-014](decisions/adrs/ADR-014-non-software-profile-scope.md))
 - Workflow/session modeling (RFC-008 Phase 3, v0.15.0+)
 
