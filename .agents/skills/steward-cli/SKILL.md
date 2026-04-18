@@ -1,3 +1,8 @@
+---
+name: steward-cli
+description: Orient, validate, and maintain artifacts in this repository using the Steward CLI. Use when navigating the repo, checking governance, inspecting a file's rules, refreshing generated artifacts, or extracting Markdown content.
+---
+
 # SKILL: Using the Steward CLI in This Repository
 
 ## Purpose
