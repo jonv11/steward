@@ -7,7 +7,7 @@
     <AssemblyName>Steward.Cli</AssemblyName>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>steward</ToolCommandName>
-    <PackageId>Steward.Cli</PackageId>
+    <PackageId>Steward</PackageId>
     <Description>A configurable repository stewardship CLI for humans and AI agents.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/jonv11/steward</PackageProjectUrl>

@@ -1,6 +1,7 @@
 using Markdig;
 using Markdig.Extensions.Yaml;
 using Markdig.Syntax;
+using Markdig.Syntax.Inlines;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -106,7 +107,7 @@ public static class MarkdownParser
         for (var i = 0; i < headings.Count; i++)
         {
             var (block, line) = headings[i];
-            var heading = block.Inline?.FirstChild?.ToString() ?? "";
+            var heading = ExtractHeadingText(block.Inline);
             var level = block.Level;
             var startLine = line; // 0-based
             var endLine = i + 1 < headings.Count
@@ -229,6 +230,40 @@ public static class MarkdownParser
         }
 
         return regions;
+    }
+
+    private static string ExtractHeadingText(ContainerInline? inline)
+    {
+        if (inline == null)
+            return string.Empty;
+
+        var builder = new System.Text.StringBuilder();
+        AppendInlineText(inline.FirstChild, builder);
+        return builder.ToString().Trim();
+    }
+
+    private static void AppendInlineText(Inline? inline, System.Text.StringBuilder builder)
+    {
+        while (inline != null)
+        {
+            switch (inline)
+            {
+                case LiteralInline literal:
+                    builder.Append(literal.Content.ToString());
+                    break;
+                case CodeInline code:
+                    builder.Append(code.Content);
+                    break;
+                case LineBreakInline:
+                    builder.Append(' ');
+                    break;
+                case ContainerInline container:
+                    AppendInlineText(container.FirstChild, builder);
+                    break;
+            }
+
+            inline = inline.NextSibling;
+        }
     }
 
     private static string? ExtractAttribute(string line, string name)

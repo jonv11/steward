@@ -153,6 +153,28 @@ public class IndexMaintainerTests
     }
 
     [Fact]
+    public void Evaluate_UsesLinksRelativeToTargetFile()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/docs/reference/guide.md", "# Guide");
+
+        var files = new[] { new DiscoveredFile("docs/reference/guide.md", 50, false) };
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "idx",
+            Path = "docs/INDEX.md",
+            Type = "index",
+            Source = "docs/**/*.md"
+        };
+
+        var action = new IndexMaintainer().Evaluate(config, CreateContext(fs, files));
+
+        action.ExpectedContent.Should().Contain("[Guide](reference/guide.md)");
+        action.ExpectedContent.Should().NotContain("(docs/reference/guide.md)");
+    }
+
+    [Fact]
     public void Evaluate_ManagedSection_MissingMarkers_ReportsNoChanges()
     {
         var fs = new InMemoryFileSystem()

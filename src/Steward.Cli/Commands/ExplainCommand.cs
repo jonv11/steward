@@ -167,6 +167,7 @@ public static class ExplainCommand
             "STWD-014" => "Add the missing heading section to the document as declared in the artifact family's required_sections.",
             "STWD-015" => "Add more files matching the artifact family pattern to meet the declared minimum count.",
             "STWD-016" => "Rename the file to satisfy the naming_pattern regex declared for its artifact family.",
+            "STWD-017" => "Rename duplicate headings so each normalized Markdown anchor slug is unique within the file.",
             _ => "No specific remediation guidance available."
         };
     }
@@ -372,6 +373,29 @@ public static class ExplainCommand
             }
         }
 
+        if (ctx.Policy?.Maintenance?.Artifacts != null)
+        {
+            foreach (var artifact in ctx.Policy.Maintenance.Artifacts)
+            {
+                if (!string.Equals(artifact.Type, "directory-index", StringComparison.OrdinalIgnoreCase) ||
+                    string.IsNullOrWhiteSpace(artifact.Source))
+                {
+                    continue;
+                }
+
+                var sourceGlob = Glob.Parse(artifact.Source);
+                var isSourceMatch = sourceGlob.IsMatch(relativePath);
+                var isSelfTarget = !string.IsNullOrWhiteSpace(artifact.Path) &&
+                                   string.Equals(
+                                       PathHelper.NormalizeSeparators(artifact.Path),
+                                       relativePath,
+                                       StringComparison.OrdinalIgnoreCase);
+
+                if (isSourceMatch && !isSelfTarget && !requiredFields.Contains("description", StringComparer.OrdinalIgnoreCase))
+                    requiredFields.Add("description");
+            }
+        }
+
         // 5b. Family classification
         string? matchedFamily = null;
         string? familyDisplayName = null;
@@ -452,6 +476,7 @@ public static class ExplainCommand
                 "STWD-014" => matchedFamily != null,            // family-naming-pattern: family members only
                 "STWD-015" => matchedFamily != null,            // family-min-count: family members only
                 "STWD-016" => matchedFamily != null,            // required-sections: family members only
+                "STWD-017" => isMarkdown,                       // unique-heading-text: md files
                 _ => true
             })
             .Select(r => r.RuleId)

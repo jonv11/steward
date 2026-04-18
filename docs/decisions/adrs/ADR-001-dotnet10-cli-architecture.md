@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Architecture
+description: Defines the .NET 10 LTS baseline, CLI hosting model, and layered architecture for Steward
 ---
 
 # ADR-001: .NET 10 CLI Architecture

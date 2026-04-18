@@ -186,6 +186,9 @@ artifact_families:
 
 governance:
   section_size_warning_threshold: 500
+  frontmatter:
+    auto_fields:
+      last_updated: true
   start_here:
     - README.md
     - docs/planning-index.md
@@ -249,3 +252,15 @@ maintenance:
           - "**/TestResults/**"
           - "**/publish/**"
           - ".steward/**"
+    - id: decision-rfc-index
+      path: docs/decisions/decision-index.md
+      type: directory-index
+      source: "docs/decisions/rfcs/RFC-*.md"
+      managed_section: decision-rfc-index
+      sort: filename
+    - id: decision-adr-index
+      path: docs/decisions/decision-index.md
+      type: directory-index
+      source: "docs/decisions/adrs/ADR-*.md"
+      managed_section: decision-adr-index
+      sort: filename

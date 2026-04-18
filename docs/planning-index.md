@@ -33,7 +33,7 @@ Central navigation for the active product, planning, readiness, and decision art
 | [Review Synthesis Action Plan — 2026-04-18](reviews/review-synthesis-action-plan.md) | Canonical synthesis of the April 18 review cycle into validated backlog, priorities, and planning destinations |
 | [Pre-Release Blockers](planning/pre-release-blockers.md) | Critical items that must be resolved before a first meaningful public pre-1.0 release |
 | [Implementation Instructions](planning/implementation-instructions.md) | Contributor execution guide for the active pre-1.0 roadmap |
-| [v0.15.0 Draft Preparation](planning/v0-15-draft-preparation.md) | Evidence-backed preparation memo for the next milestone: scope boundary, sequencing, and open review questions |
+| [v0.15.0 Draft Preparation](planning/v0-15-draft-preparation.md) | Historical preparation memo preserved as evidence for the shipped `v0.15.0` milestone |
 | [RFC-007 Governance Enhancements Backlog](planning/rfc-007-governance-enhancements-backlog.md) | Status ledger for accepted governance-enhancement items |
 | [Curation Notes](planning/curation-notes.md) | Provenance, superseded framing, and roadmap retargeting notes |
 | [Release Process](planning/release-process.md) | Authoritative operator guide for intentional public pre-1.0 releases, labels, changelog policy, tagging, and GitHub Releases |
@@ -59,7 +59,8 @@ Historical audits are preserved for evidence and context. Active repository trut
 
 | Document | Purpose |
 | -------- | ------- |
-| [Rule-System Completeness Audit — 2026-04-18](audits/rule-system-completeness-audit-2026-04-18.md) | Systematic per-rule and system-wide review of all 16 validation rules: intent clarity, diagnostic quality, remediation quality, coverage gaps, and highest-value governance improvements |
+| [Maintainer Remarks Implementation Summary — 2026-04-18](audits/maintainer-remarks-implementation-summary-2026-04-18.md) | Repo-grounded implementation summary for the 2026-04-18 maintainer pass: code, tests, docs, package naming, and release automation outcomes |
+| [Rule-System Completeness Audit — 2026-04-18](audits/rule-system-completeness-audit-2026-04-18.md) | Systematic per-rule and system-wide review of the validation rule set as of 2026-04-18: intent clarity, diagnostic quality, remediation quality, coverage gaps, and highest-value governance improvements |
 | [AI-Agent Contract Review - 2026-04-18](audits/ai-agent-contract-review-2026-04-18.md) | Focused contract audit of Steward as an autonomous coding-agent tool: JSON stability, handoff quality, recovery, and mutation safety |
 | [Fresh-Eyes Onboarding Audit - 2026-04-18](audits/fresh-eyes-onboarding-audit-2026-04-18.md) | Fresh-clone, README-only onboarding audit of whether a skeptical newcomer can reach meaningful first value on a real repository without internal knowledge |
 | [CLI Expectation Fidelity Assessment - 2026-04-17](audits/cli-expectation-fidelity-assessment-2026-04-17.md) | Current evidence-based assessment of whether Steward-on-Steward fulfills the repo's stated CLI promise, workflows, and trust expectations |

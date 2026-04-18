@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Architecture
+description: Defines the solution layout, project boundaries, and test-project structure for Steward
 ---
 
 # ADR-002: Project Structure

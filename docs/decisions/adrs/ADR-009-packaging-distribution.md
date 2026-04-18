@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Distribution
+description: Defines the .NET tool packaging model, package identity, GitHub Release assets, and NuGet publication flow for Steward
 ---
 
 # ADR-009: Packaging and Distribution
@@ -23,7 +24,7 @@ The CLI is packaged as a **.NET tool** and may be installed either from a locall
 dotnet pack src/Steward.Cli -c Release
 
 # Install from the local package source
-dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.Cli --version <VERSION>
+dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward --version <VERSION>
 
 # When a public release is intentionally published, the same package id is used.
 ```
@@ -51,9 +52,10 @@ dotnet publish src/Steward.Cli -c Release -r osx-arm64 --self-contained -p:Publi
 
 ### NuGet package
 
-- Package ID: `Steward.Cli`
+- Package ID: `Steward`
 - Tool command name: `steward`
-- Public publication is optional and must be an explicit release action; active repo docs must not imply that publication already happened.
+- Project and assembly naming remain `Steward.Cli`; the package identity aligns to the product name `Steward`.
+- Tagged release publication includes an automated `nuget.org` push from GitHub Actions using the configured repository secret. Active repo docs must still avoid implying a package exists before a successful public release has actually happened.
 - When GitHub Releases are used, the release page should attach the `.nupkg`, published binary bundles, and checksums so the page is directly useful as a download surface.
 
 ### Project configuration
@@ -65,7 +67,7 @@ dotnet publish src/Steward.Cli -c Release -r osx-arm64 --self-contained -p:Publi
   <TargetFramework>net10.0</TargetFramework>
   <PackAsTool>true</PackAsTool>
   <ToolCommandName>steward</ToolCommandName>
-  <PackageId>Steward.Cli</PackageId>
+  <PackageId>Steward</PackageId>
   <PublishSingleFile>true</PublishSingleFile>
   <SelfContained>false</SelfContained>
 </PropertyGroup>
@@ -90,3 +92,4 @@ The source of truth is `Directory.Build.props`. Assembly version, NuGet package 
 - Cross-platform support for all major OS/arch combinations.
 - Standard .NET packaging and versioning model.
 - No platform lock-in for installation.
+- The public package name matches the product name before the first public NuGet publication, avoiding a rename/migration later.

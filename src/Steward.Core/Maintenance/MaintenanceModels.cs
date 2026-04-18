@@ -21,9 +21,20 @@ public sealed class MaintenanceAction
     public required string Type { get; init; }
     public required string Description { get; init; }
     public required bool HasChanges { get; init; }
+    public bool IsBlocked { get; init; }
+    public string? BlockedReason { get; init; }
     public string? ExpectedContent { get; init; }
     public string? CurrentContent { get; init; }
+    public IReadOnlyList<MaintenanceFileEdit> FileEdits { get; init; } = [];
     public string? Diff { get; init; }
+}
+
+public sealed class MaintenanceFileEdit
+{
+    public required string FilePath { get; init; }
+    public required string Description { get; init; }
+    public string? CurrentContent { get; init; }
+    public required string ExpectedContent { get; init; }
 }
 
 /// <summary>
@@ -66,5 +77,6 @@ public sealed class MaintenanceContext
     public required string RepositoryRoot { get; init; }
     public required Abstractions.IFileSystem FileSystem { get; init; }
     public required IReadOnlyList<Discovery.DiscoveredFile> Files { get; init; }
+    public IReadOnlySet<string>? ChangedFiles { get; init; }
     public DocumentCache? DocumentCache { get; init; }
 }

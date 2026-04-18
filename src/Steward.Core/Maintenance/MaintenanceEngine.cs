@@ -1,4 +1,5 @@
 using Steward.Core.Configuration;
+using Steward.Core.Validation;
 
 namespace Steward.Core.Maintenance;
 
@@ -30,13 +31,23 @@ public sealed class MaintenanceEngine
 
     public MaintenancePlan Evaluate(RepositoryPolicy? policy, MaintenanceContext context, string? scope = null)
     {
-        var artifacts = policy?.Maintenance?.Artifacts;
-        if (artifacts == null || artifacts.Count == 0)
+        var evaluationContext = context;
+        if (context.ChangedFiles == null)
         {
-            return new MaintenancePlan { Actions = [] };
+            var changedFiles = GitDiffHelper.GetChangedFiles(context.RepositoryRoot);
+            evaluationContext = new MaintenanceContext
+            {
+                RepositoryRoot = context.RepositoryRoot,
+                FileSystem = context.FileSystem,
+                Files = context.Files,
+                ChangedFiles = changedFiles != null
+                    ? new HashSet<string>(changedFiles, StringComparer.OrdinalIgnoreCase)
+                    : null,
+                DocumentCache = context.DocumentCache
+            };
         }
 
-        var configs = artifacts
+        var configs = (policy?.Maintenance?.Artifacts ?? [])
             .Where(a => a.Id != null && a.Type != null)
             .Select(a => new MaintenanceArtifactConfig
             {
@@ -54,6 +65,13 @@ public sealed class MaintenanceEngine
                 DependsOn = a.DependsOn
             })
             .ToList();
+
+        configs.AddRange(CreateGovernanceFrontmatterAutoConfigs(policy, configs));
+
+        if (configs.Count == 0)
+        {
+            return new MaintenancePlan { Actions = [] };
+        }
 
         if (scope != null)
         {
@@ -81,7 +99,7 @@ public sealed class MaintenanceEngine
         {
             if (_maintainers.TryGetValue(config.Type, out var maintainer))
             {
-                actions.Add(maintainer.Evaluate(config, context));
+                actions.Add(maintainer.Evaluate(config, evaluationContext));
             }
         }
 
@@ -138,5 +156,51 @@ public sealed class MaintenanceEngine
 
         cyclicIds = cycles;
         return result;
+    }
+
+    private static IReadOnlyList<MaintenanceArtifactConfig> CreateGovernanceFrontmatterAutoConfigs(
+        RepositoryPolicy? policy,
+        IReadOnlyList<MaintenanceArtifactConfig> existingConfigs)
+    {
+        var autoFields = policy?.Governance?.Frontmatter?.AutoFields;
+        if (autoFields == null || autoFields.Count == 0)
+            return [];
+
+        var explicitFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var config in existingConfigs.Where(config =>
+                     string.Equals(config.Type, "frontmatter-auto", StringComparison.OrdinalIgnoreCase)))
+        {
+            var configuredFields = config.Fields is not null
+                ? config.Fields.Keys.Cast<string>()
+                : Array.Empty<string>();
+            foreach (var field in configuredFields)
+                explicitFields.Add(field);
+        }
+
+        var synthesizedFields = autoFields
+            .Where(entry => entry.Value && !explicitFields.Contains(entry.Key))
+            .ToDictionary(entry => entry.Key, _ => "today-if-local-change", StringComparer.OrdinalIgnoreCase);
+
+        if (synthesizedFields.Count == 0)
+            return [];
+
+        var synthesizedId = "governance-frontmatter-auto";
+        var suffix = 1;
+        while (existingConfigs.Any(config => string.Equals(config.Id, synthesizedId, StringComparison.OrdinalIgnoreCase)))
+        {
+            synthesizedId = $"governance-frontmatter-auto-{suffix++}";
+        }
+
+        return
+        [
+            new MaintenanceArtifactConfig
+            {
+                Id = synthesizedId,
+                Path = "**/*.md",
+                Type = "frontmatter-auto",
+                Targets = "**/*.md",
+                Fields = synthesizedFields
+            }
+        ];
     }
 }

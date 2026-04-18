@@ -1,44 +1,46 @@
 # Decision Index
 
-Index of the current decision artifacts for the Repository Steward project. Accepted RFCs and ADRs remain the authoritative decision record; draft RFCs under review are listed separately below.
+Index of the current decision artifacts for the Repository Steward project. The RFC and ADR tables below are steward-managed from decision-record frontmatter. Each indexed document must declare a non-empty `description` field, and lifecycle state is shown in the generated `Status` column.
 
-## RFCs — Product and Requirement Decisions
+Deferred RFCs remain in the RFC table with `Status: Deferred`; accepted ADRs and RFCs remain the authoritative decision record.
 
-| ID | Title | Status | Summary |
-|----|-------|--------|---------|
-| [RFC-001](rfcs/RFC-001-cli-command-structure.md) | CLI Command Structure | Accepted | Command hierarchy, naming, global options, exit codes |
-| [RFC-002](rfcs/RFC-002-configuration-model.md) | Configuration Model | Accepted | Config/policy separation, profiles, layering, precedence |
-| [RFC-003](rfcs/RFC-003-validation-and-diagnostics.md) | Validation and Diagnostics | Accepted | Check behavior, diagnostic schema, scoping, fix/dry-run |
-| [RFC-004](rfcs/RFC-004-markdown-structural-model.md) | Markdown Structural Model | Accepted | Selectors (mdpath), managed regions, edit ops, preview/apply |
-| [RFC-005](rfcs/RFC-005-orientation-search-outline.md) | Orientation, Search, and Outline | Accepted | Surface boundaries and responsibilities |
-| [RFC-006](rfcs/RFC-006-maintenance-and-memory.md) | Maintenance and Memory | Accepted | Maintenance flows, memory artifacts, anti-drift |
-| [RFC-007](rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements.md) | Maintainer Governance and Stewardship Enhancements | Accepted | Policy expressiveness, governance inspection, maintenance evolution, stewardship workflows |
-| [RFC-008](rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) | Convention-Based Discovery and Workflow Modeling | Accepted | Artifact families, path-based discovery, frontmatter-driven classification, workflow/session modeling; v0.13.0 scope narrowed in §8 |
+## RFCs
 
-| [RFC-010](rfcs/RFC-010-consistent-json-output-envelope.md) | Consistent JSON Output Envelope | Accepted | Additive standard JSON envelope (`--json-envelope standard`) for machine-facing consistency while preserving legacy payloads |
-| [RFC-011](rfcs/RFC-011-markdown-split-and-extract-workflows.md) | Markdown Split and Extract Workflows | Accepted | `md split plan` (non-mutating) and `md edit extract-section` (preview/apply) for the Markdown subsystem |
+<!-- steward:begin id="decision-rfc-index" owner="steward" -->
+| Title | Path | Status | Description |
+| --- | --- | --- | --- |
+| RFC-001: CLI Command Structure | [RFC-001-cli-command-structure.md](rfcs/RFC-001-cli-command-structure.md) | Accepted | Defines the CLI command hierarchy, naming, global options, and interaction conventions |
+| RFC-002: Configuration Model | [RFC-002-configuration-model.md](rfcs/RFC-002-configuration-model.md) | Accepted | Defines the config and policy model, built-in profiles, layering rules, and precedence |
+| RFC-003: Validation and Diagnostics | [RFC-003-validation-and-diagnostics.md](rfcs/RFC-003-validation-and-diagnostics.md) | Accepted | Defines repository validation behavior, diagnostic structure, severities, remediation, and scoping |
+| RFC-004: Markdown Structural Model | [RFC-004-markdown-structural-model.md](rfcs/RFC-004-markdown-structural-model.md) | Accepted | Defines Markdown structural selectors, anchor-compatible heading addressing, managed regions, and preview-first edit operations |
+| RFC-005: Orientation, Search, and Outline Boundaries | [RFC-005-orientation-search-outline.md](rfcs/RFC-005-orientation-search-outline.md) | Accepted | Defines the boundaries and overlap rules for orient, outline, and search surfaces |
+| RFC-006: Maintenance and Memory Artifacts | [RFC-006-maintenance-and-memory.md](rfcs/RFC-006-maintenance-and-memory.md) | Accepted | Defines deterministic maintenance artifacts, managed sections, frontmatter auto-maintenance, and anti-drift behavior |
+| RFC-007: Maintainer Governance and Repository Stewardship Enhancements | [RFC-007-maintainer-governance-and-stewardship-enhancements.md](rfcs/RFC-007-maintainer-governance-and-stewardship-enhancements.md) | Accepted | Defines maintainer-focused governance, explainability, and stewardship workflow enhancements |
+| RFC-008: Convention-Based Artifact Discovery and Workflow Modeling | [RFC-008-convention-based-discovery-and-workflow-modeling.md](rfcs/RFC-008-convention-based-discovery-and-workflow-modeling.md) | Accepted | Defines convention-based artifact discovery, frontmatter-driven classification, and related workflow-modeling direction |
+| RFC-009: Typed Resource Addresses and Search Alignment | [RFC-009-typed-resource-addresses-and-search-alignment.md](rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md) | Deferred | Proposes a typed resource-address model aligned across file, Markdown, search, and reference surfaces |
+| RFC-010: Consistent JSON Output Envelope | [RFC-010-consistent-json-output-envelope.md](rfcs/RFC-010-consistent-json-output-envelope.md) | Accepted | Defines an additive standard JSON envelope for machine-facing CLI consistency |
+| RFC-011: Markdown Split and Extract Workflows | [RFC-011-markdown-split-and-extract-workflows.md](rfcs/RFC-011-markdown-split-and-extract-workflows.md) | Accepted | Defines preview-first Markdown split planning and extract-section workflows |
 
-## Deferred RFCs
+<!-- steward:end -->
 
-| ID | Title | Status | Summary |
-|----|-------|--------|---------|
-| [RFC-009](rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md) | Typed Resource Addresses and Search Alignment | Deferred | Additive typed-address model for file and Markdown resources — deferred to a later pre-1.0 milestone |
+## ADRs
 
-## ADRs — Technical and Architectural Decisions
+<!-- steward:begin id="decision-adr-index" owner="steward" -->
+| Title | Path | Status | Description |
+| --- | --- | --- | --- |
+| ADR-001: .NET 10 CLI Architecture | [ADR-001-dotnet10-cli-architecture.md](adrs/ADR-001-dotnet10-cli-architecture.md) | Accepted | Defines the .NET 10 LTS baseline, CLI hosting model, and layered architecture for Steward |
+| ADR-002: Project Structure | [ADR-002-project-structure.md](adrs/ADR-002-project-structure.md) | Accepted | Defines the solution layout, project boundaries, and test-project structure for Steward |
+| ADR-003: Configuration Format — YAML | [ADR-003-configuration-format-yaml.md](adrs/ADR-003-configuration-format-yaml.md) | Accepted | Selects YAML and YamlDotNet as the configuration and policy format for Steward |
+| ADR-004: Markdown Parser — Markdig | [ADR-004-markdown-parser-markdig.md](adrs/ADR-004-markdown-parser-markdig.md) | Accepted | Selects Markdig as the Markdown parser and preserves raw-text editing for minimal diffs |
+| ADR-005: Validation Engine Design | [ADR-005-validation-engine-design.md](adrs/ADR-005-validation-engine-design.md) | Accepted | Defines the validation engine, rule registry, diagnostics model, and fixable-rule contract |
+| ADR-006: Output Formatting Strategy | [ADR-006-output-formatting-strategy.md](adrs/ADR-006-output-formatting-strategy.md) | Accepted | Defines the text and JSON output strategy, stdout or stderr contract, and color handling |
+| ADR-007: Test Strategy | [ADR-007-test-strategy.md](adrs/ADR-007-test-strategy.md) | Accepted | Defines Steward's unit, integration, fixture, and snapshot testing strategy |
+| ADR-008: .gitignore Handling | [ADR-008-gitignore-handling.md](adrs/ADR-008-gitignore-handling.md) | Accepted | Defines Steward's custom .gitignore handling and early-pruning discovery behavior |
+| ADR-009: Packaging and Distribution | [ADR-009-packaging-distribution.md](adrs/ADR-009-packaging-distribution.md) | Accepted | Defines the .NET tool packaging model, package identity, GitHub Release assets, and NuGet publication flow for Steward |
+| ADR-010: Agent-Usefulness Improvements | [ADR-010-agent-usefulness-improvements.md](adrs/ADR-010-agent-usefulness-improvements.md) | Accepted | Records the first bundle of agent-focused CLI improvements for navigation, query, and maintenance workflows |
+| ADR-011: Domain-Specific Stewardship Through Generic Configuration | [ADR-011-domain-stewardship-through-generic-configuration.md](adrs/ADR-011-domain-stewardship-through-generic-configuration.md) | Accepted | Keeps domain-specific stewardship needs in generic repository configuration instead of hardcoded logic |
+| ADR-012: Artifact Type Schema System Direction | [ADR-012-artifact-type-schema-direction.md](adrs/ADR-012-artifact-type-schema-direction.md) | Accepted | Defines the direction for per-type artifact schemas in policy-driven governance |
+| ADR-013: Pre-1.0 Versioning and Release Authorization | [ADR-013-pre-1-0-versioning-and-release-authorization.md](adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) | Accepted | Keeps Steward on the 0.x line until an explicit stable-release decision authorizes 1.0.0 |
+| ADR-014: Non-Software Profile Scope for First Public Release | [ADR-014-non-software-profile-scope.md](adrs/ADR-014-non-software-profile-scope.md) | Accepted | Narrows the first public profile set and defers mixed and knowledge profiles until contracts are richer |
 
-| ID | Title | Status | Summary |
-|----|-------|--------|---------|
-| [ADR-001](adrs/ADR-001-dotnet10-cli-architecture.md) | .NET 10 CLI Architecture | Accepted | Runtime, System.CommandLine, three-layer architecture |
-| [ADR-002](adrs/ADR-002-project-structure.md) | Project Structure | Accepted | Solution layout, Cli/Core split, test projects |
-| [ADR-003](adrs/ADR-003-configuration-format-yaml.md) | Configuration Format — YAML | Accepted | YAML + YamlDotNet for all config/policy files |
-| [ADR-004](adrs/ADR-004-markdown-parser-markdig.md) | Markdown Parser — Markdig | Accepted | Markdig for parsing, structural facade, raw-text editing |
-| [ADR-005](adrs/ADR-005-validation-engine-design.md) | Validation Engine Design | Accepted | Rule interface, registry, scope resolution, fix support |
-| [ADR-006](adrs/ADR-006-output-formatting-strategy.md) | Output Formatting Strategy | Accepted | Text/JSON formatters, stdout/stderr contract, color handling |
-| [ADR-007](adrs/ADR-007-test-strategy.md) | Test Strategy | Accepted | xUnit, FluentAssertions, Verify, fixture repos |
-| [ADR-008](adrs/ADR-008-gitignore-handling.md) | .gitignore Handling | Accepted | Custom implementation, IIgnoreFilter, early pruning |
-| [ADR-009](adrs/ADR-009-packaging-distribution.md) | Packaging and Distribution | Accepted | dotnet tool, self-contained single-file, NuGet |
-| [ADR-010](adrs/ADR-010-agent-usefulness-improvements.md) | Agent-Usefulness Improvements | Accepted | --compact orient, --regex search, --quiet check, stdin content, maintain diff, batch query |
-| [ADR-011](adrs/ADR-011-domain-stewardship-through-generic-configuration.md) | Domain-Specific Stewardship Through Generic Configuration | Accepted | Domain needs served through generic policy mechanisms, not hardcoded domain logic |
-| [ADR-012](adrs/ADR-012-artifact-type-schema-direction.md) | Artifact Type Schema System Direction | Accepted | Per-type artifact definitions in policy.yaml for frontmatter, sections, naming, lifecycle |
-| [ADR-013](adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) | Pre-1.0 Versioning and Release Authorization | Accepted | Keeps Steward on `0.x.y` until explicit stable-release approval and defines version-bump governance |
-| [ADR-014](adrs/ADR-014-non-software-profile-scope.md) | Non-Software Profile Scope for First Public Release | Accepted | Keep `software`/`docs`/`minimal`; defer `mixed`/`knowledge` until contracts are enriched |
+<!-- steward:end -->

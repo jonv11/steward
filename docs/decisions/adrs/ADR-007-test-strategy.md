@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Quality
+description: Defines Steward's unit, integration, fixture, and snapshot testing strategy
 ---
 
 # ADR-007: Test Strategy

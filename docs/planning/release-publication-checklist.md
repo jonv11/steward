@@ -1,7 +1,7 @@
 ---
 type: planning
 status: Active
-last_updated: 2026-04-17
+last_updated: 2026-04-18
 ---
 
 # Release Publication Checklist
@@ -40,11 +40,10 @@ pwsh ./scripts/release/Build-ReleaseAssets.ps1 -Version <VERSION>
 pwsh ./scripts/release/Export-ReleaseNotes.ps1 -Version <VERSION>
 
 # 5. Install from the locally built package and smoke-test
-dotnet tool install --global --add-source ./artifacts/release/v<VERSION> Steward.Cli --version <VERSION>
-steward version
-steward orient
-steward check
-dotnet tool uninstall --global Steward.Cli
+dotnet tool install --tool-path ./.tools/steward --add-source ./artifacts/release/v<VERSION> Steward --version <VERSION>
+./.tools/steward/steward version
+./.tools/steward/steward orient
+./.tools/steward/steward check
 ```
 
 ## Tagging
@@ -57,21 +56,22 @@ git push origin v<VERSION>
 
 The push triggers `.github/workflows/release.yml`, which rebuilds/tests, validates the tag against `Directory.Build.props`, creates or updates the GitHub Release, and uploads the published assets.
 
-## NuGet Publication (when applicable)
+## NuGet Publication
 
-Publication to nuget.org is an explicit, manual action per ADR-009. It must not happen automatically.
+The tagged release workflow publishes to nuget.org automatically when `NUGET_ORG_API_KEY` is configured in GitHub.
 
 ```bash
-# Push to NuGet (requires API key)
-dotnet nuget push artifacts/release/v<VERSION>/Steward.Cli.<VERSION>.nupkg \
-  --api-key <NUGET_API_KEY> \
-  --source https://api.nuget.org/v3/index.json
+# Optional local fallback if the workflow publish needs manual recovery
+dotnet nuget push artifacts/release/v<VERSION>/Steward.<VERSION>.nupkg \
+  --api-key <NUGET_ORG_API_KEY> \
+  --source https://api.nuget.org/v3/index.json \
+  --skip-duplicate
 ```
 
-Verify on [nuget.org](https://www.nuget.org/packages/Steward.Cli) that the package appears, then install from the public feed:
+Verify on [nuget.org](https://www.nuget.org/packages/Steward) that the package appears, then install from the public feed:
 
 ```bash
-dotnet tool install --global Steward.Cli --version <VERSION>
+dotnet tool install --global Steward --version <VERSION>
 steward version
 ```
 

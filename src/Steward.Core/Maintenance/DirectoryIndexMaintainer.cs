@@ -22,6 +22,10 @@ public sealed class DirectoryIndexMaintainer : IArtifactMaintainer
         var matchingFiles = context.Files
             .Where(f => !f.IsDirectory && sourceGlob.IsMatch(f.RelativePath))
             .Where(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            .Where(f => !string.Equals(
+                PathHelper.NormalizeSeparators(f.RelativePath),
+                PathHelper.NormalizeSeparators(config.Path),
+                StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         matchingFiles = sort switch
@@ -31,12 +35,14 @@ public sealed class DirectoryIndexMaintainer : IArtifactMaintainer
             _ => matchingFiles.OrderBy(f => Path.GetFileName(f.RelativePath), StringComparer.OrdinalIgnoreCase).ToList()
         };
 
-        var rows = new List<(string Title, string RelPath, string Description)>();
+        var rows = new List<(string Title, string RelPath, string Status, string Description)>();
+        var missingDescriptions = new List<string>();
         foreach (var file in matchingFiles)
         {
             var fullPath = Path.Combine(context.RepositoryRoot, file.RelativePath);
             var title = Path.GetFileNameWithoutExtension(file.RelativePath);
-            var description = "";
+            var status = "";
+            string? description = null;
 
             if (context.FileSystem.FileExists(fullPath))
             {
@@ -48,11 +54,38 @@ public sealed class DirectoryIndexMaintainer : IArtifactMaintainer
                 else if (doc.Sections.Count > 0)
                     title = doc.Sections[0].Heading;
 
+                if (doc.Frontmatter?.Fields.TryGetValue("status", out var statusValue) == true && statusValue != null)
+                    status = statusValue.ToString()!;
+
                 if (doc.Frontmatter?.Fields.TryGetValue("description", out var d) == true && d != null)
-                    description = d.ToString()!;
+                    description = d.ToString();
             }
 
-            rows.Add((title, PathHelper.NormalizeSeparators(file.RelativePath), description));
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                missingDescriptions.Add(file.RelativePath);
+                continue;
+            }
+
+            var linkPath = PathHelper.GetRelativeMarkdownPath(config.Path, file.RelativePath);
+            rows.Add((title, linkPath, status, description));
+        }
+
+        if (missingDescriptions.Count > 0)
+        {
+            var sample = string.Join(", ", missingDescriptions.Take(3));
+            var suffix = missingDescriptions.Count > 3 ? ", ..." : string.Empty;
+
+            return new MaintenanceAction
+            {
+                ArtifactId = config.Id,
+                ArtifactPath = config.Path,
+                Type = Type,
+                Description = $"Directory index generation is blocked: {missingDescriptions.Count} source file(s) are missing a non-empty frontmatter.description field.",
+                HasChanges = false,
+                IsBlocked = true,
+                BlockedReason = $"Add frontmatter.description to the indexed source files, starting with: {sample}{suffix}"
+            };
         }
 
         var tableContent = GenerateTable(rows);
@@ -82,16 +115,35 @@ public sealed class DirectoryIndexMaintainer : IArtifactMaintainer
         };
     }
 
-    internal static string GenerateTable(List<(string Title, string RelPath, string Description)> rows)
+    internal static string GenerateTable(List<(string Title, string RelPath, string Status, string Description)> rows)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("| Title | Path | Description |");
-        sb.AppendLine("| --- | --- | --- |");
-        foreach (var (title, relPath, description) in rows)
+        var includeStatus = rows.Any(row => !string.IsNullOrWhiteSpace(row.Status));
+
+        if (includeStatus)
+        {
+            sb.AppendLine("| Title | Path | Status | Description |");
+            sb.AppendLine("| --- | --- | --- | --- |");
+        }
+        else
+        {
+            sb.AppendLine("| Title | Path | Description |");
+            sb.AppendLine("| --- | --- | --- |");
+        }
+
+        foreach (var (title, relPath, status, description) in rows)
         {
             var escapedTitle = title.Replace("|", "\\|");
             var escapedDesc = description.Replace("|", "\\|");
-            sb.AppendLine($"| {escapedTitle} | [{Path.GetFileName(relPath)}]({relPath}) | {escapedDesc} |");
+            if (includeStatus)
+            {
+                var escapedStatus = status.Replace("|", "\\|");
+                sb.AppendLine($"| {escapedTitle} | [{Path.GetFileName(relPath)}]({relPath}) | {escapedStatus} | {escapedDesc} |");
+            }
+            else
+            {
+                sb.AppendLine($"| {escapedTitle} | [{Path.GetFileName(relPath)}]({relPath}) | {escapedDesc} |");
+            }
         }
         return sb.ToString();
     }

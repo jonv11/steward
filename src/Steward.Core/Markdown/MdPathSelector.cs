@@ -5,6 +5,8 @@ namespace Steward.Core.Markdown;
 /// Supported selectors:
 ///   frontmatter            — entire frontmatter block
 ///   frontmatter.field      — specific frontmatter field
+///   #anchor-slug          — heading resolved through Markdown anchor normalization
+///   README.md#anchor      — Markdown link-style heading selector
 ///   heading[Name]          — section by heading text
 ///   heading[Parent/Child]  — nested heading path
 ///   heading[#N]            — Nth heading (1-based)
@@ -16,6 +18,25 @@ namespace Steward.Core.Markdown;
 /// </summary>
 public static class MdPathSelector
 {
+    public static bool IsAnchorSelector(string selector)
+    {
+        if (string.IsNullOrWhiteSpace(selector))
+            return false;
+
+        if (selector[0] == '#')
+            return selector.Length > 1;
+
+        if (selector.StartsWith("heading[", StringComparison.OrdinalIgnoreCase) ||
+            selector.StartsWith("frontmatter", StringComparison.OrdinalIgnoreCase) ||
+            selector.StartsWith("managed[", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var fragmentIndex = selector.IndexOf('#');
+        return fragmentIndex > 0 && fragmentIndex < selector.Length - 1;
+    }
+
     public static SelectorResult Evaluate(StructuredDocument doc, string selector)
     {
         ArgumentNullException.ThrowIfNull(doc);
@@ -26,6 +47,9 @@ public static class MdPathSelector
 
         if (selector.StartsWith("frontmatter.", StringComparison.OrdinalIgnoreCase))
             return EvaluateFrontmatterField(doc, selector[12..]);
+
+        if (TryGetAnchorSlug(selector, out var anchorSlug))
+            return EvaluateAnchor(doc, selector, anchorSlug);
 
         if (selector.StartsWith("heading[", StringComparison.OrdinalIgnoreCase) && selector.EndsWith(']'))
             return EvaluateHeading(doc, selector[8..^1]);
@@ -102,7 +126,7 @@ public static class MdPathSelector
             if (!int.TryParse(path[1..], out var index) || index < 1)
                 return SelectorResult.Error($"Invalid heading index: '{path}'");
 
-            var allSections = FlattenSections(doc.Sections);
+            var allSections = MarkdownHeadings.Flatten(doc.Sections);
             if (index > allSections.Count)
                 return SelectorResult.Empty($"heading[{path}]");
 
@@ -140,7 +164,7 @@ public static class MdPathSelector
         // Find the section
         var parts = headingPath.Split('/');
         var sections = parts[0].StartsWith('#')
-            ? [FlattenSections(doc.Sections).ElementAtOrDefault(int.Parse(parts[0][1..]) - 1)!]
+            ? [MarkdownHeadings.Flatten(doc.Sections).ElementAtOrDefault(int.Parse(parts[0][1..]) - 1)!]
             : FindSectionsByPath(doc.Sections, parts, 0);
 
         if (sections.Count == 0 || sections[0] == null)
@@ -169,6 +193,24 @@ public static class MdPathSelector
             Selector = selectorStr,
             Matches = blocks
         };
+    }
+
+    private static SelectorResult EvaluateAnchor(StructuredDocument doc, string selector, string anchorSlug)
+    {
+        var matches = MarkdownHeadings.Flatten(doc.Sections)
+            .Where(section => string.Equals(
+                MarkdownHeadings.ToAnchorSlug(section.Heading),
+                anchorSlug,
+                StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (matches.Count == 0)
+            return SelectorResult.Empty(selector);
+
+        if (matches.Count > 1)
+            return SelectorResult.Ambiguous(selector, matches.Count);
+
+        return MakeSectionResult(selector, matches[0], doc);
     }
 
     private static SelectorResult EvaluateManaged(StructuredDocument doc, string id)
@@ -250,17 +292,6 @@ public static class MdPathSelector
         return results;
     }
 
-    private static List<Section> FlattenSections(IReadOnlyList<Section> sections)
-    {
-        var result = new List<Section>();
-        foreach (var section in sections)
-        {
-            result.Add(section);
-            result.AddRange(FlattenSections(section.Children));
-        }
-        return result;
-    }
-
     private static SelectorResult MakeSectionResult(string selector, Section section, StructuredDocument doc)
     {
         var content = ExtractLines(doc.RawContent, section.Range);
@@ -287,6 +318,27 @@ public static class MdPathSelector
         var start = Math.Max(0, range.Start - 1); // to 0-based
         var end = Math.Min(lines.Length, range.End); // exclusive
         return string.Join('\n', lines[start..end]);
+    }
+
+    private static bool TryGetAnchorSlug(string selector, out string anchorSlug)
+    {
+        anchorSlug = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(selector))
+            return false;
+
+        if (selector[0] == '#')
+        {
+            anchorSlug = selector[1..].Trim();
+            return anchorSlug.Length > 0;
+        }
+
+        if (!IsAnchorSelector(selector))
+            return false;
+
+        var fragmentIndex = selector.IndexOf('#');
+        anchorSlug = selector[(fragmentIndex + 1)..].Trim();
+        return anchorSlug.Length > 0;
     }
 }
 

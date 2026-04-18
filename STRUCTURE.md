@@ -28,6 +28,7 @@
 │   │   ├── code-quality-review-2025-07-23.md
 │   │   ├── end-user-documentation-path-audit-2026-04-17.md
 │   │   ├── fresh-eyes-onboarding-audit-2026-04-18.md
+│   │   ├── maintainer-remarks-implementation-summary-2026-04-18.md
 │   │   ├── maintainer-review.md
 │   │   ├── maintainer-usecase-expectations.md
 │   │   ├── maintainer-usecase-ideas.md
@@ -38,6 +39,7 @@
 │   │   ├── repo-actionability-pass-2026-04-16.md
 │   │   ├── repository-audit-2026-04-14.md
 │   │   ├── review-requirements.md
+│   │   ├── rule-system-completeness-audit-2026-04-18.md
 │   │   ├── usability-review-2026-04-15.md
 │   │   └── usecase-consolidation-proposal.md
 │   ├── decisions/
@@ -57,10 +59,14 @@
 │   │   ├── rfc-007-governance-enhancements-backlog.md
 │   │   └── v0-15-draft-preparation.md
 │   ├── planning-index.md
-│   └── requirements/
-│       ├── assumptions-constraints.md
-│       ├── PRD.md
-│       └── requirements-traceability.md
+│   ├── requirements/
+│   │   ├── assumptions-constraints.md
+│   │   ├── PRD.md
+│   │   └── requirements-traceability.md
+│   └── reviews/
+│       ├── config-expressiveness-stress-test.md
+│       └── review-synthesis-action-plan.md
+├── dgitstewarddocsreviews
 ├── README.md
 ├── repository-steward-master-requirements.md
 ├── scripts/
@@ -168,6 +174,7 @@
     │   ├── SectionSizeRuleTests.cs
     │   ├── Steward.Core.Tests.csproj
     │   ├── StructuralEditorTests.cs
+    │   ├── UniqueHeadingTextRuleTests.cs
     │   ├── ValidationEngineTests.cs
     │   └── WellKnownRolesTests.cs
     └── Steward.TestFixtures/

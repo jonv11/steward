@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Technical
+description: Defines Steward's custom .gitignore handling and early-pruning discovery behavior
 ---
 
 # ADR-008: .gitignore Handling

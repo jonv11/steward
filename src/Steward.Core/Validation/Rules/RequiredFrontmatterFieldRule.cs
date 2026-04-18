@@ -32,6 +32,8 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
         // Compile path-scoped frontmatter requirements
         var scopedRequirements = CompileScopedRequirements(
             context.Policy?.Validation?.FrontmatterRequirements);
+        var generatedIndexRequirements = CompileGeneratedIndexRequirements(
+            context.Policy?.Maintenance?.Artifacts);
 
         // Build family classifier
         var familyClassifier = new ArtifactFamilyClassifier(context.Policy?.ArtifactFamilies);
@@ -41,15 +43,18 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
 
         var hasFamilies = context.Policy?.ArtifactFamilies is { Count: > 0 };
 
-        if (globalRequired.Count == 0 && scopedRequirements.Count == 0 && !hasFamilies)
+        if (globalRequired.Count == 0 && scopedRequirements.Count == 0 && generatedIndexRequirements.Count == 0 && !hasFamilies)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
 
         foreach (var file in context.TargetFiles.Where(f =>
             f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase)))
         {
             // Determine effective required fields for this path (global + scoped)
-            var effectiveFields = GetEffectiveRequiredFields(file.RelativePath, globalRequired, scopedRequirements);
+            var effectiveFields = GetEffectiveRequiredFields(file.RelativePath, globalRequired, scopedRequirements, generatedIndexRequirements);
             var effectiveAllowedValues = GetEffectiveAllowedValues(file.RelativePath, scopedRequirements);
+            var requiresGeneratedIndexDescription = generatedIndexRequirements.Any(req =>
+                req.RequiredFields?.Contains("description", StringComparer.OrdinalIgnoreCase) == true &&
+                req.AppliesTo(file.RelativePath));
 
             // We may need to parse the document even if no global/scoped requirements apply,
             // because family matching requires frontmatter fields.
@@ -124,7 +129,9 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
                         Path: file.RelativePath,
                         Line: 1,
                         Message: $"File '{file.RelativePath}' is missing frontmatter block.{familyContext}",
-                        Remediation: "Add a YAML frontmatter block enclosed by --- markers at the top of the file.",
+                        Remediation: requiresGeneratedIndexDescription
+                            ? "Add a YAML frontmatter block enclosed by --- markers at the top of the file, including a non-empty 'description' field so generated indexes can include it."
+                            : "Add a YAML frontmatter block enclosed by --- markers at the top of the file.",
                         Source: "policy.yaml"));
                 }
                 continue;
@@ -141,7 +148,25 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
                         Path: file.RelativePath,
                         Line: doc.Frontmatter.Range.Start,
                         Message: $"Required frontmatter field '{field}' is missing in '{file.RelativePath}'.{familyContext}",
-                        Remediation: $"Add '{field}' to the frontmatter block.",
+                        Remediation: string.Equals(field, "description", StringComparison.OrdinalIgnoreCase) && requiresGeneratedIndexDescription
+                            ? "Add 'description' to the frontmatter block so generated directory indexes can describe this file."
+                            : $"Add '{field}' to the frontmatter block.",
+                        Source: "policy.yaml"));
+                    continue;
+                }
+
+                if (string.Equals(field, "description", StringComparison.OrdinalIgnoreCase) &&
+                    requiresGeneratedIndexDescription &&
+                    string.IsNullOrWhiteSpace(doc.Frontmatter.Fields[field]?.ToString()))
+                {
+                    diagnostics.Add(new Diagnostic(
+                        RuleId: RuleId,
+                        Severity: DefaultSeverity,
+                        Category: Category,
+                        Path: file.RelativePath,
+                        Line: doc.Frontmatter.Range.Start,
+                        Message: $"Required frontmatter field 'description' is blank in '{file.RelativePath}'.{familyContext}",
+                        Remediation: "Set 'description' to a concise non-empty summary so generated directory indexes can include this file.",
                         Source: "policy.yaml"));
                 }
             }
@@ -188,13 +213,23 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
     private static List<string> GetEffectiveRequiredFields(
         string relativePath,
         List<string> globalRequired,
-        List<CompiledFrontmatterReq> scopedRequirements)
+        List<CompiledFrontmatterReq> scopedRequirements,
+        List<CompiledFrontmatterReq> generatedIndexRequirements)
     {
         var fields = new HashSet<string>(globalRequired, StringComparer.OrdinalIgnoreCase);
 
         foreach (var req in scopedRequirements)
         {
-            if (req.Glob.IsMatch(relativePath) && req.RequiredFields != null)
+            if (req.AppliesTo(relativePath) && req.RequiredFields != null)
+            {
+                foreach (var f in req.RequiredFields)
+                    fields.Add(f);
+            }
+        }
+
+        foreach (var req in generatedIndexRequirements)
+        {
+            if (req.AppliesTo(relativePath) && req.RequiredFields != null)
             {
                 foreach (var f in req.RequiredFields)
                     fields.Add(f);
@@ -212,7 +247,7 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
 
         foreach (var req in scopedRequirements)
         {
-            if (req.Glob.IsMatch(relativePath) && req.AllowedValues != null)
+            if (req.AppliesTo(relativePath) && req.AllowedValues != null)
             {
                 foreach (var (field, values) in req.AllowedValues)
                     result[field] = values;
@@ -237,13 +272,55 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
             compiled.Add(new CompiledFrontmatterReq(
                 Glob.Parse(req.Pattern),
                 req.RequiredFields,
-                req.AllowedValues));
+                req.AllowedValues,
+                null));
         }
+        return compiled;
+    }
+
+    private static List<CompiledFrontmatterReq> CompileGeneratedIndexRequirements(
+        List<MaintenanceArtifactDef>? maintenanceArtifacts)
+    {
+        if (maintenanceArtifacts == null || maintenanceArtifacts.Count == 0)
+            return [];
+
+        var compiled = new List<CompiledFrontmatterReq>();
+        foreach (var artifact in maintenanceArtifacts)
+        {
+            if (!string.Equals(artifact.Type, "directory-index", StringComparison.OrdinalIgnoreCase) ||
+                string.IsNullOrWhiteSpace(artifact.Source))
+            {
+                continue;
+            }
+
+            compiled.Add(new CompiledFrontmatterReq(
+                Glob.Parse(artifact.Source),
+                ["description"],
+                null,
+                artifact.Path));
+        }
+
         return compiled;
     }
 
     private sealed record CompiledFrontmatterReq(
         Glob Glob,
         List<string>? RequiredFields,
-        Dictionary<string, List<string>>? AllowedValues);
+        Dictionary<string, List<string>>? AllowedValues,
+        string? ExcludedPath)
+    {
+        public bool AppliesTo(string relativePath)
+        {
+            if (!Glob.IsMatch(relativePath))
+                return false;
+
+            if (!string.IsNullOrWhiteSpace(ExcludedPath) &&
+                string.Equals(PathHelper.NormalizeSeparators(ExcludedPath), relativePath, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
 }

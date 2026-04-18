@@ -78,6 +78,18 @@ public class MdQueryCommandTests : IDisposable
     }
 
     [Fact]
+    public void SingleArgumentAnchorSelector_Works()
+    {
+        var testFile = Path.Combine(_tempDir, "README.md");
+        File.WriteAllText(testFile, "# Intro\n## Who Is Steward For?\nMaintainers and contributors.\n");
+
+        var (exitCode, output, _) = InvokeQuery("md", "query", "README.md#who-is-steward-for");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("Maintainers and contributors.");
+    }
+
+    [Fact]
     public void NoSelectorProvided_ReturnsError()
     {
         var (exitCode, _, error) = InvokeQuery("md", "query");

@@ -8,13 +8,17 @@ namespace Steward.Core.Tests.Maintenance;
 
 public class FrontmatterAutoMaintainerTests
 {
-    private static MaintenanceContext CreateContext(InMemoryFileSystem fs, params DiscoveredFile[] files)
+    private static MaintenanceContext CreateContext(
+        InMemoryFileSystem fs,
+        IReadOnlySet<string>? changedFiles = null,
+        params DiscoveredFile[] files)
     {
         return new MaintenanceContext
         {
             RepositoryRoot = "/repo",
             FileSystem = fs,
-            Files = files.ToList()
+            Files = files.ToList(),
+            ChangedFiles = changedFiles
         };
     }
 
@@ -37,10 +41,12 @@ public class FrontmatterAutoMaintainerTests
         };
 
         var maintainer = new FrontmatterAutoMaintainer();
-        var action = maintainer.Evaluate(config, CreateContext(fs, files));
+        var action = maintainer.Evaluate(config, CreateContext(fs, null, files));
 
         action.HasChanges.Should().BeTrue();
         action.Description.Should().Contain("1 file(s) need frontmatter updates");
+        action.FileEdits.Should().HaveCount(1);
+        action.FileEdits[0].ExpectedContent.Should().Contain("last_updated:");
     }
 
     [Fact]
@@ -62,7 +68,7 @@ public class FrontmatterAutoMaintainerTests
         };
 
         var maintainer = new FrontmatterAutoMaintainer();
-        var action = maintainer.Evaluate(config, CreateContext(fs, files));
+        var action = maintainer.Evaluate(config, CreateContext(fs, null, files));
 
         action.HasChanges.Should().BeFalse();
         action.Description.Should().Contain("up to date");
@@ -106,9 +112,10 @@ public class FrontmatterAutoMaintainerTests
         };
 
         var maintainer = new FrontmatterAutoMaintainer();
-        var action = maintainer.Evaluate(config, CreateContext(fs, files));
+        var action = maintainer.Evaluate(config, CreateContext(fs, null, files));
 
         action.HasChanges.Should().BeTrue();
+        action.FileEdits[0].ExpectedContent.Should().Contain("status: published");
     }
 
     [Fact]
@@ -129,7 +136,7 @@ public class FrontmatterAutoMaintainerTests
         };
 
         var maintainer = new FrontmatterAutoMaintainer();
-        var action = maintainer.Evaluate(config, CreateContext(fs, files));
+        var action = maintainer.Evaluate(config, CreateContext(fs, null, files));
 
         action.HasChanges.Should().BeFalse();
     }
@@ -159,9 +166,86 @@ public class FrontmatterAutoMaintainerTests
         };
 
         var maintainer = new FrontmatterAutoMaintainer();
-        var action = maintainer.Evaluate(config, CreateContext(fs, files));
+        var action = maintainer.Evaluate(config, CreateContext(fs, null, files));
 
         action.HasChanges.Should().BeTrue();
         action.Description.Should().Contain("2 file(s)");
+        action.FileEdits.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void Evaluate_TodayIfLocalChange_UpdatesConfiguredFieldWhenFileChanged()
+    {
+        var today = DateTime.UtcNow.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/doc.md", "---\nlast_updated: 2020-01-01\n---\n# Doc\nChanged.");
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "fm-auto",
+            Path = "",
+            Type = "frontmatter-auto",
+            Targets = "**/*.md",
+            Fields = new Dictionary<string, string> { ["last_updated"] = "today-if-local-change" }
+        };
+
+        var action = new FrontmatterAutoMaintainer().Evaluate(
+            config,
+            CreateContext(
+                fs,
+                new HashSet<string>(["doc.md"], StringComparer.OrdinalIgnoreCase),
+                new DiscoveredFile("doc.md", 100, false)));
+
+        action.HasChanges.Should().BeTrue();
+        action.FileEdits.Should().HaveCount(1);
+        action.FileEdits[0].ExpectedContent.Should().Contain($"last_updated: {today}");
+    }
+
+    [Fact]
+    public void Evaluate_TodayIfLocalChange_SkipsFilesWithoutConfiguredField()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/doc.md", "---\ntitle: Doc\n---\n# Doc\nChanged.");
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "fm-auto",
+            Path = "",
+            Type = "frontmatter-auto",
+            Targets = "**/*.md",
+            Fields = new Dictionary<string, string> { ["last_updated"] = "today-if-local-change" }
+        };
+
+        var action = new FrontmatterAutoMaintainer().Evaluate(
+            config,
+            CreateContext(
+                fs,
+                new HashSet<string>(["doc.md"], StringComparer.OrdinalIgnoreCase),
+                new DiscoveredFile("doc.md", 100, false)));
+
+        action.HasChanges.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Evaluate_TodayIfLocalChange_WithoutGitChangeDetection_IsBlocked()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/doc.md", "---\nlast_updated: 2020-01-01\n---\n# Doc\nChanged.");
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "fm-auto",
+            Path = "",
+            Type = "frontmatter-auto",
+            Targets = "**/*.md",
+            Fields = new Dictionary<string, string> { ["last_updated"] = "today-if-local-change" }
+        };
+
+        var action = new FrontmatterAutoMaintainer().Evaluate(
+            config,
+            CreateContext(fs, null, new DiscoveredFile("doc.md", 100, false)));
+
+        action.IsBlocked.Should().BeTrue();
+        action.BlockedReason.Should().Contain("git");
     }
 }

@@ -142,6 +142,39 @@ public class MdPathSelectorTests
     }
 
     [Fact]
+    public void Evaluate_AnchorSlug_ReturnsMatchingSection()
+    {
+        var doc = MarkdownParser.Parse("sample.md", "# Who Is Steward For?\nAudience details.\n");
+
+        var result = MdPathSelector.Evaluate(doc, "#who-is-steward-for");
+
+        result.HasMatches.Should().BeTrue();
+        result.Matches[0].Label.Should().Be("Who Is Steward For?");
+    }
+
+    [Fact]
+    public void Evaluate_MarkdownLinkStyleSelector_ReturnsMatchingSection()
+    {
+        var doc = MarkdownParser.Parse("README.md", "# Who Is Steward For?\nAudience details.\n");
+
+        var result = MdPathSelector.Evaluate(doc, "README.md#who-is-steward-for");
+
+        result.HasMatches.Should().BeTrue();
+        result.Matches[0].Label.Should().Be("Who Is Steward For?");
+    }
+
+    [Fact]
+    public void Evaluate_AnchorSlug_StripsPunctuationAndCase()
+    {
+        var doc = MarkdownParser.Parse("sample.md", "# Who, Is Steward For?\nAudience details.\n");
+
+        var result = MdPathSelector.Evaluate(doc, "#WHO-IS-STEWARD-FOR");
+
+        result.HasMatches.Should().BeTrue();
+        result.Matches[0].Label.Should().Be("Who, Is Steward For?");
+    }
+
+    [Fact]
     public void Evaluate_FrontmatterOnDocWithoutIt_ReturnsEmpty()
     {
         var doc = MarkdownParser.Parse("test.md", "# Title\nContent\n");
@@ -253,5 +286,13 @@ public class MdPathSelectorTests
 
         result.IsError.Should().BeTrue();
         result.ErrorMessage.Should().Contain("Unknown sub-selector");
+    }
+
+    [Fact]
+    public void IsAnchorSelector_RecognizesFragmentAndMarkdownAddressForms()
+    {
+        MdPathSelector.IsAnchorSelector("#who-is-steward-for").Should().BeTrue();
+        MdPathSelector.IsAnchorSelector("README.md#who-is-steward-for").Should().BeTrue();
+        MdPathSelector.IsAnchorSelector("heading[Goals]").Should().BeFalse();
     }
 }

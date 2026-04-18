@@ -24,7 +24,7 @@ public static class MdCommand
 
     private static Command CreateQueryCommand()
     {
-        var command = new Command("query", "Extract content using an MdPath selector (e.g., 'heading[Status]', 'frontmatter', 'heading[## Usage]')");
+        var command = new Command("query", "Extract content using an MdPath selector (e.g., 'heading[Status]', '#who-is-steward-for', or 'README.md#who-is-steward-for')");
 
         var fileArg = new Argument<string?>("file") { Description = "Path to the Markdown file", Arity = ArgumentArity.ZeroOrOne };
         var selectorArg = new Argument<string?>("selector") { Description = "MdPath selector expression", Arity = ArgumentArity.ZeroOrOne };
@@ -53,6 +53,13 @@ public static class MdCommand
             {
                 selector = file;
                 file = null;
+            }
+
+            if (selector == null && file != null && MdPathSelector.IsAnchorSelector(file))
+            {
+                var fragmentIndex = file.IndexOf('#');
+                selector = file;
+                file = file[..fragmentIndex];
             }
 
             if (string.IsNullOrWhiteSpace(selector))
@@ -109,7 +116,7 @@ public static class MdCommand
             {
                 if (result.IsEmpty)
                 {
-                    formatter.WriteMessage($"No matches for selector '{result.Selector}'.");
+                    formatter.WriteMessage(FormatNoMatchMessage(file, result.Selector));
                 }
                 else
                 {
@@ -186,6 +193,16 @@ public static class MdCommand
         }
 
         return ExitCodes.Success;
+    }
+
+    private static string FormatNoMatchMessage(string file, string selector)
+    {
+        if (MdPathSelector.IsAnchorSelector(selector))
+        {
+            return $"No matches for selector '{selector}' in '{file}'. Use 'steward md outline {file}' to inspect headings and verify the anchor slug.";
+        }
+
+        return $"No matches for selector '{selector}'.";
     }
 
     private static Command CreateOutlineCommand()

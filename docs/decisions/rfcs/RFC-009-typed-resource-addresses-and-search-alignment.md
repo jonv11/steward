@@ -1,9 +1,9 @@
 ---
 type: rfc
 status: Deferred
-resolves: >-
-  REQ-ADDR-002 through REQ-ADDR-005 and REQ-SEARCH-012 follow-on alignment on the pre-1.0 line
-last_updated: 2026-04-17
+description: Proposes a typed resource-address model aligned across file, Markdown, search, and reference surfaces
+resolves: REQ-ADDR-002 through REQ-ADDR-005 and REQ-SEARCH-012 follow-on alignment on the pre-1.0 line
+last_updated: 2026-04-18
 ---
 
 # RFC-009: Typed Resource Addresses and Search Alignment
@@ -174,4 +174,3 @@ This RFC is additive in `v0.15.0`:
 - workflow/session resource kinds
 - fuzzy or heuristic selector matching
 - replacement of all path-first command arguments
-

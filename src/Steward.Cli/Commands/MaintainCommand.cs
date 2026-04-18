@@ -81,6 +81,23 @@ public static class MaintainCommand
                     var (added, removed) = CountDiffLines(oldContent, action.ExpectedContent!);
                     appliedChanges.Add((action.ArtifactPath, added, removed));
                 }
+
+                foreach (var action in plan.Actions.Where(a => a.HasChanges && a.FileEdits.Count > 0))
+                {
+                    foreach (var edit in action.FileEdits)
+                    {
+                        var fullPath = Path.Combine(ctx.RootPath, edit.FilePath);
+                        var dir = Path.GetDirectoryName(fullPath);
+                        if (dir != null && !Directory.Exists(dir))
+                            Directory.CreateDirectory(dir);
+
+                        var oldContent = File.Exists(fullPath) ? File.ReadAllText(fullPath) : "";
+                        File.WriteAllText(fullPath, edit.ExpectedContent);
+
+                        var (added, removed) = CountDiffLines(oldContent, edit.ExpectedContent);
+                        appliedChanges.Add((edit.FilePath, added, removed));
+                    }
+                }
             }
 
             // Output — single pass for both text and JSON
@@ -96,7 +113,14 @@ public static class MaintainCommand
                         artifactPath = a.ArtifactPath,
                         type = a.Type,
                         description = a.Description,
-                        hasChanges = a.HasChanges
+                        hasChanges = a.HasChanges,
+                        blocked = a.IsBlocked,
+                        blockedReason = a.BlockedReason,
+                        fileEdits = a.FileEdits.Select(edit => new
+                        {
+                            path = edit.FilePath,
+                            description = edit.Description
+                        }).ToArray()
                     }).ToArray(),
                     changes = apply && appliedChanges.Count > 0
                         ? appliedChanges.Select(c => new
@@ -118,9 +142,13 @@ public static class MaintainCommand
 
                 foreach (var action in plan.Actions)
                 {
-                    var status = action.HasChanges ? "MAINTAIN" : "OK      ";
+                    var status = action.IsBlocked
+                        ? "BLOCKED "
+                        : action.HasChanges ? "MAINTAIN" : "OK      ";
                     ctx.Formatter.WriteMessage($"{status}  {action.ArtifactId}  {action.ArtifactPath}");
                     ctx.Formatter.WriteMessage($"  {action.Description}");
+                    if (action.IsBlocked && action.BlockedReason != null)
+                        ctx.Formatter.WriteMessage($"  {action.BlockedReason}");
 
                     // --diff works in both preview and apply modes
                     if (showDiff && action.HasChanges && action.CurrentContent != null && action.ExpectedContent != null)
@@ -137,6 +165,28 @@ public static class MaintainCommand
                             };
                             if (line.Type != ChangeType.Unchanged)
                                 ctx.Formatter.WriteMessage($"  {prefix}{line.Text}");
+                        }
+                    }
+
+                    if (showDiff && action.FileEdits.Count > 0)
+                    {
+                        foreach (var edit in action.FileEdits)
+                        {
+                            ctx.Formatter.WriteMessage($"  diff: {edit.FilePath}");
+                            var diffBuilder = new InlineDiffBuilder(new Differ());
+                            var diff = diffBuilder.BuildDiffModel(edit.CurrentContent ?? string.Empty, edit.ExpectedContent);
+                            foreach (var line in diff.Lines)
+                            {
+                                var prefix = line.Type switch
+                                {
+                                    ChangeType.Inserted => "+",
+                                    ChangeType.Deleted => "-",
+                                    _ => " "
+                                };
+
+                                if (line.Type != ChangeType.Unchanged)
+                                    ctx.Formatter.WriteMessage($"  {prefix}{line.Text}");
+                            }
                         }
                     }
                 }

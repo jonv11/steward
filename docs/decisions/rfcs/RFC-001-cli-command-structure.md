@@ -1,6 +1,7 @@
 ---
 type: rfc
 status: Accepted
+description: Defines the CLI command hierarchy, naming, global options, and interaction conventions
 resolves: >-
   Product questions about command hierarchy, naming, global options, and CLI UX conventions
 ---

@@ -32,13 +32,13 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 | `v0.12.0` | CLI fidelity, governance deepening, and Markdown subsystem completion | Delivered |
 | `v0.13.0` | Artifact type schema RFC and base implementation | Delivered |
 | `v0.14.0` | Release automation and public pre-1.0 distribution discipline | Delivered |
-| `v0.15.0` | JSON envelope, Markdown split/extract, and config/explainability trust | Delivered |
+| `v0.15.0` | JSON envelope, Markdown split/extract, release alignment, and config/explainability trust | Delivered |
 
 ## Planned Pre-1.0 Milestones
 
 | Version   | Theme                                                          | Primary outcome                                                                                              |
 |-----------|----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| `v0.16.0` | Adoption readiness, onboarding trust, and rule/runtime coherence | Tested first-hour onboarding, version-story alignment, rule/runtime trust fixes, `config suggest` precision, and UX/help polish |
+| `v0.16.0` | Adoption readiness, onboarding trust, and rule/runtime coherence | Tested first-hour onboarding, hosted release evidence, rule/runtime trust fixes, `config suggest` precision, and UX/help polish |
 | `v0.17.0` | Machine contract hardening and targeted pre-stable extensions  | Universal JSON contract behavior, safe JSON mutation/reporting, typed-address handoff follow-on, and scoped config-model/RFC follow-ups if justified |
 
 ## First Stable Release
@@ -63,7 +63,7 @@ Primary outcome: adoption readiness, onboarding trust, and rule/runtime coherenc
 |---|------|--------|--------|
 | 1 | Add a tested README "First 15 Minutes" path | Fresh-eyes onboarding audit, synthesis `SYN-01` | Make the first value path explicit: install or repo-independent executable path -> target repo -> `orient` -> `init` -> `status --coverage` -> `check` |
 | 2 | Document repo-independent source-build usage and the `global.json` hazard | Fresh-eyes onboarding audit, synthesis `SYN-01` | Prefer a built executable or local `--tool-path` install; state that `dotnet run --project ...` can fail when the target repo controls SDK selection |
-| 3 | Reconcile runtime/package/version-story drift | Fresh-eyes onboarding audit, synthesis `SYN-05` | README, changelog, `steward version`, and planning/status artifacts must tell the same version/baseline story before the next release-oriented doc pass |
+| 3 | Capture first hosted release + NuGet publication evidence | Release readiness tracker, maintainer pass 2026-04-18 | The workflow is now configured to publish GitHub Release assets and the `Steward` NuGet package; the next milestone needs hosted green evidence and a verified public package page |
 | 4 | Fix rule-system trust defects in scoped and family-based validation | Rule-system completeness audit, synthesis `SYN-04` | Correct STWD-008, STWD-011, and STWD-015 behavior; make STWD-012 diagnostics self-contained; narrow STWD-006 if the fix stays bounded |
 | 5 | Fix `refactor move --apply --output json` and add postcondition tests | AI-agent contract review, synthesis `SYN-02` | JSON mode must execute the move, rewrite references, and prove what changed |
 | 6 | Improve `config suggest` precision for mature repos | RFC-007 G7-20, synthesis `SYN-07` | Honor `validation.path_overrides`-style exclusions, add confidence/heuristic scoring, and label conservative suggestions as such |
@@ -84,6 +84,25 @@ Primary outcome: machine contract hardening and targeted pre-stable extensions. 
 | 4 | Scope and implement the first narrow RFC-009 slice | RFC-009, AI-agent contract review | Focus on reusable address handoff across `search`, `refs`, `check`, and `explain path` rather than a broad address model all at once |
 | 5 | Publish machine-facing contract docs and broaden contract tests | AI-agent contract review | Add coverage for standard-envelope success/failure paths and mutation postconditions |
 | 6 | Decide whether to open an adoption-oriented config-model RFC | Config expressiveness stress test, synthesis `SYN-08` | Only after the trust floor above lands; constrain scope to non-Markdown transparency, intentionally ungoverned zones, and grandfathering/new-files-only |
+
+---
+
+## v0.15.0 Delivered Scope
+
+All items planned for v0.15.0 have been implemented and aligned into a coherent pre-1.0 release-ready baseline. The primary outcome: Steward now has the intended `0.15.0` version story, machine-facing envelope work, Markdown split/extract support, anchor-aware Markdown selectors, stricter generated-index governance, and an activated NuGet publication path.
+
+| # | Item | Source | Status |
+|---|------|--------|--------|
+| 1 | Standard JSON output envelope support | RFC-010 | Done — `--json-envelope standard` supported on JSON-producing commands |
+| 2 | Markdown split planning and extract-section workflows | RFC-011 | Done — `md split plan` and `md edit extract-section` implemented with preview/apply safety |
+| 3 | Apply `validation.severity_overrides` at runtime | Config/runtime trust pass | Done — configured severities now affect emitted diagnostics and pass/fail outcomes |
+| 4 | Fix `explain path` family applicability | Explainability trust pass | Done — family-only rules now surface only when the file actually matches a family |
+| 5 | Support Markdown anchor-style selectors | Maintainer remarks pass | Done — `#anchor-slug` and `README.md#anchor-slug` work in `md query` |
+| 6 | Enforce unique normalized heading text per file | Maintainer remarks pass | Done — STWD-017 warns when anchor-normalized headings collide |
+| 7 | Require description frontmatter for generated directory indexes | Maintainer remarks pass | Done — generated indexes block on missing descriptions and the repo now dogfoods them in `decision-index.md` |
+| 8 | Update existing frontmatter date fields on local change | Maintainer remarks pass | Done — `governance.frontmatter.auto_fields` synthesizes `today-if-local-change` maintenance |
+| 9 | Align package identity to `Steward` and activate NuGet publication | ADR-009, maintainer remarks pass | Done — package id renamed before first public publish and tag workflow now pushes to nuget.org |
+| 10 | Reconcile repo version/package/release story to `0.15.0` | Fresh-eyes onboarding audit, synthesis `SYN-05` | Done — shared version metadata, changelog, README, release docs, and current-state docs now agree |
 
 ---
 

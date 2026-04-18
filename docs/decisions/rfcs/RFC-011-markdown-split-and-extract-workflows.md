@@ -1,9 +1,9 @@
 ---
 type: rfc
 status: Accepted
-resolves: >-
-  REQ-MD-012 split/extract workflows in preview-first form for governed Markdown
-last_updated: 2026-04-17
+description: Defines preview-first Markdown split planning and extract-section workflows
+resolves: REQ-MD-012 split/extract workflows in preview-first form for governed Markdown
+last_updated: 2026-04-18
 ---
 
 # RFC-011: Markdown Split and Extract Workflows
@@ -60,7 +60,7 @@ Without that support, maintainers and agents fall back to manual copy/move edits
 
 ## 1. `md split plan`
 
-### Command
+### Split-Planning Command
 
 ```bash
 steward md split plan <file> [--max-lines <n>] [--min-section-lines <n>] [--output json|text]
@@ -93,7 +93,7 @@ This surface satisfies the "evaluation" part of the milestone without committing
 
 ## 2. `md edit extract-section`
 
-### Command
+### Extract-Section Command
 
 ```bash
 steward md edit extract-section <file> --selector <mdpath> --to <target-file> [--replace-with-link] [--apply]
@@ -159,4 +159,3 @@ That narrower scope matters because split/extract is Steward's first real multi-
 - automatic frontmatter scaffolding based on artifact families
 - automatic inbound/outbound link rewriting across the repo
 - non-section extraction primitives such as arbitrary list or table extraction
-

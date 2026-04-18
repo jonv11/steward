@@ -1,6 +1,7 @@
 ---
 type: rfc
 status: Accepted
+description: Defines convention-based artifact discovery, frontmatter-driven classification, and related workflow-modeling direction
 resolves: >-
   Convention-based artifact discovery, hierarchical path rules, frontmatter-driven
   classification, workflow/session modeling, and policy scalability gaps identified

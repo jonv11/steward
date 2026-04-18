@@ -113,6 +113,27 @@ maintenance:
     }
 
     [Fact]
+    public void Apply_FrontmatterAutoFileEdit_UpdatesFile()
+    {
+        WritePolicyYaml(@"
+maintenance:
+  artifacts:
+    - id: frontmatter-sync
+      type: frontmatter-auto
+      targets: docs/*.md
+      fields:
+        status: published
+");
+        WriteFile("docs/guide.md", "---\nstatus: draft\n---\n# Guide\n");
+
+        var (exitCode, output, _) = InvokeMaintain("maintain", "--apply");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("Changes applied");
+        File.ReadAllText(Path.Combine(_tempDir, "docs", "guide.md")).Should().Contain("status: published");
+    }
+
+    [Fact]
     public void Apply_Idempotent()
     {
         WritePolicyYaml(@"
@@ -223,6 +244,24 @@ maintenance:
         exitCode.Should().Be(0);
         output.Should().Contain("\"hasChanges\"");
         output.Should().Contain("\"artifactId\"");
+    }
+
+    [Fact]
+    public void Blocked_Action_IsReported()
+    {
+        WritePolicyYaml(@"
+governance:
+  frontmatter:
+    auto_fields:
+      last_updated: true
+");
+        WriteFile("docs/guide.md", "---\nlast_updated: 2026-04-01\n---\n# Guide\n");
+
+        var (exitCode, output, _) = InvokeMaintain("maintain");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("BLOCKED");
+        output.Should().Contain("git");
     }
 
     [Fact]

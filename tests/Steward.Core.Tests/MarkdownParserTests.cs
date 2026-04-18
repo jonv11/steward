@@ -137,4 +137,15 @@ public class MarkdownParserTests
         doc.Sections[0].Heading.Should().Be("First");
         doc.Sections[1].Heading.Should().Be("Second");
     }
+
+    [Fact]
+    public void Parse_ExtractsFullHeadingTextFromInlineFormatting()
+    {
+        var content = "# Heading with *emphasis* and `code`\n";
+
+        var doc = MarkdownParser.Parse("test.md", content);
+
+        doc.Sections.Should().HaveCount(1);
+        doc.Sections[0].Heading.Should().Be("Heading with emphasis and code");
+    }
 }

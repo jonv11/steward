@@ -22,6 +22,24 @@ public sealed class StaleArtifactRule : IValidationRule, IFixableRule
 
         foreach (var action in plan.Actions.Where(a => a.HasChanges))
         {
+            if (action.FileEdits.Count > 0)
+            {
+                foreach (var edit in action.FileEdits)
+                {
+                    diagnostics.Add(new Diagnostic(
+                        RuleId,
+                        DefaultSeverity,
+                        Category,
+                        edit.FilePath,
+                        null,
+                        $"Maintained artifact '{action.ArtifactId}' is stale. {edit.Description}",
+                        "Run 'steward maintain --apply' or 'steward check --fix' to update.",
+                        null));
+                }
+
+                continue;
+            }
+
             diagnostics.Add(new Diagnostic(
                 RuleId,
                 DefaultSeverity,
@@ -43,13 +61,26 @@ public sealed class StaleArtifactRule : IValidationRule, IFixableRule
         if (plan == null)
             return Task.FromResult<IReadOnlyList<Fix>>(fixes);
 
-        foreach (var action in plan.Actions.Where(a => a.HasChanges && a.ExpectedContent != null))
+        foreach (var action in plan.Actions.Where(a => a.HasChanges))
         {
+            if (action.FileEdits.Count > 0)
+            {
+                fixes.AddRange(action.FileEdits.Select(edit => new Fix(
+                    RuleId,
+                    edit.FilePath,
+                    $"Update stale artifact '{action.ArtifactId}': {edit.Description}",
+                    edit.ExpectedContent)));
+                continue;
+            }
+
+            if (action.ExpectedContent == null)
+                continue;
+
             fixes.Add(new Fix(
                 RuleId,
                 action.ArtifactPath,
                 $"Update stale artifact '{action.ArtifactId}'",
-                action.ExpectedContent!));
+                action.ExpectedContent));
         }
 
         return Task.FromResult<IReadOnlyList<Fix>>(fixes);

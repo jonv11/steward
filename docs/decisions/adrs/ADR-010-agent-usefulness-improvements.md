@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: CLI Ergonomics
+description: Records the first bundle of agent-focused CLI improvements for navigation, query, and maintenance workflows
 ---
 
 # ADR-010: Agent-Usefulness Improvements

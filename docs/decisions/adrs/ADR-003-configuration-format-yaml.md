@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Technical
+description: Selects YAML and YamlDotNet as the configuration and policy format for Steward
 ---
 
 # ADR-003: Configuration Format — YAML

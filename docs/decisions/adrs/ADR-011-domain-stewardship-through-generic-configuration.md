@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Product Direction
+description: Keeps domain-specific stewardship needs in generic repository configuration instead of hardcoded logic
 ---
 
 # ADR-011: Domain-Specific Stewardship Through Generic Configuration

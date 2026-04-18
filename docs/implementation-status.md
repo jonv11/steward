@@ -1,21 +1,21 @@
 # Implementation Status
 
-Last updated: 2026-04-17
+Last updated: 2026-04-18
 
 ## Current Baseline
 
-Steward is currently on **`v0.14.0`**. The repository is **still pre-1.0**: intentional public `0.x` releases are allowed when readiness evidence is green and the release process is followed, but `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Steward is currently on **`v0.15.0`**. The repository is **still pre-1.0**: intentional public `0.x` releases are allowed when readiness evidence is green and the release process is followed, but `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
 | Area | Current state |
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
 | Current repo version | `0.15.0` |
-| Tests | 627 passing (`436` core, `191` CLI) |
-| Validation rules | 16 (`STWD-001` through `STWD-016`) |
+| Tests | 644 passing (`450` core, `194` CLI) |
+| Validation rules | 17 (`STWD-001` through `STWD-017`) |
 | Artifact families | `artifact_families` section now supported in `policy.yaml`; ADRs and RFCs governed by families in this repo |
 | Maintainer types | 6 (`structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`) |
-| Packaging | `dotnet pack` succeeds cleanly for `Steward.Cli.0.14.0.nupkg` |
-| Public pre-1.0 release path | Tag-driven GitHub Release workflow, changelog-backed notes, `.nupkg` + curated binary bundles + checksums, optional manual NuGet publication |
+| Packaging | `dotnet pack` succeeds cleanly for `Steward.0.15.0.nupkg` |
+| Public pre-1.0 release path | Tag-driven GitHub Release workflow, changelog-backed notes, automated nuget.org publication, `.nupkg` + curated binary bundles + checksums |
 | Active readiness tracker | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) |
 
 ## Delivered Lineage
@@ -113,7 +113,7 @@ The repository now contains a coherent operator path for intentional public `0.x
 - `.github/workflows/pr-release-intent.yml` requires exactly one release-intent label on non-draft pull requests to the default branch.
 - `.github/workflows/release-labels.yml` plus `scripts/release/Sync-ReleaseLabels.ps1` keep the GitHub label set synchronized with the repo-managed manifest.
 - `.github/workflows/release.yml` publishes GitHub Releases from tags, validates the tag/version match, builds/tests, attaches the `.nupkg`, curated self-contained bundles, and `SHA256SUMS.txt`, and sources release notes from the matching changelog entry.
-- [Release Process](planning/release-process.md) now explains how version bumps, changelog updates, labels, tagging, GitHub Releases, and optional NuGet publication fit together.
+- [Release Process](planning/release-process.md) now explains how version bumps, changelog updates, labels, tagging, GitHub Releases, and automated NuGet publication fit together.
 
 ### Maintainer review hardening
 
@@ -131,6 +131,11 @@ A comprehensive maintainer review pass also addressed several cross-cutting conc
 - **Markdown split/extract workflows (RFC-011):** `md split plan` provides a non-mutating analysis of candidate section splits for large Markdown files. `md edit extract-section` is a preview/apply operation that extracts a named section into a new target file, with optional link replacement and managed-region ownership enforcement.
 - **`validation.severity_overrides` implemented:** The `severity_overrides` config field was previously modeled and validated but never applied at runtime. Diagnostics are now rewritten to the configured severity level after all rules run, and pass/fail computation reflects the overridden severities.
 - **`explain path` family-applicability fixes:** Family classification now runs for all files including those in `artifacts[]` (explicit artifacts were previously excluded). STWD-014/015/016 now show as applicable only when the file matches a configured artifact family, not for every file.
+- **Markdown anchor selectors:** `md query` now accepts Markdown-fragment selectors such as `#who-is-steward-for` and combined CLI tokens such as `README.md#who-is-steward-for`.
+- **STWD-017 unique heading validation:** Heading text must now be unique within a Markdown file after anchor-style normalization so fragment selectors stay deterministic.
+- **Generated decision-index automation:** This repo now dogfoods steward-managed decision-index sections powered by `directory-index`, with mandatory child-document `description` frontmatter and generated `Status` columns.
+- **Local-change frontmatter date refresh:** `governance.frontmatter.auto_fields` now synthesizes `frontmatter-auto` maintenance that updates existing fields like `last_updated` to today's date when `git diff --name-only HEAD` reports a local change.
+- **Package/release alignment:** The published tool package is now `Steward`, and the release workflow pushes tagged packages to nuget.org using `NUGET_ORG_API_KEY`.
 
 ## Remaining Before First Stable Shipment
 

@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Product / Configuration
+description: Narrows the first public profile set and defers mixed and knowledge profiles until contracts are richer
 date: 2026-04-16
 ---
 

@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Architecture
+description: Defines the validation engine, rule registry, diagnostics model, and fixable-rule contract
 ---
 
 # ADR-005: Validation Engine Design

@@ -309,4 +309,49 @@ public class FrontmatterValidationRuleTests
 
         diagnostics.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Evaluate_DirectoryIndexSources_RequireDescriptionButExcludeTarget()
+    {
+        var fs = new InMemoryFileSystem();
+        fs.AddFile("root/docs/index.md", "# Index\n");
+        fs.AddFile("root/docs/alpha.md", "---\nstatus: Draft\n---\n# Alpha\n");
+
+        var policy = new RepositoryPolicy
+        {
+            Maintenance = new MaintenanceConfig
+            {
+                Artifacts =
+                [
+                    new MaintenanceArtifactDef
+                    {
+                        Id = "docs-index",
+                        Path = "docs/index.md",
+                        Type = "directory-index",
+                        Source = "docs/*.md"
+                    }
+                ]
+            }
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles =
+            [
+                new DiscoveredFile("docs/index.md", 20, false),
+                new DiscoveredFile("docs/alpha.md", 20, false)
+            ],
+            FileSystem = fs,
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredFrontmatterFieldRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().ContainSingle(diagnostic => diagnostic.Path == "docs/alpha.md");
+        diagnostics[0].Message.Should().Contain("description");
+        diagnostics[0].Remediation.Should().Contain("generated directory indexes");
+    }
 }

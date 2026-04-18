@@ -1,9 +1,9 @@
 ---
 type: rfc
 status: Accepted
-resolves: >-
-  Machine-readable output consistency across CLI commands without destabilizing current consumers
-last_updated: 2026-04-17
+description: Defines an additive standard JSON envelope for machine-facing CLI consistency
+resolves: Machine-readable output consistency across CLI commands without destabilizing current consumers
+last_updated: 2026-04-18
 ---
 
 # RFC-010: Consistent JSON Output Envelope
@@ -175,4 +175,3 @@ That helper should:
 - full JSON Schema publication
 - NDJSON or streaming output
 - a cross-command RPC protocol
-

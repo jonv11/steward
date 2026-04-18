@@ -1,6 +1,7 @@
 ---
 type: rfc
 status: Accepted
+description: Defines deterministic maintenance artifacts, managed sections, frontmatter auto-maintenance, and anti-drift behavior
 resolves: >-
   Maintenance flows, memory artifacts, auto-maintained documents, anti-drift, artifact roles
 ---
@@ -31,7 +32,7 @@ Maintenance covers deterministic, policy-driven regeneration or update of govern
 | **Repository structure document** | docs/STRUCTURE.md | Regenerated from file tree + policy |
 | **Index / registry** | docs/index.md, docs/decision-index.md | Regenerated from governed file inventory |
 | **Managed section** | A `<!-- steward:managed:begin -->` block inside a human-authored doc | Content between markers updated, rest preserved |
-| **Frontmatter fields** | `last_updated`, `generated_by` fields | Fields updated based on policy rules |
+| **Frontmatter fields** | `last_updated`, `updated_at`, `generated_by` fields | Fields updated from policy rules using literal values, file metadata, or local-change date refresh |
 | **Catalog / glossary** | docs/glossary.md | Updated from declared sources |
 
 ### Artifact roles in policy
@@ -61,8 +62,15 @@ maintenance:
       type: frontmatter-auto
       targets: "docs/**/*.md"
       fields:
-        last_updated: file-mtime
+        last_updated: today-if-local-change
 ```
+
+### Frontmatter auto-maintenance sources
+
+- Literal values set the field to the configured string.
+- `file-mtime` copies the file's current UTC modification date in `yyyy-MM-dd` format.
+- `today-if-local-change` writes today's UTC date in `yyyy-MM-dd` format only when the file already has that frontmatter field and `git diff --name-only HEAD` reports the file as locally changed.
+- `governance.frontmatter.auto_fields.<field>: true` is shorthand for a repository-wide `today-if-local-change` rule for that existing field.
 
 ### Maintenance command
 

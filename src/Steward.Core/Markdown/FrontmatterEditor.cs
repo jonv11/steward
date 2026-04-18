@@ -71,6 +71,35 @@ public static class FrontmatterEditor
         return ReplaceFrontmatter(doc, lines, merged, "Merged fields into frontmatter.");
     }
 
+    public static EditResult SetFields(StructuredDocument doc, IReadOnlyDictionary<string, string> values)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+
+        if (values.Count == 0)
+            return EditResult.NoOp(doc.RawContent, "No frontmatter fields required updates.");
+
+        var merged = doc.Frontmatter != null
+            ? new Dictionary<string, object?>(doc.Frontmatter.Fields)
+            : new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (key, value) in values)
+            merged[key] = value;
+
+        var lines = doc.RawContent.Split('\n').ToList();
+
+        if (doc.Frontmatter == null)
+        {
+            var yaml = YamlSerializer.Serialize(merged).TrimEnd('\n', '\r');
+            lines.InsertRange(0, ["---", yaml, "---", ""]);
+            var newContent = string.Join('\n', lines);
+            return EditResult.Changed(doc.RawContent, newContent,
+                $"Created frontmatter with fields: {string.Join(", ", values.Keys)}.");
+        }
+
+        return ReplaceFrontmatter(doc, lines, merged,
+            $"Set frontmatter field(s): {string.Join(", ", values.Keys)}.");
+    }
+
     /// <summary>
     /// Reads the <c>last_updated</c> frontmatter field from a Markdown file and returns it as a UTC DateTime.
     /// Returns null when the file has no frontmatter, the field is absent, or the value cannot be parsed.

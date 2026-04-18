@@ -1,8 +1,8 @@
 ---
 type: planning
-source_baseline: v0.14.0
+source_baseline: v0.15.0
 status: Active
-last_updated: 2026-04-17
+last_updated: 2026-04-18
 ---
 
 # Release Process
@@ -13,7 +13,7 @@ last_updated: 2026-04-17
 
 This document is the authoritative operator guide for intentional public releases on the Steward pre-`1.0.0` line.
 
-It defines how version bumps, labels, changelog entries, GitHub Actions, GitHub Releases, and optional NuGet publication fit together so the repo has one coherent release story.
+It defines how version bumps, labels, changelog entries, GitHub Actions, GitHub Releases, and NuGet publication fit together so the repo has one coherent release story.
 
 ## Governance Summary
 
@@ -62,7 +62,7 @@ The labels inform the bump decision; they do not auto-edit `Directory.Build.prop
 
 Each GitHub Release currently publishes:
 
-- `Steward.Cli.<version>.nupkg`
+- `Steward.<version>.nupkg`
 - `steward-<version>-win-x64.zip`
 - `steward-<version>-linux-x64.zip`
 - `steward-<version>-osx-arm64.zip`
@@ -120,21 +120,23 @@ git push origin v<VERSION>
 - It validates that the tag matches `Directory.Build.props`.
 - It restores, builds, tests, packages, exports release notes from `CHANGELOG.md`, creates or updates the GitHub Release, and uploads the release assets.
 
-### 7. Optionally publish to NuGet
+### 7. Let GitHub Actions publish to NuGet
 
-NuGet publication remains explicit and manual. The `.nupkg` attached to the GitHub Release is the same package that may later be pushed to nuget.org if maintainers intentionally choose to do so.
+- `.github/workflows/release.yml` publishes the packaged .NET tool to nuget.org using the repository secret `NUGET_ORG_API_KEY`.
+- Publication uses `dotnet nuget push --skip-duplicate` so rerunning a tagged release is safe when the package already exists.
+- The workflow fails if the secret is missing or if no package artifact was produced.
 
 ### 8. Verify post-release state
 
 - Confirm the GitHub Release page has the expected notes and assets.
 - Download at least one bundle and verify the checksum.
+- Confirm the package appears on nuget.org.
 - Install the `.nupkg` locally or from the release asset and smoke-test `steward version`, `steward orient`, and `steward check`.
 
 ## What Is Still Intentionally Manual
 
 - Version bump selection and the actual edit to `Directory.Build.props`
 - Changelog curation
-- Optional NuGet publication
 - Expanding the automated binary matrix beyond the curated minimum
 - Any future stable-release authorization decision for `1.0.0`
 
@@ -142,5 +144,4 @@ NuGet publication remains explicit and manual. The `.nupkg` attached to the GitH
 
 - Automatic version bumping directly from merged pull-request labels
 - Automatic changelog generation
-- Automatic NuGet publication
 - Stable-release (`1.0.0`) workflow logic

@@ -8,10 +8,10 @@ namespace Steward.Core.Tests;
 public class RuleRegistryTests
 {
     [Fact]
-    public void CreateAllRules_ReturnsSixteenRules()
+    public void CreateAllRules_ReturnsSeventeenRules()
     {
         var rules = RuleRegistry.CreateAllRules();
-        rules.Should().HaveCount(16);
+        rules.Should().HaveCount(17);
     }
 
     [Fact]
@@ -35,6 +35,7 @@ public class RuleRegistryTests
         rules.Should().ContainSingle(r => r is RequiredSectionsRule);
         rules.Should().ContainSingle(r => r is FamilyMinCountRule);
         rules.Should().ContainSingle(r => r is FamilyNamingPatternRule);
+        rules.Should().ContainSingle(r => r is UniqueHeadingTextRule);
     }
 
     [Fact]

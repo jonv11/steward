@@ -2,6 +2,7 @@
 type: rfc
 status: Accepted
 accepted: 2026-04-15
+description: Defines maintainer-focused governance, explainability, and stewardship workflow enhancements
 resolves: >-
   Maintainer-governance gaps, policy explainability gaps, and stewardship workflow
   improvements identified through repo-maintainer review and follow-up product analysis

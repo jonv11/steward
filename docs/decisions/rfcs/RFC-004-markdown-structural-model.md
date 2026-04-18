@@ -1,6 +1,7 @@
 ---
 type: rfc
 status: Accepted
+description: Defines Markdown structural selectors, anchor-compatible heading addressing, managed regions, and preview-first edit operations
 resolves: >-
   Selector syntax, managed regions, edit operations, preview/apply, ownership enforcement
 ---
@@ -38,12 +39,17 @@ managed[steward:index]          # Managed region with id "steward:index"
 heading[Overview].lists         # All lists under "Overview"
 heading[Overview].tables        # All tables under "Overview"
 heading[Overview].codeblocks    # All code blocks under "Overview"
+
+# Markdown anchor-style heading lookup
+#who-is-steward-for             # Heading whose normalized anchor slug is "who-is-steward-for"
 ```
 
 **Design principles:**
 - Selectors read left-to-right as a path into the document.
 - Ambiguous selectors that match multiple elements fail with an error by default (REQ-MD-007).
 - Indexed selectors (`#N`) provide deterministic addressing when names collide.
+- Anchor-style heading selectors normalize text using Markdown-fragment rules: lowercase, trim, drop most punctuation, and collapse whitespace / `-` / `_` into `-`.
+- Heading text must therefore be unique within a document after that normalization so anchor-style selectors remain deterministic.
 
 ### Managed region markers
 
@@ -108,6 +114,9 @@ steward md query README.md frontmatter
 
 # Get a specific section's content
 steward md query docs/PRD.md "heading[Goals]"
+
+# Get a section by Markdown anchor slug
+steward md query README.md#who-is-steward-for
 
 # Get heading outline
 steward md outline docs/PRD.md

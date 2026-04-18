@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Technical
+description: Selects Markdig as the Markdown parser and preserves raw-text editing for minimal diffs
 ---
 
 # ADR-004: Markdown Parser — Markdig

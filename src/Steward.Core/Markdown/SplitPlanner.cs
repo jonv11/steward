@@ -62,12 +62,9 @@ public static class SplitPlanner
     internal static string SuggestTargetPath(string sourceFile, string heading)
     {
         var dir = Path.GetDirectoryName(sourceFile) ?? "";
-        var slug = heading
-            .ToLowerInvariant()
-            .Replace(' ', '-')
+        var slug = MarkdownHeadings.ToAnchorSlug(heading)
             .Replace('/', '-')
             .Replace('\\', '-');
-        slug = new string(slug.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
         slug = slug.Trim('-');
         if (string.IsNullOrEmpty(slug)) slug = "extracted";
 

@@ -47,7 +47,7 @@ Steward's configuration model is **meaningfully expressive for documentation-cen
 
 ## Repo 1: microsoft/vscode
 
-### Repo Overview
+### Repo Overview (microsoft/vscode)
 
 - ~14,600 files, 5,800+ TypeScript files
 - Highly layered: `src/vs/base/`, `src/vs/platform/`, `src/vs/editor/`, `src/vs/workbench/`, `src/vs/code/`
@@ -57,7 +57,7 @@ Steward's configuration model is **meaningfully expressive for documentation-cen
 - No RFC/ADR directory; decisions via GitHub Discussions
 - Naming conventions: PascalCase types, camelCase methods, platform-scoped filenames (`.browser.ts`, `.electron-main.ts`, `.node.ts`, `.common.ts`)
 
-### Governance Intent a Maintainer Would Reasonably Want
+### Governance Intent a Maintainer Would Reasonably Want (microsoft/vscode)
 
 1. **Layering enforcement** — `base/` must not import `workbench/`, `platform/` must not import `editor/`. Cross-layer dependency violations are caught by a custom validator (`valid-layers-check`).
 2. **CODEOWNERS coverage** — Key directories (CI workflows, release scripts) have mandatory reviewers; ungoverned important paths should be flagged.
@@ -67,7 +67,7 @@ Steward's configuration model is **meaningfully expressive for documentation-cen
 6. **Endgame milestone docs** — `.github/endgame/` docs should follow a predictable naming pattern (e.g., `{version}.md`).
 7. **Missing CHANGELOG** — No centralized changelog is a governance gap; a maintainer might want Steward to flag this or at least not penalize its absence.
 
-### Config/Policy Attempt
+### Config/Policy Attempt (microsoft/vscode)
 
 **What can be expressed:**
 
@@ -154,7 +154,7 @@ rulesets:
         must_match: "^[a-zA-Z0-9]+(?:[A-Z][a-zA-Z0-9]*)*(?:\\.node)?\\.ts$"
 ```
 
-### What Steward Expressed Well
+### What Steward Expressed Well (microsoft/vscode)
 
 - Required governance file presence (CONTRIBUTING, SECURITY, CODEOWNERS)
 - Freshness expectations on AI governance docs (copilot-instructions, AGENTS.md)
@@ -163,7 +163,7 @@ rulesets:
 - `start_here` orientation to key contributor entry points
 - Scoped rule suppression via `path_overrides`
 
-### What Was Awkward but Possible
+### What Was Awkward but Possible (microsoft/vscode)
 
 - **Extension package.json presence:** The `artifact_families` match on `extensions/*/README.md` captures the README requirement, but there is no clean way to also require `extensions/*/package.json` from the same family declaration. Two families with different path patterns can each require their file, but the conceptual unit is "an extension needs both" — not two separate files in two separate families. **Workaround: two families, duplicated semantic intent.**
 
@@ -171,7 +171,7 @@ rulesets:
 
 - **Freshness on AI governance docs:** Works, but the freshness comparison is git-based timestamp — it cannot understand whether the architecture described in `copilot-instructions.md` is actually current. Steward flags stale by time, not by content drift. That is probably acceptable but is a weaker signal than a maintainer might want.
 
-### What Was Not Credibly Expressible
+### What Was Not Credibly Expressible (microsoft/vscode)
 
 - **Layer dependency enforcement.** Steward cannot validate that `src/vs/workbench/` does not import from `src/vs/base/` in the wrong direction. This is a source-code dependency concern. It is clearly not Steward's domain, but the vscode maintainer's primary governance concern is this rule — meaning Steward's governance coverage of this repo is shallow by design.
 
@@ -183,7 +183,7 @@ rulesets:
 
 - **Milestone doc lifecycle.** There is no way to declare that an endgame doc `{version}.md` should be closed/archived when the version ships.
 
-### False-Positive / False-Negative Concerns
+### False-Positive / False-Negative Concerns (microsoft/vscode)
 
 - **False positives (high):** The `platform-scoped-ts-naming` path-policy rules will produce a large volume of violations in a codebase of this size. Many existing files use non-suffixed names for legitimate reasons. Without per-file or per-directory exemption mechanism at scale, the policy is unusable in practice. `path_overrides` can suppress by rule per directory but cannot easily express "all existing files are grandfathered; only new files need the suffix".
 
@@ -191,7 +191,7 @@ rulesets:
 
 - **Runtime noise:** A 14,600-file repo will surface many rule violations from any non-trivial policy. Steward's scoped validation (`--scope changed`) is critical here, but even the check baseline could be overwhelming. Steward currently has no "policy phased rollout" mechanism.
 
-### Verdict: **Materially Limited**
+### Verdict: **Materially Limited** (microsoft/vscode)
 
 For a repo of this shape, Steward can handle documentation governance adequately but cannot touch the primary governance concerns (layer dependencies, CODEOWNERS coverage, co-located multi-file extension contract). The policy model expresses useful but peripheral intent. The false-positive risk at scale is high without a grandfathering or phase-in mechanism.
 
@@ -199,7 +199,7 @@ For a repo of this shape, Steward can handle documentation governance adequately
 
 ## Repo 2: sphinx-doc/sphinx
 
-### Repo Overview
+### Repo Overview (sphinx-doc/sphinx)
 
 - ~774 Python files, ~471 RST docs
 - `sphinx/` package: `builders/`, `domains/`, `ext/`, `directives/`, `environment/`, `util/`, `writers/`, `transforms/`, `themes/`, `locale/`
@@ -208,7 +208,7 @@ For a repo of this shape, Steward can handle documentation governance adequately
 - `CHANGES.rst` stub, `CONTRIBUTING.rst` minimal, `CODE_OF_CONDUCT.rst` full inline, `AUTHORS.rst`
 - Changelog: per-version RST files, structured sections: Features added, Bugs fixed, Deprecations, Dependencies, Incompatible changes
 
-### Governance Intent a Maintainer Would Reasonably Want
+### Governance Intent a Maintainer Would Reasonably Want (sphinx-doc/sphinx)
 
 1. **Changelog completeness per release.** Every release version must have a corresponding `doc/changes/{version}.rst` file following the standard structure (required headings: Features added, Bugs fixed).
 2. **Extension module structure.** Built-in extensions under `sphinx/ext/` should follow consistent naming and have corresponding test roots under `tests/roots/`.
@@ -219,7 +219,7 @@ For a repo of this shape, Steward can handle documentation governance adequately
 7. **Changelog section structure.** Each release changelog file should contain the expected section headings.
 8. **RST documentation file governance.** Key doc files in `doc/development/`, `doc/internals/` should be tracked as governed artifacts.
 
-### Config/Policy Attempt
+### Config/Policy Attempt (sphinx-doc/sphinx)
 
 ```yaml
 # policy.yaml
@@ -335,7 +335,7 @@ rulesets:
         must_match: "^[a-z][a-z0-9_]*\\.py$"
 ```
 
-### What Steward Expressed Well
+### What Steward Expressed Well (sphinx-doc/sphinx)
 
 - Required governance file presence (CONTRIBUTING, CODE_OF_CONDUCT, CHANGES.rst)
 - Freshness expectations on AUTHORS and CONTRIBUTING
@@ -345,7 +345,7 @@ rulesets:
 - `path_overrides` to suppress noise in tests/ and locale/
 - `start_here` orientation for contributor entry points
 
-### What Was Awkward but Possible
+### What Was Awkward but Possible (sphinx-doc/sphinx)
 
 - **RST files as governed artifacts.** Steward governs Markdown natively. RST files are supported by discovery and path-policy (filename matching works), but `required_sections` in `artifact_families` checks Markdown headings — **RST section headings (underline-delimited) will not be recognized.** This means the `required_sections` declaration for release changelog files will silently fail to validate RST content. **Workaround: none within current config model. Governance intent is expressed but not enforced at runtime for RST files.**
 
@@ -355,7 +355,7 @@ rulesets:
 
 - **Extension ↔ test-root correspondence.** A maintainer might want to ensure that every extension `sphinx/ext/{name}.py` has a corresponding `tests/roots/test-{name}/` fixture. This cross-directory referential integrity is inexpressible.
 
-### What Was Not Credibly Expressible
+### What Was Not Credibly Expressible (sphinx-doc/sphinx)
 
 - **RST content validation.** Steward is Markdown-native. RST files can be discovered, named-checked, and declared as artifacts, but their content — headings, sections, structural completeness — cannot be validated. For a repo where RST is the primary documentation format, this is a fundamental coverage gap. The governance config accurately declares intent but Steward cannot enforce it at the content level.
 
@@ -367,13 +367,13 @@ rulesets:
 
 - **Extension ecosystem integrity.** Steward cannot validate that registered extensions in `sphinx/ext/__init__.py` have corresponding module files, or that extension names referenced in docs match actual module names.
 
-### False-Positive / False-Negative Concerns
+### False-Positive / False-Negative Concerns (sphinx-doc/sphinx)
 
 - **False positives (medium-high):** The `domain-module-naming` rule will flag `__init__.py` and `__pycache__` items unless the path pattern is precise enough. Glob precision matters greatly for Python package structures.
 - **False positives (high for RST):** If `required_sections` silently fails on RST files and no error is raised, the maintainer may believe governance is enforced when it is not. This is a silent false-negative, not a noisy false-positive — arguably worse.
 - **False negatives (high):** The RST content governance gap means Steward provides weaker validation for the most important artifact type in this repo (release changelogs in RST).
 
-### Verdict: **Workable with Friction**
+### Verdict: **Workable with Friction** (sphinx-doc/sphinx)
 
 Steward can express meaningful governance for file presence, naming conventions, and family-level classification. The RST content gap is significant for a docs-heavy RST repo but does not block the entire config. The authoring experience for the parts that work is reasonable. The gap between declared intent and enforced reality (RST sections) is a credibility risk.
 
@@ -381,7 +381,7 @@ Steward can express meaningful governance for file presence, naming conventions,
 
 ## Repo 3: psf/requests
 
-### Repo Overview
+### Repo Overview (psf/requests)
 
 - ~36 core Python files, 16 RST doc files
 - `src/requests/`: flat package — `adapters.py`, `auth.py`, `models.py`, `sessions.py`, `utils.py`, `cookies.py`, `exceptions.py`, `api.py`
@@ -391,7 +391,7 @@ Steward can express meaningful governance for file presence, naming conventions,
 - Changelog: `HISTORY.md` flat chronological, version entries with release dates and CVE references
 - Named maintainers governance: maintainer list in contributing docs
 
-### Governance Intent a Maintainer Would Reasonably Want
+### Governance Intent a Maintainer Would Reasonably Want (psf/requests)
 
 1. **HISTORY.md currency.** Every release must add a new version entry to HISTORY.md. Freshness constraint: should be updated within 90 days of last release.
 2. **Governance artifact presence.** AUTHORS.rst, LICENSE, SECURITY (or equivalent), CONTRIBUTING-equivalent (docs/dev/contributing.rst) must exist.
@@ -402,7 +402,7 @@ Steward can express meaningful governance for file presence, naming conventions,
 7. **Test naming.** `tests/test_{feature}.py` naming convention.
 8. **PSF contributor count tracking.** AUTHORS.rst completeness (named contributor list).
 
-### Config/Policy Attempt
+### Config/Policy Attempt (psf/requests)
 
 ```yaml
 # policy.yaml
@@ -507,7 +507,7 @@ rulesets:
         must_match: "^[a-z][a-z0-9_]*\\.py$"
 ```
 
-### What Steward Expressed Well
+### What Steward Expressed Well (psf/requests)
 
 - Required artifact presence: HISTORY.md, AUTHORS.rst, LICENSE, README.md, security docs
 - Freshness on HISTORY.md (90 days) and contributing/release docs (365 days)
@@ -517,7 +517,7 @@ rulesets:
 - Family-based classification of test modules and core modules
 - Required governance files with distinct importance levels
 
-### What Was Awkward but Possible
+### What Was Awkward but Possible (psf/requests)
 
 - **HISTORY.md versioned entry structure.** HISTORY.md is Markdown, so `required_sections` in a family *could* theoretically enforce that every HISTORY.md has certain heading patterns. But HISTORY.md is a single file with many versioned entries — the family concept applies at file-match granularity, not at section-within-file granularity. There is no way to declare "the top section of HISTORY.md should be a recent version entry." **Workaround: only freshness enforcement; structural validation of the changelog is not possible.**
 
@@ -529,7 +529,7 @@ rulesets:
 
 - **Vulnerability doc sections.** `docs/community/vulnerabilities.rst` is RST; section presence validation would not work. For a file this important (security disclosure process), the inability to validate its structure is a genuine gap.
 
-### What Was Not Credibly Expressible
+### What Was Not Credibly Expressible (psf/requests)
 
 - **Changelog version entry validation.** Cannot check that a new release version in HISTORY.md matches the actual version in `setup.cfg` or `pyproject.toml`. Cannot validate that the release date is present or in ISO format. Cannot validate that a CVE is properly attributed.
 
@@ -543,7 +543,7 @@ rulesets:
 
 - **Pre-commit config governance.** `.pre-commit-config.yaml` is a tooling artifact that a maintainer might want to keep fresh. It can be declared as an artifact, but Steward has no concept of "this file's content should reference packages that are not pinned to EOL versions."
 
-### False-Positive / False-Negative Concerns
+### False-Positive / False-Negative Concerns (psf/requests)
 
 - **False positives (low-medium):** For a repo this small, the policy is unlikely to produce excessive noise. The main risk is the `core-module-naming` rule flagging `__init__.py` and `__version__.py`. **Mitigation: tighten the glob pattern to exclude dunder files.**
 
@@ -551,7 +551,7 @@ rulesets:
 
 - **False negatives (medium):** No changelog entry validation means a release can happen without a HISTORY.md update — Steward will only flag staleness after 90 days, not immediately after a version bump.
 
-### Verdict: **Workable with Friction**
+### Verdict: **Workable with Friction** (psf/requests)
 
 For a small focused library, Steward's config model covers the meaningful governance surface well. The main gaps are RST content enforcement and conditional/composite policy. The authoring experience is clean and the policy reads like credible intent. This is the repo archetype where Steward fits best today.
 

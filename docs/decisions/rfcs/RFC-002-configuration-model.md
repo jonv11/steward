@@ -1,6 +1,7 @@
 ---
 type: rfc
 status: Accepted
+description: Defines the config and policy model, built-in profiles, layering rules, and precedence
 resolves: >-
   Config format, file layout, policy vs. runtime separation, profiles, layering, precedence, excludes
 ---

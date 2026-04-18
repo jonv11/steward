@@ -42,6 +42,37 @@ public class MaintenanceEngineTests
     }
 
     [Fact]
+    public void Evaluate_AutoFieldsWithoutExplicitArtifacts_SynthesizesFrontmatterMaintenance()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Governance = new GovernanceConfig
+            {
+                Frontmatter = new FrontmatterConfig
+                {
+                    AutoFields = new Dictionary<string, bool> { ["last_updated"] = true }
+                }
+            }
+        };
+
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/doc.md", "---\nlast_updated: 2026-04-01\n---\n# Doc\n");
+        var engine = new MaintenanceEngine();
+
+        var plan = engine.Evaluate(
+            policy,
+            new MaintenanceContext
+            {
+                RepositoryRoot = "/repo",
+                FileSystem = fs,
+                Files = [new DiscoveredFile("doc.md", 100, false)],
+                ChangedFiles = null
+            });
+
+        plan.Actions.Should().ContainSingle(action => action.Type == "frontmatter-auto");
+    }
+
+    [Fact]
     public void Evaluate_DispatchesToCorrectMaintainer()
     {
         var policy = new RepositoryPolicy

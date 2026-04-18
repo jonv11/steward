@@ -19,6 +19,10 @@ public sealed class IndexMaintainer : IArtifactMaintainer
 
         var matchingFiles = context.Files
             .Where(f => !f.IsDirectory && sourceGlob.IsMatch(f.RelativePath))
+            .Where(f => !string.Equals(
+                PathHelper.NormalizeSeparators(f.RelativePath),
+                PathHelper.NormalizeSeparators(config.Path),
+                StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         // Sort
@@ -48,7 +52,8 @@ public sealed class IndexMaintainer : IArtifactMaintainer
                     title = doc.Sections[0].Heading;
             }
 
-            entries.Add($"- [{title}]({PathHelper.NormalizeSeparators(file.RelativePath)})");
+            var linkPath = PathHelper.GetRelativeMarkdownPath(config.Path, file.RelativePath);
+            entries.Add($"- [{title}]({linkPath})");
         }
 
         var expectedSection = string.Join('\n', entries);

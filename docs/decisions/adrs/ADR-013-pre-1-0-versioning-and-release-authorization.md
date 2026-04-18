@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Release Governance
+description: Keeps Steward on the 0.x line until an explicit stable-release decision authorizes 1.0.0
 date: 2026-04-15
 ---
 

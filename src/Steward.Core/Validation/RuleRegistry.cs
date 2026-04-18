@@ -25,6 +25,7 @@ public static class RuleRegistry
         new OrphanedDocumentRule(),
         new RequiredSectionsRule(),
         new FamilyMinCountRule(),
-        new FamilyNamingPatternRule()
+        new FamilyNamingPatternRule(),
+        new UniqueHeadingTextRule()
     ];
 }

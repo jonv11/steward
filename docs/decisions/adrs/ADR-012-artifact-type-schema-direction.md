@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Product Architecture
+description: Defines the direction for per-type artifact schemas in policy-driven governance
 ---
 
 # ADR-012: Artifact Type Schema System Direction

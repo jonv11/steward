@@ -2,6 +2,7 @@
 type: adr
 status: Accepted
 category: Technical
+description: Defines the text and JSON output strategy, stdout or stderr contract, and color handling
 ---
 
 # ADR-006: Output Formatting Strategy

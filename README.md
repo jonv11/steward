@@ -2,7 +2,7 @@
 
 A configurable repository stewardship CLI for humans and AI agents. Steward helps maintain documentation structure, enforce governance policies, and keep repository artifacts in sync — all driven by declarative YAML configuration.
 
-Current repository baseline: **`0.14.0`**. Steward is pre-`1.0.0`: intentional public `0.x` releases are allowed when the documented release process is satisfied, but `1.0.0` remains separately gated by explicit stable-release authorization. See [Current Status](#current-status) for what works today and what is still planned.
+Current repository baseline: **`0.15.0`**. Steward is pre-`1.0.0`: intentional public `0.x` releases are allowed when the documented release process is satisfied, but `1.0.0` remains separately gated by explicit stable-release authorization. See [Current Status](#current-status) for what works today and what is still planned.
 
 ## Who Is Steward For?
 
@@ -27,7 +27,7 @@ Both roles use the same CLI binary. This README covers both paths and marks sect
 
 ## Installation
 
-### Prerequisites
+### Development Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 
@@ -49,18 +49,18 @@ dotnet run --project src/Steward.Cli -- <command>
 
 ```bash
 dotnet pack src/Steward.Cli -c Release
-dotnet tool install --global --add-source ./src/Steward.Cli/bin/Release Steward.Cli --version 0.14.0
+dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward --version 0.15.0
 ```
 
-After installing globally, run commands using:
+After installing locally with `--tool-path`, run commands using:
 
 ```bash
-steward <command>
+./.tools/steward/steward <command>
 ```
 
 ### Public feed install
 
-NuGet publication is not assumed. Use a public-feed install only when the project intentionally publishes a release package. This repository does not treat public publication as an already-completed fact.
+NuGet publication is intentional and tag-driven. Tagged releases publish the `Steward` .NET tool package to nuget.org from GitHub Actions, but docs in the repo should still avoid implying a package exists before a given release has actually published successfully.
 
 ### GitHub Releases
 
@@ -147,6 +147,7 @@ After editing policy, re-run `config validate`, `config doctor`, and `check` to 
 | Required sections per family | `required_sections` on artifact families in policy.yaml | STWD-014 |
 | Minimum file count per family | `directory_expectations.min_count` on artifact families in policy.yaml | STWD-015 |
 | Naming pattern per family | `naming_pattern` on artifact families in policy.yaml | STWD-016 |
+| Unique Markdown heading text | Automatically enforced on Markdown files after anchor-style normalization | STWD-017 |
 
 ## Getting Started — Contributor
 
@@ -236,7 +237,7 @@ A clean check returns exit code `0` and reports no errors. In CI, the same `stew
 | `steward refs <path>` | Show inbound and outbound Markdown references for a file (`--to`, `--from`) |
 | `steward refactor move <old> <new>` | Move/rename a file and update all Markdown references (`--preview`, `--apply`) |
 | `steward md outline <file>` | Show Markdown heading hierarchy with line counts |
-| `steward md query <file> <selector>` | Extract content using an MdPath selector (`--pattern` for batch) |
+| `steward md query <file> <selector>` | Extract content using an MdPath selector or Markdown anchor slug such as `#who-is-steward-for` (`--pattern` for batch) |
 | `steward md edit <operation> <file>` | Structural Markdown editing (sections, frontmatter, blocks) |
 | `steward config show [--effective]` | Print raw config files and (with `--effective`) the resolved runtime defaults plus merged policy |
 | `steward config validate` | Check .steward/ YAML files for syntax and field errors |
@@ -272,6 +273,7 @@ A clean check returns exit code `0` and reports no errors. In CI, the same `stew
 | STWD-014 | warning | structure | Files in an artifact family must contain all required section headings |
 | STWD-015 | warning | family-completeness | Artifact families with `min_count` must meet the declared minimum |
 | STWD-016 | warning | naming | Files matched by an artifact family must satisfy the family's `naming_pattern` |
+| STWD-017 | warning | structure | Heading text must be unique within a Markdown file after anchor-style normalization |
 
 Use `steward explain <rule-id>` for detailed guidance on any rule. Run `steward explain` (no argument) to list all rules with their current severity and description.
 
@@ -358,7 +360,7 @@ governance:
   frontmatter:
     required_fields: [status, owner]    # Fields all governed Markdown files must declare
     auto_fields:
-      updated_at: true                  # Auto-populate updated_at on steward maintain --apply
+      updated_at: true                  # Update existing updated_at fields to today's date on locally changed Markdown files
 
 validation:
   disabled_rules: [STWD-004]           # Suppress rules globally
@@ -386,11 +388,15 @@ maintenance:
     - id: docs-index
       path: docs/index.md
       type: directory-index             # Auto-generates an index of a directory
-      source: docs/
-      sort: title
+      source: "docs/*.md"
+      sort: filename
 ```
 
 Supported maintenance types: `structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`.
+
+`directory-index` maintenance requires each indexed Markdown file to declare a non-empty `description` field in frontmatter so generated tables stay reviewable without hand-authored summaries.
+
+`governance.frontmatter.auto_fields.<field>: true` is shorthand for maintaining that existing frontmatter field with today's date when the file is reported as locally changed by `git diff --name-only HEAD`. Steward updates existing fields only; it does not create new date fields implicitly.
 
 ### path-policy.yaml — Path and naming rules
 
@@ -508,15 +514,15 @@ This was a known defect resolved in v0.11.0. If you see false positives for STWD
 
 ## Current Status
 
-Steward is at `v0.14.0` on a pre-`1.0.0` release line. Intentional public `0.x` releases are allowed when the repo is ready and the release process is followed. The version `1.0.0` still requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) and has not been scheduled.
+Steward is at `v0.15.0` on a pre-`1.0.0` release line. Intentional public `0.x` releases are allowed when the repo is ready and the release process is followed. The version `1.0.0` still requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) and has not been scheduled.
 
-**What works today:** All 16 validation rules, all commands listed above, three built-in profiles, artifact family classification, deterministic maintenance, Markdown structural editing, and JSON output for automation.
+**What works today:** All 17 validation rules, all commands listed above, three built-in profiles, artifact family classification, deterministic maintenance, Markdown structural editing, and JSON output for automation.
 
 **Release operations today:** The repo has a changelog-backed, tag-driven GitHub Release workflow and repo-managed release-intent labels for pre-`1.0.0` releases. See [docs/planning/release-process.md](docs/planning/release-process.md).
 
 **Remaining before first stable release:** Cross-platform CI and release-workflow green evidence from GitHub-hosted runs. See [implementation status](docs/implementation-status.md) for the full picture.
 
-**Planned for later pre-1.0 milestones:** Heading selector fuzzy matching in MdPath, JSON output envelope consistency, workflow/session modeling. See [pre-1.0 readiness plan](docs/planning/pre-1-0-readiness-plan.md) for the categorized list.
+**Planned for later pre-1.0 milestones:** Heading selector fuzzy matching in MdPath, workflow/session modeling, and broader machine-contract hardening. See [pre-1.0 readiness plan](docs/planning/pre-1-0-readiness-plan.md) for the categorized list.
 
 ## Using Steward In This Repo
 

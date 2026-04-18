@@ -1,6 +1,7 @@
 ---
 type: rfc
 status: Accepted
+description: Defines the boundaries and overlap rules for orient, outline, and search surfaces
 resolves: >-
   How orient, outline, and search relate; what each surface owns; overlap management
 ---

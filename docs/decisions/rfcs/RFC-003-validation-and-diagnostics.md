@@ -1,6 +1,7 @@
 ---
 type: rfc
 status: Accepted
+description: Defines repository validation behavior, diagnostic structure, severities, remediation, and scoping
 resolves: >-
   Check behavior, diagnostic schema, severity model, exit codes, remediation, scoping, dry-run
 ---
