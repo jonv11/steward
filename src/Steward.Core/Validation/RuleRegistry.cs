@@ -26,6 +26,7 @@ public static class RuleRegistry
         new RequiredSectionsRule(),
         new FamilyMinCountRule(),
         new FamilyNamingPatternRule(),
-        new UniqueHeadingTextRule()
+        new UniqueHeadingTextRule(),
+        new BrokenFragmentAnchorRule()
     ];
 }

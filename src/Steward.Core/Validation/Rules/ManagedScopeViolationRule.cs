@@ -3,17 +3,19 @@ using Steward.Core.Markdown;
 namespace Steward.Core.Validation.Rules;
 
 /// <summary>
-/// STWD-006: Detects content modifications inside managed/generated regions
-/// that should only be edited by their declared owner.
-/// Checks for structural anomalies: headings inside managed regions that
-/// were not placed there by the declared owner.
+/// STWD-006: Detects structural anomalies in managed regions — specifically,
+/// regions whose begin/end markers are present but contain no content.
+/// An empty managed region usually means 'steward maintain --apply' has not
+/// been run since the region was declared, or that the maintenance source
+/// produced no output. This is a proxy signal; STWD-007 detects stale content
+/// once a region has been populated.
 /// </summary>
 public sealed class ManagedScopeViolationRule : IValidationRule
 {
     public string RuleId => "STWD-006";
-    public string Category => "ownership";
+    public string Category => "managed-region";
     public DiagnosticSeverity DefaultSeverity => DiagnosticSeverity.Warning;
-    public string Description => "Content in managed regions must only be modified by the declared owner.";
+    public string Description => "Managed regions should not be empty. An empty managed region indicates 'steward maintain --apply' has not been run.";
 
     public Task<IReadOnlyList<Diagnostic>> EvaluateAsync(ValidationContext context)
     {
@@ -35,7 +37,8 @@ public sealed class ManagedScopeViolationRule : IValidationRule
             {
                 if (region.Owner == null) continue;
 
-                // Check for empty managed regions (markers exist but no content between them)
+                // An empty managed region (markers present but no content) is a structural anomaly.
+                // STWD-007 handles stale content in populated regions.
                 if (region.Range.End - region.Range.Start <= 1)
                 {
                     diagnostics.Add(new Diagnostic(
@@ -44,50 +47,15 @@ public sealed class ManagedScopeViolationRule : IValidationRule
                         Category: Category,
                         Path: file.RelativePath,
                         Line: region.Range.Start,
-                        Message: $"Managed region '{region.Id}' (owner: '{region.Owner}') is empty.",
-                        Remediation: $"Run 'steward maintain' to regenerate content for this region.",
+                        Message: $"Managed region '{region.Id}' in '{file.RelativePath}' (owner: '{region.Owner}') is empty. " +
+                                 $"Run 'steward maintain --apply' to populate it.",
+                        Remediation: "Run 'steward maintain --apply' to generate content for this region, " +
+                                     "or remove the managed region markers if the region is no longer needed.",
                         Source: file.RelativePath));
-                    continue;
-                }
-
-                // Check for headings inside steward-owned managed regions
-                // These indicate manual insertion into a machine-managed section
-                if (string.Equals(region.Owner, "steward", StringComparison.OrdinalIgnoreCase))
-                {
-                    foreach (var section in FlattenSections(doc.Sections))
-                    {
-                        if (section.Range.Start > region.Range.Start &&
-                            section.Range.Start < region.Range.End)
-                        {
-                            diagnostics.Add(new Diagnostic(
-                                RuleId: RuleId,
-                                Severity: DefaultSeverity,
-                                Category: Category,
-                                Path: file.RelativePath,
-                                Line: section.Range.Start,
-                                Message: $"Heading '{section.Heading}' inside managed region '{region.Id}' " +
-                                         $"(owner: '{region.Owner}') may have been manually inserted.",
-                                Remediation: "Avoid manually editing content inside steward-managed regions. " +
-                                             "Run 'steward maintain --apply' to regenerate.",
-                                Source: file.RelativePath));
-                        }
-                    }
                 }
             }
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
-    }
-
-    private static IEnumerable<Section> FlattenSections(IReadOnlyList<Section> sections)
-    {
-        foreach (var section in sections)
-        {
-            yield return section;
-            foreach (var child in FlattenSections(section.Children))
-            {
-                yield return child;
-            }
-        }
     }
 }

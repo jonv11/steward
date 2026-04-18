@@ -159,23 +159,24 @@ public static class ExplainCommand
     {
         return ruleId switch
         {
-            "STWD-001" => "Add the required artifact file to the repository, or mark it as optional in policy.yaml.",
-            "STWD-002" => "Remove or rename the file/directory matching the forbidden path pattern.",
-            "STWD-003" => "Add the missing frontmatter field to the Markdown file's YAML header.",
-            "STWD-004" => "Break the large section into smaller subsections to improve readability.",
-            "STWD-005" => "Ensure managed regions have matching begin/end markers with valid id and owner attributes.",
-            "STWD-006" => "Do not manually edit content within managed regions. Use 'steward maintain --apply' to update.",
-            "STWD-007" => "Run 'steward maintain --apply' to synchronize maintained artifacts.",
-            "STWD-008" => "Fix the broken link target or remove the link. Verify the referenced file exists.",
-            "STWD-009" => "Create the artifact, remove it from policy.yaml, or mark it as required if it is mandatory.",
-            "STWD-010" => "Rename the file to match the naming convention declared in path-policy.yaml.",
-            "STWD-011" => "Add a link to the missing file in the index artifact, or move the file outside the indexed directory.",
-            "STWD-012" => "Update the document and set the 'last_updated' frontmatter field to the current date.",
-            "STWD-013" => "Link to this file from an index or navigation document, or add 'standalone: true' to its frontmatter.",
+            "STWD-001" => "Create the required artifact file in the repository at the declared path, or mark it as optional in policy.yaml if it is not mandatory.",
+            "STWD-002" => "Remove or rename the file/directory matching the forbidden path pattern. Check the matched pattern's description in path-policy.yaml for the reason it is forbidden.",
+            "STWD-003" => "Add the missing frontmatter field to the Markdown file's YAML header. Use 'steward check --fix' to insert a placeholder value automatically.",
+            "STWD-004" => "Split the large section into smaller subsections. The section's heading depth and line count are shown in the diagnostic to guide splitting. Alternatively, add a path override in policy.yaml to suppress for generated content.",
+            "STWD-005" => "Ensure managed regions have matching begin/end markers with valid id and owner attributes. Every '<!-- steward:begin id=\"...\" owner=\"...\" -->' must be followed by a '<!-- steward:end -->'.",
+            "STWD-006" => "Run 'steward maintain --apply' to populate the empty managed region with generated content, or remove the managed region markers if the region is no longer needed.",
+            "STWD-007" => "Run 'steward maintain --apply' or 'steward check --fix' to synchronize stale maintained artifacts with their current expected output.",
+            "STWD-008" => "Fix or remove the broken internal link. Verify the referenced file exists. In scoped mode, links to unchanged files are validated against the full repository file set.",
+            "STWD-009" => "Create the artifact at the declared path, remove it from policy.yaml, or update the path. Required artifacts that are missing are reported as errors by STWD-001. Optional artifact paths are checked at Info severity.",
+            "STWD-010" => "Rename the file to match the naming convention (must_match regex) declared in path-policy.yaml. If a regex is invalid, fix it in path-policy.yaml — invalid patterns produce a warning diagnostic.",
+            "STWD-011" => "Add a link to the missing file in the index artifact, or move the file outside the indexed directory. Index completeness is checked against all discovered files, not just scoped files.",
+            "STWD-012" => "Review and update the document to reflect current state, then set 'last_updated: YYYY-MM-DD' in frontmatter. To update the timestamp only, run 'steward check --fix'.",
+            "STWD-013" => "Link to this file from an index or navigation document, or add 'standalone: true' to its frontmatter to suppress the orphan check.",
             "STWD-014" => "Add the missing heading section to the document as declared in the artifact family's required_sections.",
-            "STWD-015" => "Add more files matching the artifact family pattern to meet the declared minimum count.",
-            "STWD-016" => "Rename the file to satisfy the naming_pattern regex declared for its artifact family.",
+            "STWD-015" => "Add more files matching the artifact family's path pattern to meet the declared minimum count.",
+            "STWD-016" => "Rename the file to satisfy the naming_pattern regex declared for its artifact family. If a regex is invalid, fix it in policy.yaml — invalid patterns produce a warning diagnostic.",
             "STWD-017" => "Rename duplicate headings so each normalized Markdown anchor slug is unique within the file.",
+            "STWD-018" => "Verify the heading exists in the target file or update the fragment anchor. Anchors are lower-cased with spaces and punctuation replaced by hyphens. Rename the heading in the target or fix the link's fragment.",
             _ => "No specific remediation guidance available."
         };
     }
@@ -491,10 +492,11 @@ public static class ExplainCommand
                 "STWD-011" => isIndex,                          // index-completeness: index artifacts
                 "STWD-012" => isArtifact && hasFreshness,       // freshness: artifacts with freshness config
                 "STWD-013" => isMarkdown,                       // orphaned-document: md files
-                "STWD-014" => matchedFamily != null,            // family-naming-pattern: family members only
+                "STWD-014" => matchedFamily != null,            // required-sections: family members only
                 "STWD-015" => matchedFamily != null,            // family-min-count: family members only
-                "STWD-016" => matchedFamily != null,            // required-sections: family members only
+                "STWD-016" => matchedFamily != null,            // family-naming-pattern: family members only
                 "STWD-017" => isMarkdown,                       // unique-heading-text: md files
+                "STWD-018" => isMarkdown,                       // broken-fragment-anchor: md files
                 _ => true
             })
             .Select(r => r.RuleId)

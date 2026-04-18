@@ -59,8 +59,9 @@ public sealed class SectionSizeRule : IValidationRule
                     Category: Category,
                     Path: filePath,
                     Line: section.Range.Start,
-                    Message: $"Section '{section.Heading}' has {section.LineCount} lines (threshold: {threshold}).",
-                    Remediation: "Consider splitting this section into smaller subsections.",
+                    Message: $"Section '{section.Heading}' has {section.LineCount} lines at heading level {section.Level} (threshold: {threshold}).",
+                    Remediation: $"Split the level-{section.Level} section '{section.Heading}' into smaller subsections " +
+                                 $"of ~{threshold / 3}-{threshold / 2} lines each, or suppress with a path override in policy.yaml.",
                     Source: "policy.yaml"));
             }
 

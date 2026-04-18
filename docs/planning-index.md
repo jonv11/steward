@@ -51,6 +51,7 @@ Central navigation for the active product, planning, readiness, and decision art
 | -------- | ------- |
 | [AI-Agent Contract Review](reviews/ai-agent-contract-review.md) | Deep contract audit of Steward's JSON outputs, diagnostics, selectors, error handling, and mutation flows for autonomous agent use |
 | [Config Expressiveness Stress Test — 2026-04-18](reviews/config-expressiveness-stress-test.md) | Multi-repo adoption stress test of Steward's policy/config model: what expresses well, what is awkward, and what is not credibly expressible |
+| [Rule-System Completeness Audit](reviews/rule-system-completeness-audit.md) | Systematic per-rule and system-wide review of all 17 validation rules: intent clarity, diagnostic quality, remediation quality, false-positive/negative risks, coverage gaps, and prioritized governance improvements |
 
 ## Reviews And Audit Evidence
 

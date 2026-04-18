@@ -31,6 +31,7 @@ public sealed class BrokenArtifactReferenceRule : IValidationRule
         {
             var path = artifact.Path!.TrimEnd('/');
             var isDir = artifact.Path.EndsWith('/');
+            var importance = artifact.ResolveImportance();
 
             bool found;
             if (isDir)
@@ -43,20 +44,33 @@ public sealed class BrokenArtifactReferenceRule : IValidationRule
                 found = existingPaths.Contains(path);
             }
 
-            // Required artifacts are already reported by STWD-001 as errors.
-            // Use the same resolved importance as STWD-001 to avoid double-reporting.
-            if (!found && artifact.ResolveImportance() != "required")
-            {
-                diagnostics.Add(new Diagnostic(
-                    RuleId: RuleId,
-                    Severity: DefaultSeverity,
-                    Category: Category,
-                    Path: artifact.Path,
-                    Line: null,
-                    Message: $"Policy artifact '{artifact.Path}' (role: {artifact.Role ?? "unspecified"}) does not exist.",
-                    Remediation: "Create the artifact, remove it from policy.yaml, or mark it as required if it is mandatory.",
-                    Source: "policy.yaml"));
-            }
+            if (found) continue;
+
+            // Required artifacts are reported as errors by STWD-001 — skip them here.
+            if (importance == "required") continue;
+
+            var roleLabel = !string.IsNullOrWhiteSpace(artifact.Role)
+                ? $" (role: {artifact.Role})" : "";
+            var descriptionLabel = !string.IsNullOrWhiteSpace(artifact.Description)
+                ? $" — {artifact.Description}" : "";
+
+            // Optional artifacts that are missing get Info severity (silent previously).
+            // Recommended artifacts get Warning severity (same as before).
+            var severity = importance == "optional" ? DiagnosticSeverity.Info : DefaultSeverity;
+
+            var importanceNote = importance == "optional"
+                ? " This is an optional artifact; consider removing it from policy.yaml if it is no longer needed."
+                : " Required artifacts that are missing are reported as errors by STWD-001.";
+
+            diagnostics.Add(new Diagnostic(
+                RuleId: RuleId,
+                Severity: severity,
+                Category: Category,
+                Path: artifact.Path,
+                Line: null,
+                Message: $"Policy artifact '{artifact.Path}'{roleLabel} does not exist.{descriptionLabel}",
+                Remediation: $"Create the artifact, remove it from policy.yaml, or update the path.{importanceNote}",
+                Source: "policy.yaml"));
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);

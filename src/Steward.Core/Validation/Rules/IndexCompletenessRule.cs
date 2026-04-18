@@ -48,7 +48,10 @@ public sealed class IndexCompletenessRule : IValidationRule
                     linkedPaths.Add(resolved);
             }
 
-            var filesInScope = context.TargetFiles
+            // Use AllDiscoveredFiles so scoped runs (--scope changed/staged) don't
+            // miss files outside the scope when checking index completeness.
+            var allFiles = context.AllDiscoveredFiles ?? context.TargetFiles;
+            var filesInScope = allFiles
                 .Where(f => PathHelper.NormalizeSeparators(f.RelativePath).StartsWith(sourceDir, StringComparison.OrdinalIgnoreCase))
                 .Where(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
                 .Where(f => !PathHelper.NormalizeSeparators(f.RelativePath).Equals(indexPath, StringComparison.OrdinalIgnoreCase))

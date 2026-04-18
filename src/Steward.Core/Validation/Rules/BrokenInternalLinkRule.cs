@@ -20,8 +20,12 @@ public sealed class BrokenInternalLinkRule : IValidationRule
     public Task<IReadOnlyList<Diagnostic>> EvaluateAsync(ValidationContext context)
     {
         var diagnostics = new List<Diagnostic>();
+
+        // Use AllDiscoveredFiles for the existence set so that scoped runs
+        // (--scope changed/staged) do not report links to unchanged files as broken.
+        var allFiles = context.AllDiscoveredFiles ?? context.TargetFiles;
         var existingPaths = new HashSet<string>(
-            context.TargetFiles.Select(f => PathHelper.NormalizeSeparators(f.RelativePath)),
+            allFiles.Select(f => PathHelper.NormalizeSeparators(f.RelativePath)),
             StringComparer.OrdinalIgnoreCase);
 
         foreach (var file in context.TargetFiles)

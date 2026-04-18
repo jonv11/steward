@@ -870,3 +870,72 @@ Ordered by impact on release confidence and user trust. Each item is scoped as a
 **Fix:** During `check`, report any artifact paths that appear more than once in `artifacts[]`.  
 **Impact:** Low-frequency but high-confusion issue. Simple rule with no false-positive risk.  
 **Scope:** New rule. Trivially implemented as a HashSet deduplication check.
+
+---
+
+## Implementation Follow-Up (2026-04-18)
+
+All actionable items from this audit were implemented in a single session. Summary of work done, deviations, and deferred items.
+
+### Implemented
+
+#### A — Core rule correctness fixes
+
+- **STWD-006 narrowed (A1):** Removed the heading-inside-managed-region check entirely. The audit recommended splitting or narrowing; the heading check was removed outright due to high false-positive risk (generated content includes headings). Rule now detects empty managed regions only. Description updated to match. Category changed from `ownership` to `managed-region`.
+- **STWD-008 scoped fix (A2):** Fixed `existingPaths` to use `AllDiscoveredFiles ?? TargetFiles`. One-line change. Confirmed by test.
+- **STWD-011 scoped fix (A3):** Fixed `filesInScope` to use `AllDiscoveredFiles ?? TargetFiles` filtered to `sourceDir`. Same pattern as STWD-008.
+- **STWD-012 IFixableRule (A4):** Implemented `ComputeFixesAsync` using `FrontmatterEditor.SetField`. Message now includes artifact path and role: `"Artifact 'PATH' (role: ROLE) is X days old (max: Y days)."` Remediation includes today's date hint and future-date detection added as a new Warning.
+- **STWD-003 IFixableRule (A5):** Implemented `ComputeFixesAsync` using `FrontmatterEditor.SetFields`. Groups missing fields by file, inserts placeholders.
+
+#### B — Diagnostic/remediation quality
+
+- **STWD-001 (B1):** Message now includes `(role: ROLE)` and artifact description when set.
+- **STWD-002 (B2):** Remediation now includes "Reason: [description]" from `PathRule.Description` or `PathRuleSet.Description` when available.
+- **STWD-004 (B3):** Message includes heading level and threshold. Remediation suggests subsection sizes and path override mechanism.
+- **STWD-007 (B4):** Message includes artifact type and description. `Details` dict includes `artifactId`.
+- **STWD-009 (B5):** Optional (non-required, non-recommended) artifacts now checked at `Info` severity. Message includes role and description labels without "unspecified" noise. Misleading "mark as required" option removed from remediation.
+- **STWD-010/016 (B6):** Invalid regex patterns now emit a `Warning` diagnostic with category `config-error` at runtime instead of silently skipping. `RegexMatchTimeoutException` also caught and reported.
+
+#### C — Config validate and doctor integrity
+
+- **Duplicate artifact paths (C1):** `ConfigLoader.ValidatePolicy` now detects duplicate artifact `path` values (case-insensitive) and throws `StewardConfigException`. Pre-empts runtime confusion from overlapping policy entries.
+- **Config doctor checks (C2):** Three new advisory checks added to `RunDoctor`:
+  - `dead-index-of-directory` — `index_of` dirs with no discovered files
+  - `artifact-excluded-by-discovery` — artifacts whose paths match a `discovery.exclude` glob
+  - `conflicting-allowed-values` — different `allowed_values` for the same field between a family definition and a frontmatter requirement with overlapping path coverage
+
+#### D — STWD-018: BrokenFragmentAnchorRule (new rule)
+
+New rule added at `STWD-018`. Checks that `#fragment` anchors in internal Markdown links resolve to a heading that actually exists in the target file. Uses `MarkdownHeadings.ToAnchorSlug()` for GitHub-compatible slug normalization. Fragment-only links (`#heading`) check the current file. Uses `AllDiscoveredFiles ?? TargetFiles` for existence set. STWD-008 handles file existence; STWD-018 handles fragment validity within files that exist. Registered in `RuleRegistry` (18 rules total). `ExplainCommand` updated with remediation entry.
+
+#### E — ExplainCommand drift repair
+
+All 17 existing `GetRemediation` entries updated with more specific/actionable text. STWD-018 entry added. Applicable-rules filter for `explain` updated with STWD-018. Comment labels for STWD-014/015/016 corrected (were misattributed).
+
+#### F — Tests
+
+New test files created: `ManagedScopeViolationRuleTests.cs` (7 tests), `BrokenFragmentAnchorRuleTests.cs` (12 tests), `FreshnessRuleFixTests.cs` (8 tests), `ConfigIntegrityTests.cs` (3 tests). `ExplainRemediationConsistencyTests.cs` (7 tests, in `Steward.Cli.Tests`). Existing test files updated: `BrokenInternalLinkRuleTests.cs` (2 scoped-mode tests), `RuleRegistryTests.cs` (count 17→18, STWD-018 type check), `FamilyNamingPatternRuleTests.cs` (invalid-regex test updated to expect config-error Warning), `BrokenArtifactReferenceRuleTests.cs` (optional artifact severity updated to `Info`), snapshot `CliSnapshotTests.CheckJson_IsStable.verified.txt` (STWD-001 message includes role). Final test result: 703/703 passing.
+
+### Deviations from Audit Recommendations
+
+- **STWD-005 IFixableRule** (unclosed managed region → append end-marker): Not implemented. Risk of placing the marker in the wrong location without content analysis. Deferred to post-1.0.
+- **STWD-006 heading check removal vs. split**: Audit recommended "split into two rules or remove heading check." Chose removal without split — the empty-region check stands as STWD-006. A future `ManualHeadingInManagedRegionRule` (if needed) should be separate.
+- **STWD-009 severity**: Changed optional artifact check from Warning → Info (not documented in audit). Rationale: optional artifacts are advisory; Info is the appropriate severity for "here is something that might be wrong but is expected to be absent."
+- **STWD-015 frontmatter-family count bug**: Not fixed in this pass. The fix requires reading frontmatter during family counting, which adds per-file parse cost. Deferred to a dedicated performance-aware fix.
+- **ValidMaintenanceDependsOnRule (P1)**: Not implemented. Requires `maintenance.yaml` schema access during validation. Deferred — not currently a user-facing pain point.
+- **EmptyFamilyRule (P3)**: Not implemented. Deferred as low-urgency.
+- **ValidArtifactRoleRule (P4)**: Not implemented. Deferred.
+- **ValidIndexOfReferenceRule (P5)**: Partially addressed by the new `dead-index-of-directory` doctor check. A runtime rule was not added.
+
+### Remaining Open Items
+
+| Item | Audit ref | Priority | Notes |
+| --- | --- | --- | --- |
+| STWD-015 frontmatter-count bug | Section: STWD-015 | High | Needs performance-safe frontmatter counting |
+| ValidMaintenanceDependsOnRule | Gap 1, P1 | Medium | Requires maintenance config schema access |
+| EmptyFamilyRule | Gap 3, P3 | Low | Complement to STWD-015; not blocking |
+| ValidArtifactRoleRule | Gap 6, P4 | Low | Role vocabulary is small and stable |
+| STWD-006 heading check (future) | Section: STWD-006 | Low | Only valuable with git-history integration |
+| STWD-005 IFixableRule | Remediation section | Low | Placement heuristic needed |
+| STWD-013 self-link false negative | Section: STWD-013 | Low | Edge case, Info severity |
+| Config-level validation in check path | Gap 5 | Low | Config validate is a separate flow by design |

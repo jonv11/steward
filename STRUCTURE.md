@@ -73,7 +73,8 @@
 │   └── reviews/
 │       ├── ai-agent-contract-review.md
 │       ├── config-expressiveness-stress-test.md
-│       └── review-synthesis-action-plan.md
+│       ├── review-synthesis-action-plan.md
+│       └── rule-system-completeness-audit.md
 ├── dgitstewarddocsreviews
 ├── README.md
 ├── repository-steward-master-requirements.md

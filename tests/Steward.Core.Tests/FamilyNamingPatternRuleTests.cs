@@ -126,8 +126,12 @@ public class FamilyNamingPatternRuleTests
         var rule = new FamilyNamingPatternRule();
         var diagnostics = await rule.EvaluateAsync(context);
 
-        // Invalid pattern is silently skipped — config validate catches it
-        diagnostics.Should().BeEmpty();
+        // Invalid pattern emits a config-error warning instead of silently skipping.
+        diagnostics.Should().HaveCount(1);
+        diagnostics[0].RuleId.Should().Be("STWD-016");
+        diagnostics[0].Category.Should().Be("config-error");
+        diagnostics[0].Severity.Should().Be(DiagnosticSeverity.Warning);
+        diagnostics[0].Message.Should().Contain("[invalid(regex");
     }
 
     [Fact]

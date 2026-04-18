@@ -141,6 +141,22 @@ public sealed class ConfigLoader
             StringComparer.OrdinalIgnoreCase);
         var maintenanceArtifactIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        // Check for duplicate artifact paths (case-insensitive) before per-artifact validation.
+        var seenArtifactPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var artifact in policy.Artifacts ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(artifact.Path))
+            {
+                var normalizedPath = artifact.Path.TrimEnd('/').Replace('\\', '/');
+                if (!seenArtifactPaths.Add(normalizedPath))
+                {
+                    throw new StewardConfigException(
+                        $"Duplicate artifact path '{artifact.Path}' declared in '{path}'. Each artifact path must be unique.",
+                        path);
+                }
+            }
+        }
+
         foreach (var artifact in policy.Artifacts ?? [])
         {
             if (!string.IsNullOrWhiteSpace(artifact.Importance) &&

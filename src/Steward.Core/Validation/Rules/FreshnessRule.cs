@@ -5,12 +5,12 @@ using Steward.Core.Markdown;
 namespace Steward.Core.Validation.Rules;
 
 /// <summary>
-/// STWD-012: Checks that artifacts with freshness declarations have been
-/// modified within the declared max_age_days window.
-/// Uses filesystem last-write time as the primary source, with optional
-/// frontmatter 'last_updated' override.
+/// STWD-012: State documents with freshness declarations should be updated
+/// within the declared max_age_days window.
+/// Prefers the 'last_updated' frontmatter field over filesystem mtime.
+/// Implements IFixableRule to update 'last_updated' to today's date.
 /// </summary>
-public sealed class FreshnessRule : IValidationRule
+public sealed class FreshnessRule : IValidationRule, IFixableRule
 {
     public string RuleId => "STWD-012";
     public string Category => "freshness";
@@ -35,7 +35,6 @@ public sealed class FreshnessRule : IValidationRule
             }
             else
             {
-                // Fall back to role-linked default freshness
                 var roleDefault = Configuration.RoleDefaults.GetDefaultFreshnessDays(artifact.Role);
                 if (roleDefault is null or <= 0)
                     continue;
@@ -51,13 +50,29 @@ public sealed class FreshnessRule : IValidationRule
             if (!context.FileSystem.FileExists(fullPath))
                 continue;
 
-            // Try frontmatter 'last_updated' override first
+            // Prefer frontmatter 'last_updated' over filesystem mtime
             DateTime? lastModified = FrontmatterEditor.TryGetLastUpdatedDate(context.FileSystem, fullPath);
-
-            // Fall back to filesystem timestamp
             lastModified ??= context.FileSystem.GetLastWriteTimeUtc(fullPath);
 
             var age = now - lastModified.Value;
+
+            // Warn if last_updated is set to a future date — it will never trigger freshness
+            if (lastModified.Value > now.AddDays(1))
+            {
+                var futureDateStr = lastModified.Value.ToString("yyyy-MM-dd");
+                diagnostics.Add(new Diagnostic(
+                    RuleId,
+                    DiagnosticSeverity.Warning,
+                    Category,
+                    artifactPath,
+                    null,
+                    $"Artifact '{artifact.Path}'{RoleLabel(artifact.Role)} has 'last_updated' set to a future date ({futureDateStr}). " +
+                    $"This will prevent freshness checks from ever triggering.",
+                    "Correct the 'last_updated' frontmatter field to the actual last-updated date (YYYY-MM-DD).",
+                    null));
+                continue;
+            }
+
             if (age.TotalDays > maxAgeDays)
             {
                 diagnostics.Add(new Diagnostic(
@@ -66,12 +81,52 @@ public sealed class FreshnessRule : IValidationRule
                     Category,
                     artifactPath,
                     null,
-                    $"File is {(int)age.TotalDays} days old (max: {maxAgeDays} days).",
-                    $"Update the document content and its 'last_updated' frontmatter field.",
+                    $"Artifact '{artifact.Path}'{RoleLabel(artifact.Role)} is {(int)age.TotalDays} days old (max: {maxAgeDays} days).",
+                    $"Review and update the document to reflect current state, then set " +
+                    $"'last_updated: {now:yyyy-MM-dd}' in frontmatter. " +
+                    $"To update the timestamp only, run 'steward check --fix'.",
                     null));
             }
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
     }
+
+    public async Task<IReadOnlyList<Fix>> ComputeFixesAsync(ValidationContext context)
+    {
+        // Evaluate to find stale artifacts, then produce a fix for each that updates last_updated.
+        var diagnostics = await EvaluateAsync(context);
+        var fixes = new List<Fix>();
+        var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+
+        foreach (var diag in diagnostics)
+        {
+            // Only fix the staleness diagnostic, not the future-date warning
+            if (diag.Path == null || diag.Message.Contains("future date"))
+                continue;
+
+            var fullPath = Path.Combine(context.RepositoryRoot, diag.Path);
+            if (!context.FileSystem.FileExists(fullPath))
+                continue;
+
+            var content = context.FileSystem.ReadAllText(fullPath);
+            var doc = context.DocumentCache?.GetOrParse(diag.Path)
+                ?? MarkdownParser.Parse(diag.Path, content);
+
+            var result = FrontmatterEditor.SetField(doc, "last_updated", today);
+            if (result.HasChanges)
+            {
+                fixes.Add(new Fix(
+                    RuleId,
+                    diag.Path,
+                    $"Update 'last_updated' to {today} in '{diag.Path}'.",
+                    result.NewContent));
+            }
+        }
+
+        return fixes;
+    }
+
+    private static string RoleLabel(string? role) =>
+        string.IsNullOrWhiteSpace(role) ? "" : $" (role: {role})";
 }

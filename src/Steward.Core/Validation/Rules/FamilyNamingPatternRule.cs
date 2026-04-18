@@ -6,6 +6,8 @@ namespace Steward.Core.Validation.Rules;
 /// <summary>
 /// STWD-016: Enforces <c>naming_pattern</c> regex declared on artifact families.
 /// The regex is matched against the filename (not the full path). Case-insensitive.
+/// Emits a Warning diagnostic when a naming_pattern regex is invalid so the user
+/// knows enforcement is silently disabled for that family.
 /// </summary>
 public sealed class FamilyNamingPatternRule : IValidationRule
 {
@@ -22,7 +24,7 @@ public sealed class FamilyNamingPatternRule : IValidationRule
         if (families == null || families.Count == 0)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
 
-        var compiled = CompileFamilies(families);
+        var compiled = CompileFamilies(families, diagnostics);
         if (compiled.Count == 0)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
 
@@ -41,7 +43,26 @@ public sealed class FamilyNamingPatternRule : IValidationRule
             if (rule == null) continue;
 
             var fileName = Path.GetFileName(file.RelativePath);
-            if (!rule.Pattern.IsMatch(fileName))
+            bool isMatch;
+            try
+            {
+                isMatch = rule.Pattern.IsMatch(fileName);
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                diagnostics.Add(new Diagnostic(
+                    RuleId,
+                    DiagnosticSeverity.Warning,
+                    "config-error",
+                    file.RelativePath,
+                    null,
+                    $"Family naming_pattern regex '{rule.RawPattern}' timed out evaluating '{fileName}'. This may indicate catastrophic backtracking.",
+                    "Simplify the naming_pattern regex in policy.yaml to avoid excessive backtracking.",
+                    "policy.yaml"));
+                continue;
+            }
+
+            if (!isMatch)
             {
                 diagnostics.Add(new Diagnostic(
                     RuleId,
@@ -59,7 +80,7 @@ public sealed class FamilyNamingPatternRule : IValidationRule
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
     }
 
-    private static List<CompiledFamilyNaming> CompileFamilies(IReadOnlyList<ArtifactFamilyDefinition> families)
+    private static List<CompiledFamilyNaming> CompileFamilies(IReadOnlyList<ArtifactFamilyDefinition> families, List<Diagnostic> diagnostics)
     {
         var result = new List<CompiledFamilyNaming>();
         foreach (var family in families)
@@ -75,9 +96,18 @@ public sealed class FamilyNamingPatternRule : IValidationRule
                     TimeSpan.FromSeconds(1));
                 result.Add(new CompiledFamilyNaming(family, regex, family.NamingPattern));
             }
-            catch (RegexParseException)
+            catch (RegexParseException ex)
             {
-                // Config validate should catch invalid patterns; skip silently here
+                // Surface invalid regex as a warning so the user knows enforcement is disabled.
+                diagnostics.Add(new Diagnostic(
+                    RuleId: "STWD-016",
+                    Severity: DiagnosticSeverity.Warning,
+                    Category: "config-error",
+                    Path: null,
+                    Line: null,
+                    Message: $"policy.yaml: naming_pattern '{family.NamingPattern}' for family '{family.Family}' is an invalid regex — naming enforcement is disabled for this family.",
+                    Remediation: $"Fix or remove the naming_pattern regex in policy.yaml. Parse error: {ex.Message}",
+                    Source: "policy.yaml"));
             }
         }
         return result;

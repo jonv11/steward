@@ -207,4 +207,57 @@ public class BrokenInternalLinkRuleTests
         rule.Category.Should().Be("broken-link");
         rule.DefaultSeverity.Should().Be(DiagnosticSeverity.Warning);
     }
+
+    [Fact]
+    public async Task Evaluate_ScopedMode_UsesAllDiscoveredFiles_NoBrokenLinkFalsePositive()
+    {
+        // Scoped mode: only changed.md is in TargetFiles, but it links to unchanged.md
+        // which is in AllDiscoveredFiles. Should NOT report a broken link.
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/changed.md", "# Changed\nSee [guide](unchanged.md).")
+            .AddFile("/repo/unchanged.md", "# Unchanged");
+
+        var context = new ValidationContext
+        {
+            Policy = null,
+            PathPolicy = null,
+            TargetFiles = [new DiscoveredFile("changed.md", 100, false)],
+            AllDiscoveredFiles = [
+                new DiscoveredFile("changed.md", 100, false),
+                new DiscoveredFile("unchanged.md", 50, false)
+            ],
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new BrokenInternalLinkRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().BeEmpty(
+            because: "STWD-008 uses AllDiscoveredFiles for existence, so links to unchanged files should not be broken");
+    }
+
+    [Fact]
+    public async Task Evaluate_ScopedMode_NullAllDiscoveredFiles_FallsBackToTargetFiles()
+    {
+        // When AllDiscoveredFiles is null, falls back to TargetFiles — existing behavior preserved
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/readme.md", "See [missing](truly-missing.md).");
+
+        var context = new ValidationContext
+        {
+            Policy = null,
+            PathPolicy = null,
+            TargetFiles = [new DiscoveredFile("readme.md", 100, false)],
+            AllDiscoveredFiles = null,
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new BrokenInternalLinkRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().ContainSingle();
+        diagnostics[0].RuleId.Should().Be("STWD-008");
+    }
 }

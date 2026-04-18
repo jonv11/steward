@@ -21,7 +21,7 @@ public sealed class NamingConventionRule : IValidationRule
         if (context.PathPolicy?.Rulesets == null)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
 
-        var namingRules = CompileNamingRules(context.PathPolicy);
+        var namingRules = CompileNamingRules(context.PathPolicy, diagnostics);
         if (namingRules.Count == 0)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
 
@@ -33,7 +33,26 @@ public sealed class NamingConventionRule : IValidationRule
                     continue;
 
                 var fileName = Path.GetFileName(file.RelativePath);
-                if (!rule.MustMatch.IsMatch(fileName))
+                bool isMatch;
+                try
+                {
+                    isMatch = rule.MustMatch.IsMatch(fileName);
+                }
+                catch (RegexMatchTimeoutException)
+                {
+                    diagnostics.Add(new Diagnostic(
+                        RuleId: RuleId,
+                        Severity: DiagnosticSeverity.Warning,
+                        Category: "config-error",
+                        Path: file.RelativePath,
+                        Line: null,
+                        Message: $"Naming convention regex '{rule.MustMatchPattern}' timed out evaluating '{fileName}'. This may indicate catastrophic backtracking.",
+                        Remediation: "Simplify the must_match regex in path-policy.yaml to avoid excessive backtracking.",
+                        Source: "path-policy.yaml"));
+                    continue;
+                }
+
+                if (!isMatch)
                 {
                     diagnostics.Add(new Diagnostic(
                         RuleId: RuleId,
@@ -52,7 +71,7 @@ public sealed class NamingConventionRule : IValidationRule
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
     }
 
-    private static List<CompiledNamingRule> CompileNamingRules(PathPolicyDocument pathPolicy)
+    private static List<CompiledNamingRule> CompileNamingRules(PathPolicyDocument pathPolicy, List<Diagnostic> diagnostics)
     {
         var rules = new List<CompiledNamingRule>();
 
@@ -69,9 +88,18 @@ public sealed class NamingConventionRule : IValidationRule
                     var glob = Glob.Parse(rule.Pattern);
                     rules.Add(new CompiledNamingRule(rule.Pattern, glob, regex, rule.MustMatch));
                 }
-                catch (RegexParseException)
+                catch (RegexParseException ex)
                 {
-                    // Invalid regex patterns are silently skipped — config validate should catch these
+                    // Surface invalid regex as a warning so the user knows enforcement is disabled.
+                    diagnostics.Add(new Diagnostic(
+                        RuleId: "STWD-010",
+                        Severity: DiagnosticSeverity.Warning,
+                        Category: "config-error",
+                        Path: null,
+                        Line: null,
+                        Message: $"path-policy.yaml: must_match pattern '{rule.MustMatch}' for glob '{rule.Pattern}' is an invalid regex — naming convention enforcement is disabled for this pattern.",
+                        Remediation: $"Fix or remove the must_match regex in path-policy.yaml. Parse error: {ex.Message}",
+                        Source: "path-policy.yaml"));
                 }
             }
         }

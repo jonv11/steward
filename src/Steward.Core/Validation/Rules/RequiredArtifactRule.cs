@@ -48,13 +48,16 @@ public sealed class RequiredArtifactRule : IValidationRule
 
             if (!found)
             {
+                var roleLabel = !string.IsNullOrWhiteSpace(artifact.Role) ? $" (role: {artifact.Role})" : "";
+                var descriptionLabel = !string.IsNullOrWhiteSpace(artifact.Description)
+                    ? $" — {artifact.Description}" : "";
                 diagnostics.Add(new Diagnostic(
                     RuleId: RuleId,
                     Severity: severity,
                     Category: Category,
                     Path: artifact.Path,
                     Line: null,
-                    Message: $"{(importance == "recommended" ? "Recommended" : "Required")} artifact '{artifact.Path}' is missing.",
+                    Message: $"{(importance == "recommended" ? "Recommended" : "Required")} artifact '{artifact.Path}'{roleLabel} is missing.{descriptionLabel}",
                     Remediation: $"Create the file '{artifact.Path}' as specified in the repository policy.",
                     Source: "policy.yaml"));
             }

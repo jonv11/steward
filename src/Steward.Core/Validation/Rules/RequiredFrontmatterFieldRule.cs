@@ -9,8 +9,9 @@ namespace Steward.Core.Validation.Rules;
 /// <summary>
 /// STWD-003: Checks that required frontmatter fields exist in Markdown files.
 /// Supports global requirements, path-scoped requirements, and artifact-family schema requirements.
+/// Implements IFixableRule to insert missing fields with placeholder values.
 /// </summary>
-public sealed class RequiredFrontmatterFieldRule : IValidationRule
+public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
 {
     public string RuleId => "STWD-003";
     public string Category => "frontmatter";
@@ -195,6 +196,62 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
+    }
+
+    public async Task<IReadOnlyList<Fix>> ComputeFixesAsync(ValidationContext context)
+    {
+        var diagnostics = await EvaluateAsync(context);
+        var fixes = new List<Fix>();
+
+        // Group missing-field diagnostics by file path so we can batch all missing
+        // fields into a single frontmatter edit per file.
+        var missingByFile = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var diag in diagnostics)
+        {
+            if (diag.Path == null) continue;
+            if (diag.Details == null || !diag.Details.TryGetValue("missingField", out var fieldObj))
+                continue;
+
+            var field = fieldObj?.ToString();
+            if (string.IsNullOrWhiteSpace(field)) continue;
+
+            if (!missingByFile.TryGetValue(diag.Path, out var fields))
+            {
+                fields = [];
+                missingByFile[diag.Path] = fields;
+            }
+            fields.Add(field);
+        }
+
+        foreach (var (relPath, fields) in missingByFile)
+        {
+            var fullPath = Path.Combine(context.RepositoryRoot, relPath);
+            if (!context.FileSystem.FileExists(fullPath))
+                continue;
+
+            var content = context.FileSystem.ReadAllText(fullPath);
+            var doc = context.DocumentCache?.GetOrParse(relPath)
+                ?? MarkdownParser.Parse(relPath, content);
+
+            // Insert all missing fields at once with placeholder values
+            var placeholders = fields.ToDictionary(
+                f => f,
+                f => (string)"",
+                StringComparer.OrdinalIgnoreCase);
+
+            var result = FrontmatterEditor.SetFields(doc, placeholders);
+            if (result.HasChanges)
+            {
+                fixes.Add(new Fix(
+                    RuleId,
+                    relPath,
+                    $"Insert missing frontmatter field(s) [{string.Join(", ", fields)}] in '{relPath}' with placeholder values.",
+                    result.NewContent));
+            }
+        }
+
+        return fixes;
     }
 
     private static HashSet<string> BuildExplicitArtifactPaths(RepositoryPolicy? policy)

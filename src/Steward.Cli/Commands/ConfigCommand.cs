@@ -444,6 +444,98 @@ public static class ConfigCommand
             }
         }
 
+        // 10. index_of directories that do not exist (artifacts with index_of pointing at non-existent dirs)
+        if (ctx.Policy?.Artifacts != null)
+        {
+            foreach (var artifact in ctx.Policy.Artifacts)
+            {
+                if (string.IsNullOrWhiteSpace(artifact.IndexOf)) continue;
+                var indexOfDir = PathHelper.NormalizeSeparators(artifact.IndexOf.TrimEnd('/')) + "/";
+                var dirExists = existingPaths.Any(p => p.StartsWith(indexOfDir, StringComparison.OrdinalIgnoreCase));
+                if (!dirExists)
+                {
+                    findings.Add(new DoctorFinding(
+                        "dead-index-of-directory",
+                        $"Artifact '{artifact.Path}' declares index_of: '{artifact.IndexOf}', but no files were discovered in that directory. " +
+                        $"STWD-011 (IndexCompletenessRule) will not enforce completeness for this index.",
+                        $"Check that the directory '{artifact.IndexOf}' exists and is not excluded by discovery.exclude patterns. " +
+                        $"Update index_of or remove the declaration if the directory is intentionally empty."));
+                }
+            }
+        }
+
+        // 11. Artifact paths that would be excluded by discovery.exclude patterns
+        if (ctx.Policy?.Artifacts != null && ctx.EffectiveDiscoveryExcludes.Count > 0)
+        {
+            var excludeGlobs = ctx.EffectiveDiscoveryExcludes
+                .Select(p => { try { return Glob.Parse(p); } catch { return null; } })
+                .Where(g => g != null)
+                .ToList();
+
+            foreach (var artifact in ctx.Policy.Artifacts)
+            {
+                if (string.IsNullOrWhiteSpace(artifact.Path)) continue;
+                var artifactPath = PathHelper.NormalizeAndTrim(artifact.Path!);
+                if (existingPaths.Contains(artifactPath)) continue; // Already discovered, not excluded
+
+                // Check if it would be excluded by a discovery.exclude pattern
+                if (excludeGlobs.Any(g => g!.IsMatch(artifactPath)))
+                {
+                    findings.Add(new DoctorFinding(
+                        "artifact-excluded-by-discovery",
+                        $"Artifact '{artifactPath}' is declared in policy.yaml but is excluded by a discovery.exclude pattern. " +
+                        $"STWD-001 will report it as missing, but the real cause is the exclude pattern.",
+                        $"Remove '{artifactPath}' from the discovery.exclude list in config.yaml, " +
+                        $"or remove/relocate the artifact declaration in policy.yaml."));
+                }
+            }
+        }
+
+        // 12. Conflicting allowed_values for the same frontmatter field between scoped requirements and families
+        if (ctx.Policy?.Validation?.FrontmatterRequirements is { Count: > 0 } &&
+            ctx.Policy?.ArtifactFamilies is { Count: > 0 })
+        {
+            foreach (var family in ctx.Policy.ArtifactFamilies)
+            {
+                if (family.Match?.PathPattern == null || family.FrontmatterSchema?.AllowedValues == null)
+                    continue;
+
+                var familyGlob = Glob.Parse(family.Match.PathPattern);
+
+                foreach (var req in ctx.Policy.Validation.FrontmatterRequirements)
+                {
+                    if (string.IsNullOrWhiteSpace(req.Pattern) || req.AllowedValues == null)
+                        continue;
+
+                    // Check if the patterns could overlap (both match the family's path)
+                    var reqGlob = Glob.Parse(req.Pattern);
+
+                    // Check for conflicting allowed_values on the same field
+                    foreach (var (field, familyValues) in family.FrontmatterSchema.AllowedValues)
+                    {
+                        if (!req.AllowedValues.TryGetValue(field, out var reqValues))
+                            continue;
+
+                        // If both declare allowed_values for the same field but with different sets, warn
+                        var familySet = new HashSet<string>(familyValues, StringComparer.OrdinalIgnoreCase);
+                        var reqSet = new HashSet<string>(reqValues, StringComparer.OrdinalIgnoreCase);
+                        if (!familySet.SetEquals(reqSet))
+                        {
+                            findings.Add(new DoctorFinding(
+                                "conflicting-allowed-values",
+                                $"Artifact family '{family.Family}' and frontmatter requirement pattern '{req.Pattern}' " +
+                                $"declare conflicting allowed_values for field '{field}'. " +
+                                $"Family allows: [{string.Join(", ", familyValues)}]. " +
+                                $"Requirement allows: [{string.Join(", ", reqValues)}]. " +
+                                $"For files matched by both, STWD-003 will use the family's allowed_values.",
+                                $"Align the allowed_values for '{field}' between the family '{family.Family}' " +
+                                $"and the frontmatter requirement pattern '{req.Pattern}', or remove the overlap."));
+                        }
+                    }
+                }
+            }
+        }
+
         return findings;
     }
 

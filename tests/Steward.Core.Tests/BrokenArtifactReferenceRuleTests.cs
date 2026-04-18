@@ -77,7 +77,7 @@ public class BrokenArtifactReferenceRuleTests
 
         diagnostics.Should().HaveCount(1);
         diagnostics[0].RuleId.Should().Be("STWD-009");
-        diagnostics[0].Severity.Should().Be(DiagnosticSeverity.Warning);
+        diagnostics[0].Severity.Should().Be(DiagnosticSeverity.Info);
         diagnostics[0].Message.Should().Contain("CHANGELOG.md");
         diagnostics[0].Category.Should().Be("broken-reference");
     }
