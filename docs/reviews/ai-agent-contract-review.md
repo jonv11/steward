@@ -1,3 +1,9 @@
+---
+type: review
+status: Complete
+last_updated: 2026-04-18
+---
+
 # AI-Agent Contract Review — Steward CLI
 
 **Date:** 2026-04-18

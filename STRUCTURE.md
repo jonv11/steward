@@ -82,7 +82,6 @@
 │       ├── draft-rfc-disposition-review-2026-04-18.md
 │       ├── review-synthesis-action-plan.md
 │       └── rule-system-completeness-audit.md
-├── dgitstewarddocsreviews
 ├── package-lock.json
 ├── package.json
 ├── README.md

@@ -92,6 +92,11 @@ artifacts:
     freshness:
       max_age_days: 45
 
+  - path: docs/planning/workflow-guide.md
+    role: workflow
+    description: Canonical reference for how all categories of work should be performed — feature, bug fix, docs, review, release, governance
+    importance: recommended
+
   - path: docs/planning/release-process.md
     role: workflow
     description: Authoritative operator guide for intentional public pre-1.0 releases
@@ -140,6 +145,11 @@ artifacts:
     description: Assessments, review records, and supporting evidence for stewardship decisions
     importance: optional
 
+  - path: docs/reviews/
+    role: audit
+    description: Config, contract, and rule-system reviews — active synthesis and stress-test documents
+    importance: optional
+
 artifact_families:
   - family: adr
     display_name: Architecture Decision Record
@@ -186,7 +196,7 @@ artifact_families:
     frontmatter_schema:
       required: [type, status]
       allowed_values:
-        type: [requirements]
+        type: [prd, requirements]
         status: [Draft, Accepted, Active, Superseded]
 
   - family: audit
@@ -195,6 +205,18 @@ artifact_families:
       path_pattern: "docs/audits/*.md"
     role: audit
     importance: optional
+
+  - family: review
+    display_name: Config / Contract Review
+    match:
+      path_pattern: "docs/reviews/*.md"
+    role: audit
+    importance: optional
+    frontmatter_schema:
+      required: [type, status]
+      allowed_values:
+        type: [review, planning]
+        status: [Draft, Active, Complete, Completed, Superseded]
 
 governance:
   section_size_warning_threshold: 500
@@ -206,6 +228,7 @@ governance:
     - docs/planning-index.md
     - docs/implementation-status.md
     - docs/planning/implementation-instructions.md
+    - docs/planning/workflow-guide.md
     - docs/requirements/PRD.md
     - steward.sln
   completion_policy:
@@ -228,18 +251,6 @@ validation:
       disabled_rules:
         - STWD-013
 
-  # Keep scoped path-based frontmatter enforcement where this repo intentionally wants
-  # broader or different constraints than the family defaults. Family schema now also
-  # applies to explicit artifacts, but these scoped requirements still matter here
-  # because requirements docs allow both `prd` and `requirements` as valid `type` values.
-  frontmatter_requirements:
-    - pattern: "docs/requirements/*.md"
-      required_fields:
-        - type
-        - status
-      allowed_values:
-        type: [prd, requirements]
-        status: [Draft, Accepted, Active, Superseded]
 
 maintenance:
   artifacts:

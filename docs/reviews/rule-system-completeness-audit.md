@@ -1,3 +1,9 @@
+---
+type: review
+status: Complete
+last_updated: 2026-04-18
+---
+
 # Rule-System Completeness Audit — Steward CLI
 
 **Date:** 2026-04-18
