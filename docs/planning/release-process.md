@@ -1,6 +1,6 @@
 ---
 type: planning
-source_baseline: v0.15.0
+source_baseline: v0.16.0
 status: Active
 last_updated: 2026-04-18
 ---

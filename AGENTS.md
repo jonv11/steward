@@ -12,7 +12,7 @@ This repo is both the source implementation of the tool and its own self-dogfood
 - The repo uses its own `.steward/` config to enforce governance on its own docs, plans, decisions, and artifacts.
 - Changes to the CLI must also pass the repo's own steward governance checks.
 
-Current version: `v0.15.0` (pre-`1.0.0`).
+Current version: `v0.16.0` (pre-`1.0.0`).
 
 ## What Agents Do Here
 
