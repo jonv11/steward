@@ -49,7 +49,8 @@ public sealed class BrokenInternalLinkRule : IValidationRule
                         line,
                         $"Broken link to '{target}' — file not found.",
                         $"Verify the link target exists or update the reference.",
-                        null));
+                        null,
+                        new Dictionary<string, object> { ["targetPath"] = resolvedPath }));
                 }
             }
         }

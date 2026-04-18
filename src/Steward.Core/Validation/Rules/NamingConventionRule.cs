@@ -43,7 +43,8 @@ public sealed class NamingConventionRule : IValidationRule
                         Line: null,
                         Message: $"File '{fileName}' does not match naming convention '{rule.MustMatchPattern}' required for pattern '{rule.Pattern}'.",
                         Remediation: $"Rename the file to match the pattern: {rule.MustMatchPattern}",
-                        Source: "path-policy.yaml"));
+                        Source: "path-policy.yaml",
+                        Details: new Dictionary<string, object> { ["expectedPattern"] = rule.MustMatchPattern }));
                 }
             }
         }

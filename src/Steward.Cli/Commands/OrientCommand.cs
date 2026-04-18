@@ -56,6 +56,12 @@ public static class OrientCommand
 
             if (compactRequested && fullRequested)
             {
+                if (ctx!.OutputFormat == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(ctx.Formatter, ctx.JsonEnvelope, "orient", ExitCodes.UsageError,
+                        "conflicting-options", "Choose either --compact or --full, not both.");
+                    return ExitCodes.UsageError;
+                }
                 ctx!.Formatter.WriteError("Choose either --compact or --full, not both.");
                 return ExitCodes.UsageError;
             }

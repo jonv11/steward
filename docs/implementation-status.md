@@ -4,16 +4,17 @@ Last updated: 2026-04-18
 
 ## Current Baseline
 
-Steward is currently on **`v0.15.0`**. The repository is **still pre-1.0**: intentional public `0.x` releases are allowed when readiness evidence is green and the release process is followed, but `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Steward is currently on **`v0.15.0`** with unreleased `v0.16.0` contract improvements in progress. The repository is **still pre-1.0**: intentional public `0.x` releases are allowed when readiness evidence is green and the release process is followed, but `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
 | Area | Current state |
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
-| Current repo version | `0.15.0` |
-| Tests | 644 passing (`450` core, `194` CLI) |
+| Current repo version | `0.15.0` (+ unreleased 0.16.0 contract work) |
+| Tests | 210 CLI tests (208 passing, 2 pre-existing failures) |
 | Validation rules | 17 (`STWD-001` through `STWD-017`) |
 | Artifact families | `artifact_families` section now supported in `policy.yaml`; ADRs and RFCs governed by families in this repo |
 | Maintainer types | 6 (`structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`) |
+| JSON contract | Standard envelope (`--json-envelope standard`), structured errors, CC-01 through CC-10 implemented |
 | Packaging | `dotnet pack` succeeds cleanly for `Steward.0.15.0.nupkg` |
 | Public pre-1.0 release path | Tag-driven GitHub Release workflow, changelog-backed notes, automated nuget.org publication, `.nupkg` + curated binary bundles + checksums |
 | Active readiness tracker | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) |
@@ -37,6 +38,7 @@ Steward is currently on **`v0.15.0`**. The repository is **still pre-1.0**: inte
 | `v0.13.0` | Delivered | Artifact type schema RFC and base implementation: `artifact_families` in policy, deterministic family classification, type-aware frontmatter validation, family awareness in `status`, `orient`, `explain path`, `config doctor` |
 | `v0.14.0` | Delivered | Release automation and public pre-1.0 distribution discipline: changelog-backed release notes, GitHub Release workflow and assets, release-intent labels, release docs, and publication metadata hardening |
 | `v0.15.0` | Delivered | JSON output envelope consistency (RFC-010), Markdown split/extract workflows (RFC-011), severity_overrides runtime implementation, explain path family-applicability fixes |
+| `v0.16.0` | In Progress | Agent-safe JSON CLI contracts: universal envelope (CC-02), structured errors (CC-01), process/domain success separation (CC-03), refactor move apply fix (CC-04), explain path exists (CC-05), diagnostic details (CC-06), md query shape normalization (CC-07), config validate structured errors (CC-08), contract tests (CC-09), refactor move enrichment (CC-10) |
 
 ## What Was Established In `v0.10.0`
 

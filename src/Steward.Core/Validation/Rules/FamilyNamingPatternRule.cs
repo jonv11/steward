@@ -51,7 +51,8 @@ public sealed class FamilyNamingPatternRule : IValidationRule
                     null,
                     $"File '{fileName}' does not match the naming pattern '{rule.RawPattern}' required for family '{matched.Family}'.",
                     $"Rename the file to match the pattern: {rule.RawPattern}",
-                    "policy.yaml"));
+                    "policy.yaml",
+                    new Dictionary<string, object> { ["expectedPattern"] = rule.RawPattern }));
             }
         }
 

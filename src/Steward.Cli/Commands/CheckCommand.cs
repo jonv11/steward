@@ -154,7 +154,9 @@ public static class CheckCommand
             if (ctx.OutputFormat == OutputFormat.Json)
             {
                 var checkExitCode = result.Summary.Pass ? ExitCodes.Success : ExitCodes.ValidationFailure;
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "check", result.Summary.Pass, checkExitCode, new CheckResponse
+                // CC-03: success=true means process executed correctly.
+                // Domain outcome (pass/fail) is in data.summary.pass.
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "check", true, checkExitCode, new CheckResponse
                 {
                     Summary = new CheckSummaryResponse
                     {
@@ -177,7 +179,8 @@ public static class CheckCommand
                             Line = diag.Line,
                             Message = SecretFilter.Redact(diag.Message),
                             Remediation = diag.Remediation != null ? SecretFilter.Redact(diag.Remediation) : null,
-                            Source = diag.Source
+                            Source = diag.Source,
+                            Details = diag.Details
                         })
                     ],
                     ImpactSignals = impacts.Count > 0
@@ -491,6 +494,7 @@ internal sealed class CheckDiagnosticResponse
     public required string Message { get; init; }
     public string? Remediation { get; init; }
     public string? Source { get; init; }
+    public IReadOnlyDictionary<string, object>? Details { get; init; }
 }
 
 internal sealed record CompletionRuleDescriptor(string RuleId, string Description);

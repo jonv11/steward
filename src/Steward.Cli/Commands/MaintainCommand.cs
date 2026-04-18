@@ -46,6 +46,12 @@ public static class MaintainCommand
 
             if (ctx!.ConfigDirectory == null)
             {
+                if (ctx.OutputFormat == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(ctx.Formatter, ctx.JsonEnvelope, "maintain", ExitCodes.UsageError,
+                        "config-not-found", "No .steward configuration directory found. Run 'steward init' first.");
+                    return ExitCodes.UsageError;
+                }
                 ctx.Formatter.WriteError("No .steward configuration directory found. Run 'steward init' first.");
                 return ExitCodes.UsageError;
             }

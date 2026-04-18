@@ -46,6 +46,14 @@ public static class ExplainCommand
 
             if (rule == null)
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "explain", ExitCodes.UsageError,
+                        "unknown-rule", $"Unknown rule ID: '{ruleId}'.",
+                        details: new Dictionary<string, object> { ["ruleId"] = ruleId },
+                        suggestedNextStep: "Use 'steward explain' to list all rules.");
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError($"Unknown rule ID: '{ruleId}'. Use 'steward explain' to list all rules.");
                 return ExitCodes.UsageError;
             }
@@ -186,23 +194,33 @@ public static class ExplainCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
+            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var filePath = PathHelper.NormalizeSeparators(parseResult.GetValue(pathArg)!);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
 
             if (!CommandSetup.TryBuild(parseResult, out var ctx) || ctx == null)
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "explain path", ExitCodes.UsageError,
+                        "config-not-found", "Could not load steward configuration. Run from a steward-managed repository.",
+                        suggestedNextStep: "Run 'steward init' to create a .steward/ directory.");
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError("Could not load steward configuration. Run from a steward-managed repository.");
                 return ExitCodes.UsageError;
             }
 
             var info = ResolveEffectivePolicy(filePath, ctx);
+            var fileExists = File.Exists(Path.Combine(ctx.RootPath, filePath.Replace('/', Path.DirectorySeparatorChar)));
 
             if (output == OutputFormat.Json)
             {
                 var jsonObj = new Dictionary<string, object?>
                 {
                     ["path"] = info.Path,
+                    ["exists"] = fileExists,
                     ["classification"] = info.Classification,
                     ["pathPolicyCategory"] = info.PathPolicyCategory,
                     ["matchedPattern"] = info.MatchedPattern,
@@ -214,7 +232,7 @@ public static class ExplainCommand
                     ["allowedValues"] = info.AllowedValues,
                     ["applicableRules"] = info.ApplicableRules
                 };
-                formatter.WriteObject(jsonObj);
+                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "explain path", true, ExitCodes.Success, jsonObj);
             }
             else
             {

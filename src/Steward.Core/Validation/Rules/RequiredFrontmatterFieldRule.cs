@@ -151,7 +151,8 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule
                         Remediation: string.Equals(field, "description", StringComparison.OrdinalIgnoreCase) && requiresGeneratedIndexDescription
                             ? "Add 'description' to the frontmatter block so generated directory indexes can describe this file."
                             : $"Add '{field}' to the frontmatter block.",
-                        Source: "policy.yaml"));
+                        Source: "policy.yaml",
+                        Details: new Dictionary<string, object> { ["missingField"] = field }));
                     continue;
                 }
 

@@ -8,7 +8,8 @@ public sealed record Diagnostic(
     int? Line,
     string Message,
     string? Remediation,
-    string? Source);
+    string? Source,
+    IReadOnlyDictionary<string, object>? Details = null);
 
 public enum DiagnosticSeverity
 {

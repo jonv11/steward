@@ -256,12 +256,25 @@ public static class MdEditCommand
             var fullPath = Path.GetFullPath(file);
             if (!File.Exists(fullPath))
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit fm-validate", ExitCodes.UsageError,
+                        "file-not-found", $"File not found: {file}",
+                        details: new Dictionary<string, object> { ["path"] = file });
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError($"File not found: {file}");
                 return ExitCodes.UsageError;
             }
 
             if (!file.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit fm-validate", ExitCodes.UsageError,
+                        "unsupported-file-type", "fm-validate only supports Markdown (.md) files.");
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError("fm-validate only supports Markdown (.md) files.");
                 return ExitCodes.UsageError;
             }
@@ -411,6 +424,13 @@ public static class MdEditCommand
             var fullSourcePath = Path.GetFullPath(file);
             if (!File.Exists(fullSourcePath))
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit extract-section", ExitCodes.UsageError,
+                        "file-not-found", $"File not found: {file}",
+                        details: new Dictionary<string, object> { ["path"] = file });
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError($"File not found: {file}");
                 return ExitCodes.UsageError;
             }
@@ -418,6 +438,13 @@ public static class MdEditCommand
             var fullTargetPath = Path.GetFullPath(to);
             if (apply && File.Exists(fullTargetPath) && new FileInfo(fullTargetPath).Length > 0)
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit extract-section", ExitCodes.UsageError,
+                        "destination-exists", $"Target file already exists and is non-empty: {to}",
+                        details: new Dictionary<string, object> { ["path"] = to });
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError($"Target file already exists and is non-empty: {to}");
                 return ExitCodes.UsageError;
             }
@@ -428,6 +455,12 @@ public static class MdEditCommand
 
             if (result.IsError)
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit extract-section", ExitCodes.UsageError,
+                        "extraction-failed", result.ErrorMessage!);
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError(result.ErrorMessage!);
                 return ExitCodes.UsageError;
             }
@@ -487,6 +520,13 @@ public static class MdEditCommand
         var fullPath = Path.GetFullPath(file);
         if (!File.Exists(fullPath))
         {
+            if (output == OutputFormat.Json)
+            {
+                JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit", ExitCodes.UsageError,
+                    "file-not-found", $"File not found: {file}",
+                    details: new Dictionary<string, object> { ["path"] = file });
+                return ExitCodes.UsageError;
+            }
             formatter.WriteError($"File not found: {file}");
             return ExitCodes.UsageError;
         }
@@ -497,6 +537,12 @@ public static class MdEditCommand
 
         if (result.IsError)
         {
+            if (output == OutputFormat.Json)
+            {
+                JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit", ExitCodes.UsageError,
+                    "edit-failed", result.Message);
+                return ExitCodes.UsageError;
+            }
             formatter.WriteError(result.Message);
             return ExitCodes.UsageError;
         }

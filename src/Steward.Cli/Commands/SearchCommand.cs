@@ -66,6 +66,13 @@ public static class SearchCommand
 
             if (result.Error != null)
             {
+                if (ctx.OutputFormat == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(ctx.Formatter, ctx.JsonEnvelope, "search", ExitCodes.UsageError,
+                        "invalid-query", result.Error,
+                        details: new Dictionary<string, object> { ["query"] = query });
+                    return ExitCodes.UsageError;
+                }
                 ctx.Formatter.WriteError(result.Error);
                 return ExitCodes.UsageError;
             }

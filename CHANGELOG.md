@@ -8,7 +8,20 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ### Added In Unreleased
 
-- No unreleased entries yet.
+- Standard JSON envelope mode (`--json-envelope standard`) wrapping all JSON output in `{ schemaVersion, command, toolVersion, success, exitCode, data }` (CC-02).
+- Structured JSON error responses via `JsonEnvelopeWriter.WriteError()` with `{ kind, message, details, retryable, suggestedNextStep }` on all command error paths (CC-01).
+- `exists` boolean field in `explain path` JSON output indicating whether the queried file is present on disk (CC-05).
+- `details` field on `Diagnostic` record and JSON diagnostic output, populated by STWD-008 (`targetPath`), STWD-003 (`missingField`), STWD-010/STWD-016 (`expectedPattern`) (CC-06).
+- Enriched `refactor move --preview` JSON with `sourceExists`, `destinationExists`, `collision`, `applied`, `affectedFileCount`, per-edit `linkCount` and `rewrites` array (CC-10).
+- 16 new contract tests in `JsonContractTests.cs` covering envelope shape, error structure, CC-03 semantics, CC-05/CC-07/CC-08/CC-10 output.
+
+### Changed In Unreleased
+
+- `check` and `config doctor` JSON envelope now reports `success: true` for domain outcomes (violations/findings); exit code still differentiates pass from fail (CC-03).
+- `md query` single-file JSON output normalized to match batch shape with `results[]` wrapper containing `matchCount` and `range` per match (CC-07).
+- `config validate` JSON errors structured as `[{ file, message }]` objects instead of plain strings (CC-08).
+- `refactor move --apply` now executes before output formatting so JSON mode apply actually moves files (CC-04).
+- JSON error paths added to `md outline`, `md edit`, `search`, `config validate`, `orient`, `status`, and `maintain` commands (CC-01).
 
 ## [0.15.0] - 2026-04-18
 

@@ -64,6 +64,13 @@ public static class MdCommand
 
             if (string.IsNullOrWhiteSpace(selector))
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md query", ExitCodes.UsageError,
+                        "missing-selector", "A selector expression is required.",
+                        suggestedNextStep: "Provide a selector like 'heading[Title]' or '#anchor-slug'.");
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError("A selector expression is required.");
                 return ExitCodes.UsageError;
             }
@@ -76,6 +83,12 @@ public static class MdCommand
 
             if (file == null)
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md query", ExitCodes.UsageError,
+                        "missing-file", "Provide a file argument or --pattern for batch query.");
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError("Provide a file argument or --pattern for batch query.");
                 return ExitCodes.UsageError;
             }
@@ -83,6 +96,13 @@ public static class MdCommand
             var fullPath = Path.GetFullPath(file);
             if (!fileSystem.FileExists(fullPath))
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md query", ExitCodes.UsageError,
+                        "file-not-found", $"File not found: {file}",
+                        details: new Dictionary<string, object> { ["path"] = file });
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError($"File not found: {file}");
                 return ExitCodes.UsageError;
             }
@@ -93,23 +113,38 @@ public static class MdCommand
 
             if (result.IsError)
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md query", ExitCodes.UsageError,
+                        "selector-syntax-error", result.ErrorMessage!,
+                        details: new Dictionary<string, object> { ["selector"] = selector });
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError(result.ErrorMessage!);
                 return ExitCodes.UsageError;
             }
 
             if (output == OutputFormat.Json)
             {
+                // CC-07: Normalized shape — single-file uses same results[] wrapper as batch
                 JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md query", true, ExitCodes.Success, new
                 {
                     selector = result.Selector,
-                    matchCount = result.Matches.Count,
-                    matches = result.Matches.Select(m => new
+                    results = new[]
                     {
-                        kind = m.Kind.ToString().ToLowerInvariant(),
-                        label = m.Label,
-                        range = new { start = m.Range.Start, end = m.Range.End },
-                        content = m.Content
-                    }).ToArray()
+                        new
+                        {
+                            file = file,
+                            matchCount = result.Matches.Count,
+                            matches = result.Matches.Select(m => new
+                            {
+                                kind = m.Kind.ToString().ToLowerInvariant(),
+                                label = m.Label,
+                                range = new { start = m.Range.Start, end = m.Range.End },
+                                content = m.Content
+                            }).ToArray()
+                        }
+                    }
                 });
             }
             else
@@ -146,6 +181,13 @@ public static class MdCommand
 
         if (allFiles.Count == 0)
         {
+            if (output == OutputFormat.Json)
+            {
+                JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md query", ExitCodes.UsageError,
+                    "no-files-matched", $"No files matched pattern '{pattern}'.",
+                    details: new Dictionary<string, object> { ["pattern"] = pattern });
+                return ExitCodes.UsageError;
+            }
             formatter.WriteError($"No files matched pattern '{pattern}'.");
             return ExitCodes.UsageError;
         }
@@ -163,14 +205,16 @@ public static class MdCommand
 
             if (output == OutputFormat.Json)
             {
+                // CC-07: Include matchCount and range in batch results too
                 allResults.Add(new
                 {
                     file = relativePath,
-                    selector = result.Selector,
+                    matchCount = result.Matches.Count,
                     matches = result.Matches.Select(m => new
                     {
                         kind = m.Kind.ToString().ToLowerInvariant(),
                         label = m.Label,
+                        range = new { start = m.Range.Start, end = m.Range.End },
                         content = m.Content
                     }).ToArray()
                 });
@@ -225,6 +269,13 @@ public static class MdCommand
             var fullPath = Path.GetFullPath(file);
             if (!fileSystem.FileExists(fullPath))
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md outline", ExitCodes.UsageError,
+                        "file-not-found", $"File not found: {file}",
+                        details: new Dictionary<string, object> { ["path"] = file });
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError($"File not found: {file}");
                 return ExitCodes.UsageError;
             }

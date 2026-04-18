@@ -5,6 +5,23 @@
 **Method:** Direct command invocations against this repo, source inspection, end-to-end agent flow simulation
 **Version under review:** 0.15.0
 
+## Implementation Status
+
+The following findings have been addressed in the unreleased 0.16.0 work:
+
+| Finding | Status | Implementation |
+|---------|--------|----------------|
+| CC-01: Errors escape JSON | **Resolved** | `JsonEnvelopeWriter.WriteError()` on all command error paths |
+| CC-02: Envelope not universal | **Resolved** | All JSON commands now respect `--json-envelope standard` |
+| CC-03: success semantics ambiguous | **Resolved** | `success: true` for domain outcomes; exit code differentiates |
+| CC-04: refactor move --apply broken in JSON | **Resolved** | Apply logic executes before output format branching |
+| CC-05: explain path missing exists | **Resolved** | `exists` boolean field added |
+| CC-06: Diagnostic remediation lacks precision | **Resolved** | `details` dict on Diagnostic; STWD-003/008/010/016 populated |
+| CC-07: Batch vs single md query shapes differ | **Resolved** | Single-file normalized to `results[]` with `matchCount`/`range` |
+| CC-08: Config validate errors unstructured | **Resolved** | Errors now `[{file, message}]` objects |
+| CC-09: Contract test gaps | **Resolved** | 16 new tests in `JsonContractTests.cs` |
+| CC-10: refactor move preview lacks safety data | **Resolved** | Added `sourceExists`, `collision`, `applied`, `affectedFileCount`, per-edit `rewrites` |
+
 ---
 
 ## Executive Summary

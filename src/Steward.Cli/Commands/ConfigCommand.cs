@@ -40,32 +40,52 @@ public static class ConfigCommand
             var configDir = loader.FindConfigDirectory(Directory.GetCurrentDirectory(), configPath);
             if (configDir == null)
             {
+                if (output == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "config validate", ExitCodes.UsageError,
+                        "config-not-found", "No .steward/ directory found. Run 'steward init' first.");
+                    return ExitCodes.UsageError;
+                }
                 formatter.WriteError("No .steward/ directory found. Run 'steward init' first.");
                 return ExitCodes.UsageError;
             }
 
-            var errors = new List<string>();
+            var errors = new List<object>();
+            var errorStrings = new List<string>();
 
             try { loader.LoadConfig(configDir); }
-            catch (Exception ex) { errors.Add($"config.yaml: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                errors.Add(new { file = "config.yaml", message = ex.Message });
+                errorStrings.Add($"config.yaml: {ex.Message}");
+            }
 
             try { loader.LoadPolicy(configDir); }
-            catch (Exception ex) { errors.Add($"policy.yaml: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                errors.Add(new { file = "policy.yaml", message = ex.Message });
+                errorStrings.Add($"policy.yaml: {ex.Message}");
+            }
 
             try { loader.LoadPathPolicy(configDir); }
-            catch (Exception ex) { errors.Add($"path-policy.yaml: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                errors.Add(new { file = "path-policy.yaml", message = ex.Message });
+                errorStrings.Add($"path-policy.yaml: {ex.Message}");
+            }
 
             if (errors.Count > 0)
             {
                 if (output == OutputFormat.Json)
                 {
+                    // CC-08: Structured errors with file + message instead of plain strings
                     JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "config validate", false, ExitCodes.UsageError,
                         new { valid = false, errors });
                 }
                 else
                 {
                     formatter.WriteError("Configuration is invalid:");
-                    foreach (var error in errors)
+                    foreach (var error in errorStrings)
                         formatter.WriteError($"  - {error}");
                 }
 
@@ -217,7 +237,9 @@ public static class ConfigCommand
             if (ctx.OutputFormat == OutputFormat.Json)
             {
                 var doctorExitCode = findings.Count > 0 ? ExitCodes.ValidationFailure : ExitCodes.Success;
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "config doctor", findings.Count == 0, doctorExitCode, new
+                // CC-03: success=true means process executed correctly.
+                // findings.Count > 0 is a domain result, not a process failure.
+                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "config doctor", true, doctorExitCode, new
                 {
                     findings = findings.Select(f => new
                     {

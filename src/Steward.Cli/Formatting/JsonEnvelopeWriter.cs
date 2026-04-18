@@ -37,4 +37,35 @@ public static class JsonEnvelopeWriter
             formatter.WriteObject(data);
         }
     }
+
+    /// <summary>
+    /// Writes a structured JSON error on stdout. In standard envelope mode, the error
+    /// is wrapped in the envelope with success=false. In legacy mode, the error object
+    /// is emitted directly. The error is also echoed to stderr for human readability.
+    /// </summary>
+    public static void WriteError(
+        IOutputFormatter formatter,
+        JsonEnvelopeMode mode,
+        string command,
+        int exitCode,
+        string kind,
+        string message,
+        Dictionary<string, object>? details = null,
+        bool retryable = false,
+        string? suggestedNextStep = null)
+    {
+        var error = new JsonErrorResponse
+        {
+            Kind = kind,
+            Message = message,
+            Details = details,
+            Retryable = retryable,
+            SuggestedNextStep = suggestedNextStep
+        };
+
+        Write(formatter, mode, command, false, exitCode, new { error });
+
+        // Also echo to stderr for human context
+        Console.Error.WriteLine(message);
+    }
 }
