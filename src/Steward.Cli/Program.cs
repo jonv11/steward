@@ -13,6 +13,12 @@ public static class Program
 
         GlobalOptionsSetup.AddGlobalOptions(rootCommand);
 
+        rootCommand.SetAction(parseResult =>
+        {
+            parseResult.RootCommandResult.Command.Parse(["--help"]).Invoke();
+            return ExitCodes.Success;
+        });
+
         rootCommand.Add(VersionCommand.Create());
         rootCommand.Add(OrientCommand.Create());
         rootCommand.Add(OutlineCommand.Create());

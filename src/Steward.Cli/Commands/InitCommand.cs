@@ -44,18 +44,20 @@ public static class InitCommand
             var config = ProfileDefaults.CreateDefaultConfig(profile);
             var policy = ProfileDefaults.GetProfilePolicy(profile);
 
-            File.WriteAllText(configPath, ConfigLoader.SerializeConfig(config));
+            var configYaml = ConfigLoader.SerializeConfig(config)
+                + "  # - \"tests/**\"      # uncomment to exclude test fixture Markdown files from discovery\n";
+            File.WriteAllText(configPath, configYaml);
             if (policy != null)
                 File.WriteAllText(policyPath, ConfigLoader.SerializePolicy(policy));
 
-            // Scaffold placeholder files for required artifacts so that
-            // 'steward check' does not immediately fail after init.
+            // Scaffold placeholder files for all declared file artifacts so that
+            // 'steward check' does not show STWD-009 warnings immediately after init.
             var scaffolded = new List<string>();
             if (policy?.Artifacts != null)
             {
                 foreach (var artifact in policy.Artifacts)
                 {
-                    if (!artifact.Required || string.IsNullOrWhiteSpace(artifact.Path) || artifact.Path.EndsWith('/'))
+                    if (string.IsNullOrWhiteSpace(artifact.Path) || artifact.Path.EndsWith('/'))
                         continue;
 
                     var artifactFullPath = Path.Combine(rootPath, artifact.Path);
@@ -79,7 +81,7 @@ public static class InitCommand
             if (scaffolded.Count > 0)
             {
                 formatter.WriteMessage("");
-                formatter.WriteMessage("Scaffolded required artifacts:");
+                formatter.WriteMessage("Scaffolded artifacts:");
                 foreach (var path in scaffolded)
                     formatter.WriteMessage($"  {path}");
             }

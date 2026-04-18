@@ -4,6 +4,20 @@ A configurable repository stewardship CLI for humans and AI agents. Steward help
 
 Current repository baseline: **`0.15.0`**. Steward is pre-`1.0.0`: intentional public `0.x` releases are allowed when the documented release process is satisfied, but `1.0.0` remains separately gated by explicit stable-release authorization. See [Current Status](#current-status) for what works today and what is still planned.
 
+## Quick Start
+
+```bash
+# Install (see Installation for all options)
+dotnet tool install --global Steward
+
+cd your-repo
+steward orient          # see what the repo contains
+steward init --profile software   # set up governance (maintainers)
+steward check           # validate against policy
+```
+
+No `.steward/` config needed for `orient`, `outline`, or `check` — they work on any repo immediately after install.
+
 ## Who Is Steward For?
 
 Steward serves two distinct user roles. The same person may fill both roles, but the tasks and workflows differ.
@@ -29,7 +43,7 @@ Both roles use the same CLI binary. This README covers both paths and marks sect
 
 ### Development Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- **[.NET 10 SDK](https://dotnet.microsoft.com/download)** (10.0 or later) — Steward targets `net10.0`; earlier SDK versions (.NET 8, .NET 9) will not build and produce a clear error. Run `dotnet --version` to verify your installed version.
 
 ### From source
 
@@ -49,7 +63,7 @@ dotnet run --project src/Steward.Cli -- <command>
 
 ```bash
 dotnet pack src/Steward.Cli -c Release
-dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward --version 0.15.0
+dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward
 ```
 
 This installs the binary to `./.tools/steward/`. Add it to your PATH so the bare `steward` command works (matching all examples below):
@@ -72,13 +86,13 @@ Or run commands with the explicit path:
 
 ### Install from NuGet
 
-Once a release is published to nuget.org, install directly without building:
+When a release is available on nuget.org, install directly without building:
 
 ```bash
-dotnet tool install --global Steward --version 0.15.0
+dotnet tool install --global Steward
 ```
 
-NuGet publication is tag-driven via GitHub Actions. Check the [GitHub Releases page](https://github.com/jonv11/steward/releases) to confirm the package is available before running this command.
+NuGet publication is tag-driven via GitHub Actions. If the above command fails with "package not found", the latest version has not yet been published — use the [GitHub Releases page](https://github.com/jonv11/steward/releases) to download the `.nupkg` and install with `--add-source`, or build from source.
 
 ### GitHub Releases
 
@@ -89,10 +103,6 @@ When Steward cuts an intentional public `0.x` release, the GitHub Releases page 
 - a `SHA256SUMS.txt` checksum file
 
 The release operator path is documented in [docs/planning/release-process.md](docs/planning/release-process.md).
-
-### Dependency posture
-
-Steward currently pins exact prerelease CLI-stack versions in [Directory.Packages.props](Directory.Packages.props), including `System.CommandLine` beta5. All other runtime dependencies are at stable GA versions. That is an intentional pre-`1.0.0` tradeoff for the current repo line, not a claim that stable-release dependency hardening is already complete.
 
 ## Getting Started — Maintainer
 
@@ -133,8 +143,6 @@ Review the diagnostics. Each violation includes a rule ID you can look up:
 steward explain STWD-003           # understand what the rule checks and how to fix violations
 ```
 
-> **After a fresh `steward init`:** You may see STWD-009 warnings for non-required artifacts like `CHANGELOG.md` or `CONTRIBUTING.md` that are declared in the starter policy but don't exist yet. Either create those files or remove their entries from `.steward/policy.yaml`. These are warnings, not errors — `steward check` will still exit 0.
-
 ### 5. Set up maintenance
 
 If you configured maintenance artifacts (structure documents, indexes, managed sections) — look for a `maintenance:` section in `.steward/policy.yaml`:
@@ -173,7 +181,13 @@ After editing policy, re-run `config validate`, `config doctor`, and `check` to 
 
 If you are contributing to a repository that already uses Steward, follow this path. You do not need to understand or modify the `.steward/` configuration — the maintainer has already set that up.
 
-> **No `.steward/` config yet?** `steward orient`, `steward outline`, and `steward check` all work without a policy file. You can use them on any repository immediately after installing — for example, `steward outline docs/` gives you a heading-outline tree of any directory without any configuration.
+**No `.steward/` config needed.** `steward orient`, `steward outline`, and `steward check` all work on any repository immediately after installing — no policy file required. You get immediate value without any setup:
+
+```bash
+steward orient                     # classify and list the repo's key files
+steward outline docs/              # heading-outline tree of any directory
+steward check                      # validate against policy (if configured) or run structural checks
+```
 
 ### 1. Orient yourself
 
@@ -548,21 +562,9 @@ Steward is at `v0.15.0` on a pre-`1.0.0` release line. Intentional public `0.x` 
 
 **Planned for later pre-1.0 milestones:** Heading selector fuzzy matching in MdPath, workflow/session modeling, and broader machine-contract hardening. See [pre-1.0 readiness plan](docs/planning/pre-1-0-readiness-plan.md) for the categorized list.
 
-## Using Steward In This Repo
-
-When contributing to the Steward repository itself, use Steward as the primary navigation and validation surface:
-
-```bash
-steward orient --signals
-steward status --coverage
-steward check
-```
-
-Agent-specific operational guidance for using Steward on this repo lives in [SKILL.md](SKILL.md).
-
-For the strongest repo-specific orientation flow, start with `README.md`, then [docs/planning-index.md](docs/planning-index.md), [docs/implementation-status.md](docs/implementation-status.md), [docs/planning/implementation-instructions.md](docs/planning/implementation-instructions.md), and [docs/requirements/PRD.md](docs/requirements/PRD.md). Open `steward.sln` when you are ready to enter the code. If you are changing repo guidance or stewardship behavior, inspect `.steward/policy.yaml` next. After structural moves or new documentation, refresh the generated map with `steward maintain --artifact structure --apply`.
-
 ## Development
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contributor workflow, pull request guidelines, and how to use Steward on this repo.
 
 ### Prerequisites
 
@@ -583,6 +585,10 @@ dotnet test steward.sln
 ### CI
 
 The repository includes a GitHub Actions matrix in `.github/workflows/ci.yml` that runs `dotnet build`, `dotnet test`, and `dotnet pack src/Steward.Cli/Steward.Cli.csproj -c Release` on Windows, macOS, and Linux.
+
+### Dependency posture
+
+Steward currently pins exact prerelease CLI-stack versions in [Directory.Packages.props](Directory.Packages.props), including `System.CommandLine` beta5. All other runtime dependencies are at stable GA versions. That is an intentional pre-`1.0.0` tradeoff for the current repo line, not a claim that stable-release dependency hardening is already complete.
 
 ### Release Process
 
