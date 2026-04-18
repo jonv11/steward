@@ -4,6 +4,18 @@ repository:
   type: tool
 
 artifacts:
+  # Agent guidance entry points.
+  - path: AGENTS.md
+    role: guide
+    description: Primary entry point for coding agents — what to read, what to do, and how to work in this repo
+    required: true
+    importance: required
+
+  - path: .agents/skills/steward-cli/SKILL.md
+    role: guide
+    description: Steward CLI skill for agents — when and how to use steward in this specific repo
+    importance: recommended
+
   # Session-start spine and high-trust entry points.
   - path: README.md
     role: authoritative

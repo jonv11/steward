@@ -63,6 +63,7 @@ Historical audits are preserved for evidence and context. Active repository trut
 | [Rule-System Completeness Audit — 2026-04-18](audits/rule-system-completeness-audit-2026-04-18.md) | Systematic per-rule and system-wide review of the validation rule set as of 2026-04-18: intent clarity, diagnostic quality, remediation quality, coverage gaps, and highest-value governance improvements |
 | [AI-Agent Contract Review - 2026-04-18](audits/ai-agent-contract-review-2026-04-18.md) | Focused contract audit of Steward as an autonomous coding-agent tool: JSON stability, handoff quality, recovery, and mutation safety |
 | [Fresh-Eyes Onboarding Audit - 2026-04-18](audits/fresh-eyes-onboarding-audit-2026-04-18.md) | Fresh-clone, README-only onboarding audit of whether a skeptical newcomer can reach meaningful first value on a real repository without internal knowledge |
+| [Fresh-Eyes Re-Audit — 2026-04-18](audits/fresh-eyes-reaudit-onboarding-2026-04-18.md) | Follow-up onboarding re-audit after remediation: actionable findings and remaining gaps from a second fresh-clone pass |
 | [CLI Expectation Fidelity Assessment - 2026-04-17](audits/cli-expectation-fidelity-assessment-2026-04-17.md) | Current evidence-based assessment of whether Steward-on-Steward fulfills the repo's stated CLI promise, workflows, and trust expectations |
 | [Pre-1.0 Release Process Pass — 2026-04-17](audits/pre-1-0-release-process-pass-2026-04-17.md) | Release-governance and operator-process pass: labels, changelog, GitHub Release workflow, asset publication, and remaining deferred items |
 | [End-User Documentation Path Audit — 2026-04-17](audits/end-user-documentation-path-audit-2026-04-17.md) | Persona-based audit and remediation of the end-user documentation path for maintainers and contributors |
@@ -78,6 +79,7 @@ Historical audits are preserved for evidence and context. Active repository trut
 | Document | Purpose |
 | -------- | ------- |
 | [Code Quality Pass — 2026-04-16](audits/code-quality-pass-2026-04-16.md) | Closed correctness and consistency pass: `goto` refactor, STWD-009 double-report fix, `AllRules` field, `IndexMaintainer` type consistency |
+| [Code Quality Review — 2025-07-23](audits/code-quality-review-2025-07-23.md) | Historical code quality and maintainability review from the early development phase |
 | [Repository Audit — 2026-04-14](audits/repository-audit-2026-04-14.md) | Historical requirement-driven audit and contract-alignment review against the earlier repo state |
 | [Requirements Implementation Review — 2026-04-14](audits/review-requirements.md) | Historical per-requirement review against the earlier repo state and earlier version posture |
 | [Coding-Agent Usefulness Assessment — 2026-04-14](audits/assessment-coding-agent-usefulness.md) | Historical agent-workflow review that informed later ergonomics decisions |

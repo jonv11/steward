@@ -1,6 +1,9 @@
 # Repository Structure
 
 ```text
+├── .agents/
+│   └── skills/
+│       └── steward-cli
 ├── .editorconfig
 ├── .github/
 │   ├── dependabot.yml
@@ -12,7 +15,9 @@
 │       └── release.yml
 ├── .gitignore
 ├── .steward
+├── AGENTS.md
 ├── CHANGELOG.md
+├── CONTRIBUTING.md
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/
@@ -28,6 +33,7 @@
 │   │   ├── code-quality-review-2025-07-23.md
 │   │   ├── end-user-documentation-path-audit-2026-04-17.md
 │   │   ├── fresh-eyes-onboarding-audit-2026-04-18.md
+│   │   ├── fresh-eyes-reaudit-onboarding-2026-04-18.md
 │   │   ├── maintainer-remarks-implementation-summary-2026-04-18.md
 │   │   ├── maintainer-review.md
 │   │   ├── maintainer-usecase-expectations.md
@@ -74,7 +80,6 @@
 │       ├── Build-ReleaseAssets.ps1
 │       ├── Export-ReleaseNotes.ps1
 │       └── Sync-ReleaseLabels.ps1
-├── SKILL.md
 ├── src/
 │   ├── Steward.Cli/
 │   │   ├── CommandContext.cs
