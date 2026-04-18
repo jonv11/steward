@@ -22,3 +22,6 @@ Desktop.ini
 # Build
 publish/
 artifacts/
+
+# Local tool installs
+.tools/
