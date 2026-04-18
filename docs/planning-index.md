@@ -68,26 +68,27 @@ Historical audits are preserved for evidence and context. Active repository trut
 | [CLI Expectation Fidelity Assessment - 2026-04-17](audits/cli-expectation-fidelity-assessment-2026-04-17.md) | Current evidence-based assessment of whether Steward-on-Steward fulfills the repo's stated CLI promise, workflows, and trust expectations |
 | [Pre-1.0 Release Process Pass — 2026-04-17](audits/pre-1-0-release-process-pass-2026-04-17.md) | Release-governance and operator-process pass: labels, changelog, GitHub Release workflow, asset publication, and remaining deferred items |
 | [End-User Documentation Path Audit — 2026-04-17](audits/end-user-documentation-path-audit-2026-04-17.md) | Persona-based audit and remediation of the end-user documentation path for maintainers and contributors |
-| [CLI Full Assessment — 2026-04-16](audits/cli-full-assessment-2026-04-16.md) | Comprehensive end-to-end product assessment: build, exercise, cross-reference, diagnose, score |
-| [CLI Expectation Fidelity Reassessment — 2026-04-16](audits/cli-expectation-fidelity-reassessment-2026-04-16.md) | Deep evidence-based reassessment of Steward-on-Steward promise fidelity, workflow trust, and release-line credibility |
-| [CLI Expectation Fidelity Review — 2026-04-16](audits/cli-expectation-fidelity-review-2026-04-16.md) | Principal-level assessment of whether Steward-on-Steward currently fulfills the repo's own CLI promise, workflows, and trust expectations |
-| [Release-Readiness Assessment — 2026-04-15](audits/release-readiness-assessment-2026-04-15.md) | End-user product review that feeds the active pre-release blocker list |
-| [Profile Readiness Review — 2026-04-16](audits/profile-readiness-review-2026-04-16.md) | Command-level release checklist and current evidence for non-software profile readiness |
-| [Release Governance Conformance Review — 2026-04-16](audits/release-governance-conformance-review-2026-04-16.md) | Current principal-engineering release-gate pass across accepted product/architecture artifacts and implementation |
+| [Release-Readiness Assessment — 2026-04-15](audits/release-readiness-assessment-2026-04-15.md) | End-user product review that originated the active pre-release blocker list |
+| [Profile Readiness Review — 2026-04-16](audits/profile-readiness-review-2026-04-16.md) | Command-level release checklist and fixture-backed evidence for non-software profile readiness; cited by ADR-014 |
 
 ### Historical Reviews And Closed Pass Records
 
 | Document | Purpose |
 | -------- | ------- |
+| [Historical Audit Synthesis — 2026-04-14 through 2026-04-16](audits/historical-audit-synthesis.md) | Consolidated durable lessons from the early-development review wave: architecture, ergonomics, governance, and release conventions; canonical successor for the reduced files below |
+| [Audit Curation Decision Log — 2026-04-18](audits/audit-curation-decision-log-2026-04-18.md) | File-by-file classification, action taken, and rationale for the 2026-04-18 `docs/audits/` curation pass |
 | [Code Quality Pass — 2026-04-16](audits/code-quality-pass-2026-04-16.md) | Closed correctness and consistency pass: `goto` refactor, STWD-009 double-report fix, `AllRules` field, `IndexMaintainer` type consistency |
-| [Code Quality Review — 2025-07-23](audits/code-quality-review-2025-07-23.md) | Historical code quality and maintainability review from the early development phase |
-| [Repository Audit — 2026-04-14](audits/repository-audit-2026-04-14.md) | Historical requirement-driven audit and contract-alignment review against the earlier repo state |
-| [Requirements Implementation Review — 2026-04-14](audits/review-requirements.md) | Historical per-requirement review against the earlier repo state and earlier version posture |
-| [Coding-Agent Usefulness Assessment — 2026-04-14](audits/assessment-coding-agent-usefulness.md) | Historical agent-workflow review that informed later ergonomics decisions |
+| [CLI Full Assessment — 2026-04-16](audits/cli-full-assessment-2026-04-16.md) | Stub — superseded by 2026-04-17/18 reviews; finding labels F1–F5 preserved for traceability |
+| [CLI Expectation Fidelity Reassessment — 2026-04-16](audits/cli-expectation-fidelity-reassessment-2026-04-16.md) | Stub — superseded by 2026-04-17 assessment; finding labels F-01/F-02 preserved for traceability |
+| [CLI Expectation Fidelity Review — 2026-04-16](audits/cli-expectation-fidelity-review-2026-04-16.md) | Stub — superseded by 2026-04-17 assessment; finding labels EF-001/EF-002 preserved for traceability |
+| [Release Governance Conformance Review — 2026-04-16](audits/release-governance-conformance-review-2026-04-16.md) | Stub — superseded by 2026-04-17/18 release evidence; key decisions (ADR-014, RFC corrections) recorded in successor artifacts |
+| [Repository Audit — 2026-04-14](audits/repository-audit-2026-04-14.md) | Stub — early requirement-driven audit; changes and key findings recorded in stub and synthesis |
+| [Requirements Implementation Review — 2026-04-14](audits/review-requirements.md) | Stub — early per-requirement pass; remaining open items tracked in readiness plan |
+| [Coding-Agent Usefulness Assessment — 2026-04-14](audits/assessment-coding-agent-usefulness.md) | Historical agent-workflow review that informed ADR-010 |
 | [Maintainer Review — 2026-04-14](audits/maintainer-review.md) | Historical maintainer-perspective gap analysis that informed later governance work |
 | [CLI Usability and Configurability Review — 2026-04-15](audits/usability-review-2026-04-15.md) | Historical Steward-on-Steward ergonomics review that informed subsequent fixes |
-| [Repo Actionability Pass — 2026-04-16](audits/repo-actionability-pass-2026-04-16.md) | Closed implementation pass record preserved as evidence of why specific repo-grounded changes landed |
-| [Artifact Hygiene Cleanup Review — 2026-04-16](audits/artifact-hygiene-cleanup-review-2026-04-16.md) | Cleanup record for audit/status/review artifact classification and scoping hygiene |
+| [Repo Actionability Pass — 2026-04-16](audits/repo-actionability-pass-2026-04-16.md) | Closed implementation pass record: CI matrix, `config show --effective` text output, README tightening |
+| [Artifact Hygiene Cleanup Review — 2026-04-16](audits/artifact-hygiene-cleanup-review-2026-04-16.md) | Stub — prior classification-only cleanup pass; superseded by the 2026-04-18 curation pass |
 
 ### Research And Input Evidence
 
