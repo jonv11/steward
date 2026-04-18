@@ -60,6 +60,7 @@
 │   ├── planning/
 │   │   ├── curation-notes.md
 │   │   ├── delivery-strategy.md
+│   │   ├── future-enhancements-backlog.md
 │   │   ├── implementation-instructions.md
 │   │   ├── milestone-plan.md
 │   │   ├── pre-1-0-readiness-plan.md
@@ -78,6 +79,7 @@
 │   └── reviews/
 │       ├── ai-agent-contract-review.md
 │       ├── config-expressiveness-stress-test.md
+│       ├── draft-rfc-disposition-review-2026-04-18.md
 │       ├── review-synthesis-action-plan.md
 │       └── rule-system-completeness-audit.md
 ├── dgitstewarddocsreviews

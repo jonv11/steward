@@ -37,6 +37,7 @@ Central navigation for the active product, planning, readiness, and decision art
 | [Implementation Instructions](planning/implementation-instructions.md) | Contributor execution guide for the active pre-1.0 roadmap |
 | [v0.15.0 Draft Preparation](planning/v0-15-draft-preparation.md) | Historical preparation memo preserved as evidence for the shipped `v0.15.0` milestone |
 | [RFC-007 Governance Enhancements Backlog](planning/rfc-007-governance-enhancements-backlog.md) | Status ledger for accepted governance-enhancement items |
+| [Future Enhancements Backlog](planning/future-enhancements-backlog.md) | Tracked enhancement concepts from the April 2026 draft-RFC review that do not yet warrant RFC-grade design authority |
 | [Curation Notes](planning/curation-notes.md) | Provenance, superseded framing, and roadmap retargeting notes |
 | [Release Process](planning/release-process.md) | Authoritative operator guide for intentional public pre-1.0 releases, labels, changelog policy, tagging, and GitHub Releases |
 | [Release Publication Checklist](planning/release-publication-checklist.md) | Local verification, tagging, NuGet publication, and self-contained binary steps |
@@ -46,6 +47,8 @@ Central navigation for the active product, planning, readiness, and decision art
 | Document | Purpose |
 |----------|---------|
 | [RFC-009 Typed Resource Addresses and Search Alignment](decisions/rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md) | Deferred typed-address model for file and Markdown resources — revisit in a later pre-1.0 milestone |
+| [RFC-012 Heading-Level Markdown Refactors](decisions/rfcs/RFC-012-heading-level-markdown-refactors.md) | Deferred heading rename/restructure operations with cross-file reference updating |
+| [RFC-013 Governed Suppressions and Expiring Debt](decisions/rfcs/RFC-013-governed-suppressions-and-expiring-debt.md) | Deferred structured suppression metadata with lifecycle, ownership, and auditability |
 
 ## Config and Policy Reviews
 
@@ -63,6 +66,7 @@ Historical audits are preserved for evidence and context. Active repository trut
 
 | Document | Purpose |
 | -------- | ------- |
+| [Draft RFC Disposition Review — 2026-04-18](reviews/draft-rfc-disposition-review-2026-04-18.md) | Disposition synthesis for the 7 draft RFCs: 2 accepted as deferred RFCs, 5 absorbed into enhancement backlog |
 | [Workflow Model Analysis — 2026-04-18](audits/workflow-analysis-2026-04-18.md) | Git history analysis, pattern evaluation, and design rationale behind the canonical workflow guide |
 | [Maintainer Remarks Implementation Summary — 2026-04-18](audits/maintainer-remarks-implementation-summary-2026-04-18.md) | Repo-grounded implementation summary for the 2026-04-18 maintainer pass: code, tests, docs, package naming, and release automation outcomes |
 | [Repo Quality Hardening Pass — 2026-04-18](audits/repo-quality-hardening-pass-2026-04-18.md) | Implementation-quality hardening record for the April 18 full-repo pass: issues fixed, behavior-preservation choices, and explicit deferrals |

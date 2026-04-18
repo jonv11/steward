@@ -1,9 +1,9 @@
 ---
 type: planning
 document_id: PLAN-0001
-version: 0.14.0
+version: 0.16.0
 status: Accepted
-last_updated: 2026-04-16
+last_updated: 2026-04-18
 ---
 
 # Delivery Strategy
@@ -27,13 +27,13 @@ Steward continues to follow an incremental milestone model. Each milestone must 
 
 Authoritative versioning policy is recorded in [ADR-013](../decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
-- `0.14.0` is the current pre-1.0 baseline.
+- `0.16.0` is the current pre-1.0 baseline.
 - Future feature work stays on the `0.x.y` line until an explicit release-authorization decision approves `1.0.0`.
 - Pre-1.0 patch bumps are reserved for tightly scoped fixes, packaging corrections, and documentation adjustments on the same baseline.
 - Pre-1.0 minor bumps are intentional roadmap moves and require written rationale in the active planning/state artifacts.
 
 ## Milestone Shape
 
-- Delivered lineage: `v0.1.0` through `v0.14.0`
-- Planned pre-stable continuation: `v0.11.0` and later
+- Delivered lineage: `v0.1.0` through `v0.16.0`
+- Planned pre-stable continuation: `v0.17.0` and later
 - First stable release: `v1.0.0`, not yet authorized and not yet scheduled

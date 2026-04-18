@@ -47,6 +47,18 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 |---------|-------|-----------|
 | `v1.0.0` | Not scheduled | Requires explicit authorization per ADR-013 plus green evidence from the active readiness plan |
 
+## Deferred RFCs (Not Scheduled)
+
+The following RFCs are accepted in principle but deferred until the pre-1.0 trust floor is established and adoption evidence justifies scheduling:
+
+| RFC | Topic | Prerequisites |
+|-----|-------|---------------|
+| [RFC-009](../decisions/rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md) | Typed resource addresses and search alignment | Stronger pre-1.0 foundations and clearer type/address design |
+| [RFC-012](../decisions/rfcs/RFC-012-heading-level-markdown-refactors.md) | Heading-level Markdown refactors | Stable selector infrastructure, proven Markdown refactoring surfaces |
+| [RFC-013](../decisions/rfcs/RFC-013-governed-suppressions-and-expiring-debt.md) | Governed suppressions and expiring debt | Stable policy schema, adoption evidence for structured exception management |
+
+Additional future enhancement concepts that do not yet warrant RFC-grade design authority are tracked in [future-enhancements-backlog.md](future-enhancements-backlog.md).
+
 ## Notes
 
 - The release-process completion work now lives on the active pre-1.0 line; it does not imply that `1.0.0` is scheduled or authorized.

@@ -20,6 +20,8 @@ Deferred RFCs remain in the RFC table with `Status: Deferred`; accepted ADRs and
 | RFC-009: Typed Resource Addresses and Search Alignment | [RFC-009-typed-resource-addresses-and-search-alignment.md](rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md) | Deferred | Proposes a typed resource-address model aligned across file, Markdown, search, and reference surfaces |
 | RFC-010: Consistent JSON Output Envelope | [RFC-010-consistent-json-output-envelope.md](rfcs/RFC-010-consistent-json-output-envelope.md) | Accepted | Defines an additive standard JSON envelope for machine-facing CLI consistency |
 | RFC-011: Markdown Split and Extract Workflows | [RFC-011-markdown-split-and-extract-workflows.md](rfcs/RFC-011-markdown-split-and-extract-workflows.md) | Accepted | Defines preview-first Markdown split planning and extract-section workflows |
+| RFC-012: Heading-Level Markdown Refactors | [RFC-012-heading-level-markdown-refactors.md](rfcs/RFC-012-heading-level-markdown-refactors.md) | Deferred | Defines heading-level Markdown refactor operations starting with safe, reference-aware heading rename |
+| RFC-013: Governed Suppressions and Expiring Debt | [RFC-013-governed-suppressions-and-expiring-debt.md](rfcs/RFC-013-governed-suppressions-and-expiring-debt.md) | Deferred | Defines structured, metadata-bearing suppression governance with optional expiry, ownership, and auditability for policy exceptions |
 
 <!-- steward:end -->
 
