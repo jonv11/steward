@@ -45,6 +45,7 @@
 │   │   ├── release-governance-conformance-review-2026-04-16.md
 │   │   ├── release-readiness-assessment-2026-04-15.md
 │   │   ├── repo-actionability-pass-2026-04-16.md
+│   │   ├── repo-quality-hardening-pass-2026-04-18.md
 │   │   ├── repository-audit-2026-04-14.md
 │   │   ├── review-requirements.md
 │   │   ├── rule-system-completeness-audit-2026-04-18.md
@@ -64,6 +65,7 @@
 │   │   ├── pre-release-blockers.md
 │   │   ├── release-process.md
 │   │   ├── release-publication-checklist.md
+│   │   ├── repo-quality-hardening-pass-plan.md
 │   │   ├── rfc-007-governance-enhancements-backlog.md
 │   │   └── v0-15-draft-preparation.md
 │   ├── planning-index.md

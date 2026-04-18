@@ -1,4 +1,5 @@
 using Steward.Core.Configuration;
+using Steward.Core.Abstractions;
 using Steward.Core.Discovery;
 
 namespace Steward.Core.Orientation;
@@ -55,10 +56,11 @@ public sealed class OrientationEngine
         RepositoryPolicy? policy = null,
         string? profile = null,
         int maxDepth = 3,
-        OrientationSignalInput? signals = null)
+        OrientationSignalInput? signals = null,
+        IFileSystem? fileSystem = null)
     {
         var startHere = policy?.Governance?.StartHere ?? [];
-        var entries = BuildHierarchy(files, policy, startHere, maxDepth);
+        var entries = BuildHierarchy(files, policy, startHere, maxDepth, fileSystem, repositoryRoot);
         return new OrientationResult
         {
             RepositoryRoot = repositoryRoot,
@@ -75,7 +77,9 @@ public sealed class OrientationEngine
         IReadOnlyList<DiscoveredFile> files,
         RepositoryPolicy? policy,
         IReadOnlyList<string> startHere,
-        int maxDepth)
+        int maxDepth,
+        IFileSystem? fileSystem,
+        string repositoryRoot)
     {
         var rootEntries = new List<OrientationEntry>();
         var startHereSet = new HashSet<string>(startHere, StringComparer.OrdinalIgnoreCase);
@@ -85,7 +89,7 @@ public sealed class OrientationEngine
             var depth = file.RelativePath.Count(c => c == '/');
             if (depth >= maxDepth) continue;
 
-            var classification = Classify(file, policy);
+            var classification = Classify(file, policy, fileSystem, repositoryRoot);
 
             rootEntries.Add(new OrientationEntry
             {
@@ -100,7 +104,11 @@ public sealed class OrientationEngine
         return rootEntries;
     }
 
-    public static string Classify(DiscoveredFile file, RepositoryPolicy? policy = null)
+    public static string Classify(
+        DiscoveredFile file,
+        RepositoryPolicy? policy = null,
+        IFileSystem? fileSystem = null,
+        string? repositoryRoot = null)
     {
         var configuredRole = ResolveConfiguredRole(file, policy);
         if (configuredRole != null)
@@ -115,7 +123,7 @@ public sealed class OrientationEngine
         if (policy?.ArtifactFamilies is { Count: > 0 })
         {
             var classifier = new ArtifactFamilyClassifier(policy.ArtifactFamilies);
-            var family = classifier.Classify(file.RelativePath, frontmatterFields: null);
+            var family = classifier.ClassifyFile(file.RelativePath, fileSystem, repositoryRoot);
             if (family?.Family != null)
                 return $"family:{family.Family}";
         }

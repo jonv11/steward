@@ -1,4 +1,6 @@
 using DotNet.Globbing;
+using Steward.Core.Abstractions;
+using Steward.Core.Markdown;
 
 namespace Steward.Core.Configuration;
 
@@ -54,6 +56,17 @@ public sealed class ArtifactFamilyClassifier
         return null;
     }
 
+    public ArtifactFamilyDefinition? ClassifyFile(
+        string relativePath,
+        IFileSystem? fileSystem,
+        string? repositoryRoot)
+    {
+        if (!UsesFrontmatterCriteria || fileSystem == null || string.IsNullOrWhiteSpace(repositoryRoot))
+            return Classify(relativePath, frontmatterFields: null);
+
+        return Classify(relativePath, TryLoadFrontmatterFields(relativePath, fileSystem, repositoryRoot));
+    }
+
     /// <summary>Returns true if any family has a path_pattern that matches the given path.</summary>
     public bool HasFamilyWithPathPattern(string relativePath)
     {
@@ -64,6 +77,9 @@ public sealed class ArtifactFamilyClassifier
         }
         return false;
     }
+
+    public bool UsesFrontmatterCriteria =>
+        _families.Any(static compiled => compiled.Definition.Match?.Frontmatter is { Count: > 0 });
 
     public IReadOnlyList<ArtifactFamilyDefinition> AllFamilies =>
         _families.Select(c => c.Definition).ToList();
@@ -97,6 +113,33 @@ public sealed class ArtifactFamilyClassifier
         }
 
         return true;
+    }
+
+    private static IReadOnlyDictionary<string, object?>? TryLoadFrontmatterFields(
+        string relativePath,
+        IFileSystem fileSystem,
+        string repositoryRoot)
+    {
+        var fullPath = Path.Combine(repositoryRoot, relativePath);
+        if (!fileSystem.FileExists(fullPath))
+            return null;
+
+        try
+        {
+            var content = fileSystem.ReadAllText(fullPath);
+            var document = MarkdownParser.Parse(relativePath, content);
+            return document.Frontmatter?.Fields != null
+                ? document.Frontmatter.Fields.ToDictionary(
+                    static kv => kv.Key,
+                    static kv => (object?)kv.Value,
+                    StringComparer.OrdinalIgnoreCase)
+                : null;
+        }
+        catch
+        {
+            // Fall back to path-only classification when a file cannot be parsed.
+            return null;
+        }
     }
 
     private sealed record CompiledFamily(ArtifactFamilyDefinition Definition, Glob? PathGlob);

@@ -30,6 +30,7 @@ Central navigation for the active product, planning, readiness, and decision art
 |----------|---------|
 | [Delivery Strategy](planning/delivery-strategy.md) | Sequencing principles and versioning strategy |
 | [Milestone Plan](planning/milestone-plan.md) | Delivered lineage plus the active `v0.16.0` and `v0.17.0` pre-1.0 scope |
+| [Repo Quality Hardening Pass Plan](planning/repo-quality-hardening-pass-plan.md) | Execution plan for the April 18 implementation-quality hardening pass: must-fix clusters, behavior-preservation cautions, and explicit deferrals |
 | [Review Synthesis Action Plan — 2026-04-18](reviews/review-synthesis-action-plan.md) | Canonical synthesis of the April 18 review cycle into validated backlog, priorities, and planning destinations |
 | [Pre-Release Blockers](planning/pre-release-blockers.md) | Critical items that must be resolved before a first meaningful public pre-1.0 release |
 | [Implementation Instructions](planning/implementation-instructions.md) | Contributor execution guide for the active pre-1.0 roadmap |
@@ -62,6 +63,7 @@ Historical audits are preserved for evidence and context. Active repository trut
 | Document | Purpose |
 | -------- | ------- |
 | [Maintainer Remarks Implementation Summary — 2026-04-18](audits/maintainer-remarks-implementation-summary-2026-04-18.md) | Repo-grounded implementation summary for the 2026-04-18 maintainer pass: code, tests, docs, package naming, and release automation outcomes |
+| [Repo Quality Hardening Pass — 2026-04-18](audits/repo-quality-hardening-pass-2026-04-18.md) | Implementation-quality hardening record for the April 18 full-repo pass: issues fixed, behavior-preservation choices, and explicit deferrals |
 | [Rule-System Completeness Audit — 2026-04-18](audits/rule-system-completeness-audit-2026-04-18.md) | Systematic per-rule and system-wide review of the validation rule set as of 2026-04-18: intent clarity, diagnostic quality, remediation quality, coverage gaps, and highest-value governance improvements |
 | [AI-Agent Contract Review - 2026-04-18](audits/ai-agent-contract-review-2026-04-18.md) | Focused contract audit of Steward as an autonomous coding-agent tool: JSON stability, handoff quality, recovery, and mutation safety |
 | [Fresh-Eyes Onboarding Audit - 2026-04-18](audits/fresh-eyes-onboarding-audit-2026-04-18.md) | Fresh-clone, README-only onboarding audit of whether a skeptical newcomer can reach meaningful first value on a real repository without internal knowledge |

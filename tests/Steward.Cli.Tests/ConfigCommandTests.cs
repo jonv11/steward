@@ -363,6 +363,130 @@ public class ConfigCommandTests : IDisposable
         findings.Should().Contain(f => f.Category == "unreachable-frontmatter-pattern" && f.Message.Contains("archive/**"));
     }
 
+    [Fact]
+    public void ConfigDoctor_MaintenanceDirectorySource_DoesNotReportUnmatchedSource()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Maintenance = new MaintenanceConfig
+            {
+                Artifacts =
+                [
+                    new MaintenanceArtifactDef
+                    {
+                        Id = "structure",
+                        Path = "STRUCTURE.md",
+                        Type = "structure-document",
+                        Source = "src/"
+                    }
+                ]
+            }
+        };
+
+        var ctx = CreateDoctorContext(policy, pathPolicy: null,
+            files:
+            [
+                new DiscoveredFile("src", 0, true),
+                new DiscoveredFile("src/Program.cs", 100, false)
+            ]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().NotContain(f => f.Category == "unmatched-maintenance-source");
+    }
+
+    [Fact]
+    public void ConfigDoctor_ConflictingAllowedValues_NonOverlappingPatterns_NoIssue()
+    {
+        var policy = new RepositoryPolicy
+        {
+            ArtifactFamilies =
+            [
+                new ArtifactFamilyDefinition
+                {
+                    Family = "rfc",
+                    Match = new ArtifactFamilyMatch { PathPattern = "docs/decisions/rfcs/*.md" },
+                    FrontmatterSchema = new ArtifactFamilyFrontmatterSchema
+                    {
+                        AllowedValues = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["type"] = ["rfc"]
+                        }
+                    }
+                }
+            ],
+            Validation = new ValidationConfig
+            {
+                FrontmatterRequirements =
+                [
+                    new FrontmatterRequirement
+                    {
+                        Pattern = "docs/planning/*.md",
+                        AllowedValues = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["type"] = ["planning"]
+                        }
+                    }
+                ]
+            }
+        };
+
+        var ctx = CreateDoctorContext(policy, pathPolicy: null,
+            files:
+            [
+                new DiscoveredFile("docs/decisions/rfcs/RFC-001-proposal.md", 100, false),
+                new DiscoveredFile("docs/planning/implementation-plan.md", 100, false)
+            ]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().NotContain(f => f.Category == "conflicting-allowed-values");
+    }
+
+    [Fact]
+    public void ConfigDoctor_ConflictingAllowedValues_OverlappingPatterns_ReportsIssue()
+    {
+        var policy = new RepositoryPolicy
+        {
+            ArtifactFamilies =
+            [
+                new ArtifactFamilyDefinition
+                {
+                    Family = "planning",
+                    Match = new ArtifactFamilyMatch { PathPattern = "docs/planning/*.md" },
+                    FrontmatterSchema = new ArtifactFamilyFrontmatterSchema
+                    {
+                        AllowedValues = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["status"] = ["Active"]
+                        }
+                    }
+                }
+            ],
+            Validation = new ValidationConfig
+            {
+                FrontmatterRequirements =
+                [
+                    new FrontmatterRequirement
+                    {
+                        Pattern = "docs/planning/*.md",
+                        AllowedValues = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["status"] = ["Draft"]
+                        }
+                    }
+                ]
+            }
+        };
+
+        var ctx = CreateDoctorContext(policy, pathPolicy: null,
+            files: [new DiscoveredFile("docs/planning/implementation-plan.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().Contain(f => f.Category == "conflicting-allowed-values");
+    }
+
     private static CommandContext CreateDoctorContext(
         RepositoryPolicy? policy,
         PathPolicyDocument? pathPolicy,

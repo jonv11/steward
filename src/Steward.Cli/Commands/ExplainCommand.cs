@@ -5,6 +5,7 @@ using Steward.Core;
 using Steward.Core.Configuration;
 using Steward.Core.Discovery;
 using Steward.Core.Formatting;
+using Steward.Core.Maintenance;
 using Steward.Core.Markdown;
 using Steward.Core.Orientation;
 using Steward.Core.Validation;
@@ -402,11 +403,10 @@ public static class ExplainCommand
                     continue;
                 }
 
-                var sourceGlob = Glob.Parse(artifact.Source);
-                var isSourceMatch = sourceGlob.IsMatch(relativePath);
+                var isSourceMatch = MaintenanceSourceMatcher.Matches(artifact.Source, relativePath);
                 var isSelfTarget = !string.IsNullOrWhiteSpace(artifact.Path) &&
                                    string.Equals(
-                                       PathHelper.NormalizeSeparators(artifact.Path),
+                                        PathHelper.NormalizeSeparators(artifact.Path),
                                        relativePath,
                                        StringComparison.OrdinalIgnoreCase);
 
@@ -420,28 +420,8 @@ public static class ExplainCommand
         string? familyDisplayName = null;
         if (ctx.Policy?.ArtifactFamilies is { Count: > 0 })
         {
-            IReadOnlyDictionary<string, object?>? frontmatterFields = null;
-            var fullPath = System.IO.Path.Combine(ctx.RootPath, relativePath);
-            if (ctx.FileSystem?.FileExists(fullPath) == true)
-            {
-                try
-                {
-                    var content = ctx.FileSystem.ReadAllText(fullPath);
-                    var doc = MarkdownParser.Parse(relativePath, content);
-                    if (doc.Frontmatter?.Fields != null)
-                    {
-                        frontmatterFields = doc.Frontmatter.Fields
-                            .ToDictionary(kv => kv.Key, kv => (object?)kv.Value, StringComparer.OrdinalIgnoreCase);
-                    }
-                }
-                catch
-                {
-                    // File unreadable — classify by path pattern only
-                }
-            }
-
             var classifier = new ArtifactFamilyClassifier(ctx.Policy.ArtifactFamilies);
-            var family = classifier.Classify(relativePath, frontmatterFields);
+            var family = classifier.ClassifyFile(relativePath, ctx.FileSystem, ctx.RootPath);
             if (family != null)
             {
                 matchedFamily = family.Family;

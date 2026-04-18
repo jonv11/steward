@@ -174,4 +174,29 @@ public class OrientCommandTests : IDisposable
         output.Should().Contain("Signals");
         output.Should().Contain("none");
     }
+
+    [Fact]
+    public void Orient_JsonOutput_ClassifiesFrontmatterFamily()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            artifact_families:
+              - family: review
+                match:
+                  frontmatter:
+                    type: review
+            """);
+        Directory.CreateDirectory(Path.Combine(_tempDir, "docs"));
+        File.WriteAllText(Path.Combine(_tempDir, "docs", "review.md"), """
+            ---
+            type: review
+            ---
+            # Review
+            """);
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("orient", "--full", "--output", "json");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("\"path\": \"docs/review.md\"");
+        output.Should().Contain("\"classification\": \"family:review\"");
+    }
 }

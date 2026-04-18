@@ -5,6 +5,7 @@ using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Configuration;
 using Steward.Core.Formatting;
+using Steward.Core.Maintenance;
 
 namespace Steward.Cli.Commands;
 
@@ -361,8 +362,7 @@ public static class ConfigCommand
             foreach (var maint in ctx.Policy.Maintenance.Artifacts)
             {
                 if (string.IsNullOrWhiteSpace(maint.Source)) continue;
-                var glob = Glob.Parse(maint.Source);
-                if (!existingPaths.Any(p => glob.IsMatch(p)))
+                if (!MaintenanceSourceMatcher.MatchesAny(maint.Source, existingPaths))
                 {
                     findings.Add(new DoctorFinding(
                         "unmatched-maintenance-source",
@@ -507,8 +507,10 @@ public static class ConfigCommand
                     if (string.IsNullOrWhiteSpace(req.Pattern) || req.AllowedValues == null)
                         continue;
 
-                    // Check if the patterns could overlap (both match the family's path)
                     var reqGlob = Glob.Parse(req.Pattern);
+                    var hasOverlap = existingPaths.Any(path => familyGlob.IsMatch(path) && reqGlob.IsMatch(path));
+                    if (!hasOverlap)
+                        continue;
 
                     // Check for conflicting allowed_values on the same field
                     foreach (var (field, familyValues) in family.FrontmatterSchema.AllowedValues)

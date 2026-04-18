@@ -86,4 +86,37 @@ public class ChangeImpactTests
 
         impacts.Should().BeEmpty();
     }
+
+    [Fact]
+    public void ComputeImpactSignals_GlobSource_ReportsImpact()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Maintenance = new MaintenanceConfig
+            {
+                Artifacts =
+                [
+                    new MaintenanceArtifactDef
+                    {
+                        Id = "docs-index",
+                        Path = "docs/index.md",
+                        Type = "directory-index",
+                        Source = "docs/**/*.md"
+                    }
+                ]
+            }
+        };
+
+        var diagnostics = new List<Diagnostic>
+        {
+            new("STWD-008", DiagnosticSeverity.Warning, "broken-link",
+                "docs/guides/setup.md", null, "Broken link", null, null)
+        };
+
+        var impacts = CheckCommand.ComputeImpactSignals(policy, diagnostics);
+
+        impacts.Should().ContainSingle();
+        impacts[0].ArtifactId.Should().Be("docs-index");
+        impacts[0].SourcePath.Should().Be("docs/guides/setup.md");
+    }
 }

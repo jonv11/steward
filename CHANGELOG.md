@@ -22,6 +22,9 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 - `config validate` JSON errors structured as `[{ file, message }]` objects instead of plain strings (CC-08).
 - `refactor move --apply` now executes before output formatting so JSON mode apply actually moves files (CC-04).
 - JSON error paths added to `md outline`, `md edit`, `search`, `config validate`, `orient`, `status`, and `maintain` commands (CC-01).
+- Unified maintenance-source matching across `check`, `status`, and `config doctor` so directory-style and glob-based `maintenance.artifacts[].source` values are interpreted consistently.
+- `status` family summaries and `orient` classification now honor frontmatter-based artifact-family criteria instead of path-only matching on those reporting surfaces.
+- `config doctor` now reports conflicting frontmatter `allowed_values` only when family and scoped requirement patterns actually overlap on discovered files.
 
 ## [0.15.0] - 2026-04-18
 

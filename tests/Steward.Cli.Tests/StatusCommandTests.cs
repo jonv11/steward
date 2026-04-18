@@ -228,6 +228,32 @@ artifacts:
     }
 
     [Fact]
+    public void Status_JsonOutput_FrontmatterFamily_CountsMatchedFiles()
+    {
+        WritePolicyYaml("""
+            repository:
+              name: test-repo
+            artifact_families:
+              - family: review
+                match:
+                  frontmatter:
+                    type: review
+            """);
+        WriteFile("docs/reviews/summary.md", """
+            ---
+            type: review
+            ---
+            # Review
+            """);
+
+        var (exitCode, output, _) = InvokeStatus("status", "--output", "json");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("\"family\": \"review\"");
+        output.Should().Contain("\"matchedCount\": 1");
+    }
+
+    [Fact]
     public void ComputeCoverage_IncludesIndexedAndReachableMarkdownFiles()
     {
         WriteFile("README.md", "# Root\n[Index](docs/planning-index.md)\n[Guide](guides/getting-started.md)");

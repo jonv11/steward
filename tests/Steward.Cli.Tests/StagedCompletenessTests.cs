@@ -99,4 +99,36 @@ public class StagedCompletenessTests
 
         result.Should().BeEmpty();
     }
+
+    [Fact]
+    public void ComputeStagedCompleteness_GlobSourceStagedArtifactNot_ReportsIncomplete()
+    {
+        var policy = new RepositoryPolicy
+        {
+            Maintenance = new MaintenanceConfig
+            {
+                Artifacts =
+                [
+                    new MaintenanceArtifactDef
+                    {
+                        Id = "docs-index",
+                        Path = "docs/index.md",
+                        Type = "directory-index",
+                        Source = "docs/**/*.md"
+                    }
+                ]
+            }
+        };
+
+        var staged = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "docs/guides/setup.md"
+        };
+
+        var result = CheckCommand.ComputeStagedCompleteness(policy, staged);
+
+        result.Should().ContainSingle();
+        result[0].ArtifactId.Should().Be("docs-index");
+        result[0].ArtifactPath.Should().Be("docs/index.md");
+    }
 }

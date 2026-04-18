@@ -2,6 +2,7 @@ using System.CommandLine;
 using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Formatting;
+using Steward.Core.Maintenance;
 using Steward.Core.Markdown;
 using Steward.Core.Validation;
 namespace Steward.Cli.Commands;
@@ -402,8 +403,7 @@ public static class CheckCommand
 
             foreach (var path in diagnosticPaths)
             {
-                if (path.StartsWith(source + "/", StringComparison.OrdinalIgnoreCase) ||
-                    path.Equals(source, StringComparison.OrdinalIgnoreCase))
+                if (MaintenanceSourceMatcher.Matches(source, path))
                 {
                     var key = $"{artifact.Id}:{path}";
                     if (seen.Add(key))
@@ -434,10 +434,7 @@ public static class CheckCommand
             var source = PathHelper.NormalizeAndTrim(artifact.Source);
             var artifactPath = PathHelper.NormalizeSeparators(artifact.Path ?? "");
 
-            // Check if any staged path is under this source
-            var hasSourceStaged = stagedPaths.Any(p =>
-                p.StartsWith(source + "/", StringComparison.OrdinalIgnoreCase) ||
-                p.Equals(source, StringComparison.OrdinalIgnoreCase));
+            var hasSourceStaged = MaintenanceSourceMatcher.MatchesAny(source, stagedPaths);
 
             if (hasSourceStaged && !string.IsNullOrWhiteSpace(artifactPath) && !stagedPaths.Contains(artifactPath))
             {

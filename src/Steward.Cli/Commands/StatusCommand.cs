@@ -254,7 +254,7 @@ public static class StatusCommand
             }
         }
 
-        var familySummaries = ComputeFamilySummary(policy, files);
+        var familySummaries = ComputeFamilySummary(policy, files, fileSystem, rootPath);
 
         return new RepositoryStatus
         {
@@ -278,7 +278,9 @@ public static class StatusCommand
 
     internal static List<ArtifactFamilySummary> ComputeFamilySummary(
         RepositoryPolicy? policy,
-        IReadOnlyList<DiscoveredFile> files)
+        IReadOnlyList<DiscoveredFile> files,
+        IFileSystem? fileSystem = null,
+        string? repositoryRoot = null)
     {
         var families = policy?.ArtifactFamilies;
         if (families == null || families.Count == 0)
@@ -303,7 +305,7 @@ public static class StatusCommand
             f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase) &&
             !explicitPaths.Contains(f.RelativePath)))
         {
-            var matched = classifier.Classify(file.RelativePath, frontmatterFields: null);
+            var matched = classifier.ClassifyFile(file.RelativePath, fileSystem, repositoryRoot);
             if (matched?.Family != null && counts.ContainsKey(matched.Family))
                 counts[matched.Family]++;
         }
@@ -435,16 +437,7 @@ public static class StatusCommand
             if (string.IsNullOrWhiteSpace(source))
                 return;
 
-            var normalized = PathHelper.NormalizeSeparators(source);
-            var looksLikeGlob = normalized.IndexOfAny(['*', '?', '[']) >= 0;
-            if (!looksLikeGlob)
-            {
-                AddGovernedDirectory(normalized);
-                return;
-            }
-
-            var glob = Glob.Parse(normalized);
-            foreach (var path in mdFiles.Where(glob.IsMatch))
+            foreach (var path in mdFiles.Where(path => MaintenanceSourceMatcher.Matches(source, path)))
                 AddGovernedPath(path);
         }
 

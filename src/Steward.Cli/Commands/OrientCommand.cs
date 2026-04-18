@@ -76,7 +76,8 @@ public static class OrientCommand
                 ctx.Policy,
                 ctx.Config?.Profile,
                 depth,
-                status != null ? ToSignalInput(status) : null);
+                status != null ? ToSignalInput(status) : null,
+                ctx.FileSystem);
             var fullEntries = result.Entries.ToList();
 
             var useCompact = compactRequested || (!fullRequested && ctx.OutputFormat == OutputFormat.Text);
