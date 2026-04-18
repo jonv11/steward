@@ -2,6 +2,12 @@
 
 Thank you for contributing. This file covers everything specific to working on the Steward repository itself.
 
+## Workflow Guide
+
+The canonical reference for how work should be done in this repo is [docs/planning/workflow-guide.md](docs/planning/workflow-guide.md). It covers all workflow types — features, bug fixes, documentation, reviews, releases, and more — with specific steps, validation requirements, and definitions of done.
+
+Start there for process questions. The rest of this file covers setup and quick-reference commands.
+
 ## Using Steward In This Repo
 
 When contributing to Steward, use Steward as the primary navigation and validation surface:
@@ -28,10 +34,12 @@ For the strongest repo-specific orientation flow, start with `README.md`, then [
 ## Pull Requests
 
 - One logical change per PR.
+- Use [Conventional Commits](docs/planning/workflow-guide.md#commit-conventions) for all commit messages.
 - `npm run lint:md` must pass when your change touches Markdown or workflow docs.
 - All `dotnet test` must pass.
 - `steward check` must exit 0 before submitting.
 - Add a CHANGELOG.md entry under the appropriate version heading.
+- Follow the [shared finalization checklist](docs/planning/workflow-guide.md#shared-finalization-checklist) before submitting.
 
 ## Release Process
 

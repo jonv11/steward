@@ -50,7 +50,8 @@
 │   │   ├── review-requirements.md
 │   │   ├── rule-system-completeness-audit-2026-04-18.md
 │   │   ├── usability-review-2026-04-15.md
-│   │   └── usecase-consolidation-proposal.md
+│   │   ├── usecase-consolidation-proposal.md
+│   │   └── workflow-analysis-2026-04-18.md
 │   ├── decisions/
 │   │   ├── adrs
 │   │   ├── decision-index.md
@@ -67,7 +68,8 @@
 │   │   ├── release-publication-checklist.md
 │   │   ├── repo-quality-hardening-pass-plan.md
 │   │   ├── rfc-007-governance-enhancements-backlog.md
-│   │   └── v0-15-draft-preparation.md
+│   │   ├── v0-15-draft-preparation.md
+│   │   └── workflow-guide.md
 │   ├── planning-index.md
 │   ├── requirements/
 │   │   ├── assumptions-constraints.md

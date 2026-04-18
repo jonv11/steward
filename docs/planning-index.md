@@ -28,6 +28,7 @@ Central navigation for the active product, planning, readiness, and decision art
 
 | Document | Purpose |
 |----------|---------|
+| [Workflow Guide](planning/workflow-guide.md) | Canonical reference for how all categories of work should be performed in this repo |
 | [Delivery Strategy](planning/delivery-strategy.md) | Sequencing principles and versioning strategy |
 | [Milestone Plan](planning/milestone-plan.md) | Delivered lineage plus the active `v0.16.0` and `v0.17.0` pre-1.0 scope |
 | [Repo Quality Hardening Pass Plan](planning/repo-quality-hardening-pass-plan.md) | Execution plan for the April 18 implementation-quality hardening pass: must-fix clusters, behavior-preservation cautions, and explicit deferrals |
@@ -62,6 +63,7 @@ Historical audits are preserved for evidence and context. Active repository trut
 
 | Document | Purpose |
 | -------- | ------- |
+| [Workflow Model Analysis — 2026-04-18](audits/workflow-analysis-2026-04-18.md) | Git history analysis, pattern evaluation, and design rationale behind the canonical workflow guide |
 | [Maintainer Remarks Implementation Summary — 2026-04-18](audits/maintainer-remarks-implementation-summary-2026-04-18.md) | Repo-grounded implementation summary for the 2026-04-18 maintainer pass: code, tests, docs, package naming, and release automation outcomes |
 | [Repo Quality Hardening Pass — 2026-04-18](audits/repo-quality-hardening-pass-2026-04-18.md) | Implementation-quality hardening record for the April 18 full-repo pass: issues fixed, behavior-preservation choices, and explicit deferrals |
 | [Rule-System Completeness Audit — 2026-04-18](audits/rule-system-completeness-audit-2026-04-18.md) | Systematic per-rule and system-wide review of the validation rule set as of 2026-04-18: intent clarity, diagnostic quality, remediation quality, coverage gaps, and highest-value governance improvements |

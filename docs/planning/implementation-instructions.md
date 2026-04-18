@@ -1,8 +1,8 @@
 ---
 type: planning
-version: 0.14.0
+version: 0.15.0
 status: Active
-last_updated: 2026-04-17
+last_updated: 2026-04-18
 ---
 
 # Implementation Instructions
@@ -11,7 +11,9 @@ last_updated: 2026-04-17
 
 ## Purpose
 
-This guide tells contributors what to do next from the current `v0.14.0` baseline. The release-process milestone is now delivered, and the active question is: what should still land on the pre-1.0 line before stable-release criteria are approved and then satisfied?
+This guide tells contributors what to do next from the current `v0.15.0` baseline. The release-process milestone is now delivered, and the active question is: what should still land on the pre-1.0 line before stable-release criteria are approved and then satisfied?
+
+For the canonical reference on *how* to perform each type of work, see [workflow-guide.md](workflow-guide.md).
 
 ## Immediate Execution Order
 

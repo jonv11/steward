@@ -55,51 +55,19 @@ When documents disagree, trust in this order:
 
 Older audits describe past states. Verify claims against current code, tests, or the live documents listed above.
 
-## Artifact Work Expectations
+## How to Work in This Repo
 
-When creating or updating repository artifacts:
+The canonical workflow reference is [docs/planning/workflow-guide.md](docs/planning/workflow-guide.md). It defines the expected process for every category of work — features, bug fixes, documentation, reviews, releases, governance changes, and more.
 
-- **Naming and location**: Follow the conventions in `.steward/path-policy.yaml`. Planning docs use `lower-kebab-case.md`. ADRs use `ADR-NNN-lower-kebab.md`. RFCs use `RFC-NNN-lower-kebab.md`. Audit docs use `lower-kebab-case[-YYYY-MM-DD].md`.
-- **Frontmatter**: Artifacts in `docs/planning/`, `docs/requirements/`, `docs/decisions/adrs/`, and `docs/decisions/rfcs/` require specific frontmatter fields. Run `steward explain path <file>` on any governed path before editing to see what is required.
-- **Navigation**: New documents must be reachable from a governed navigation surface — typically `docs/planning-index.md` or `docs/decisions/decision-index.md`. Orphaned files violate STWD-013.
-- **Freshness**: `docs/implementation-status.md` has a 30-day freshness window. `docs/planning/pre-1-0-readiness-plan.md` has a 45-day window. Update them when repo truth changes.
-- **Regenerated artifacts**: `STRUCTURE.md` is generated. Never hand-edit it. Run `steward maintain --artifact structure --apply` after adding, moving, or removing files.
-- **Decision indexes**: `docs/decisions/decision-index.md` is maintained by steward. Run `steward maintain --apply` after adding ADRs or RFCs.
-- **Markdown lint**: When you change Markdown, workflow docs, or agent guidance, run `npm run lint:md`. `npm run lint:md:fix` is safe for the configured auto-fixable rules.
-- **Validation**: Run `steward check` before finishing any artifact work. Fix all errors and review all warnings.
+Key points for agents:
 
-## Implementation Work Expectations
-
-When implementing features, fixing bugs, or improving docs:
-
-- **Build**: `dotnet build steward.sln`
-- **Test**: `dotnet test steward.sln` — all 703 tests must pass (486 core, 217 CLI)
-- **Markdown lint**: `npm run lint:md` when touching Markdown or GitHub workflow docs
-- **Validate**: `steward check` — must exit 0
-- **Scope**: One logical change per PR. Do not bundle unrelated fixes.
-- **Changelog**: Add an entry to `CHANGELOG.md` under the appropriate version heading.
-- **Versioning**: Do not bump the version casually. Follow [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md). The current pre-1.0 line is `0.x.y` only. `v1.0.0` requires explicit authorization.
-- **Artifact sync**: When implementation changes make a planning or status doc stale, update the doc in the same change. Documentation drift is a defect.
-
-## Commit Expectations
-
-Use [Conventional Commits](https://www.conventionalcommits.org/) for all commits:
-
-```
-feat: add heading fuzzy matching to MdPath
-fix: correct STWD-009 false positive on scoped check
-docs: update implementation-status to reflect v0.15.0 delivery
-chore: refresh STRUCTURE.md after planning doc restructure
-test: add coverage for RFC family frontmatter validation
-```
-
-Common types: `feat`, `fix`, `docs`, `test`, `chore`, `refactor`, `ci`.
-
-Breaking changes use a `!` suffix or a `BREAKING CHANGE:` footer.
-
-## Release and Version Work
-
-Only perform release or version work when explicitly requested. The release process is documented in [docs/planning/release-process.md](docs/planning/release-process.md) and [docs/planning/release-publication-checklist.md](docs/planning/release-publication-checklist.md). Release operations are tag-driven via GitHub Actions.
+- **Identify the right workflow** for your change using the [workflow selection guide](docs/planning/workflow-guide.md#workflow-selection-guide).
+- **Follow the steps** in order, including the [shared finalization checklist](docs/planning/workflow-guide.md#shared-finalization-checklist).
+- **Use Conventional Commits** with specific, descriptive messages. See [commit conventions](docs/planning/workflow-guide.md#commit-conventions).
+- **One logical change per commit.** Do not bundle unrelated work.
+- **Update affected docs** in the same change. Documentation drift is a defect.
+- **Do not bump versions casually.** Follow [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+- **Only perform release work when explicitly requested.** See [release execution workflow](docs/planning/workflow-guide.md#6-release-execution).
 
 ## Using the Steward CLI in This Repo
 
