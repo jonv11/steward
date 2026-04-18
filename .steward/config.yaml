@@ -4,6 +4,7 @@ discovery:
   exclude:
     - "artifacts/**"
     - "**/bin/**"
+    - "node_modules/**"
     - "**/obj/**"
     - "**/publish/**"
     - "**/TestResults/**"

@@ -260,6 +260,7 @@ maintenance:
           - "artifacts/**"
           - ".git/**"
           - "**/bin/**"
+          - "node_modules/**"
           - "**/obj/**"
           - "**/TestResults/**"
           - "**/publish/**"

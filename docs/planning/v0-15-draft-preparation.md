@@ -2,7 +2,7 @@
 type: planning
 version: 0.14.0
 status: Completed
-last_updated: 2026-04-17
+last_updated: 2026-04-18
 ---
 
 # v0.15.0 Draft Preparation
@@ -213,4 +213,3 @@ Recommended implementation target:
 - one typed-address string format is accepted explicitly
 - the split/extract scope boundary is accepted explicitly
 - tests are planned before command-surface edits begin
-

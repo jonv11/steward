@@ -14,6 +14,7 @@
 │       ├── release-labels.yml
 │       └── release.yml
 ├── .gitignore
+├── .markdownlint-cli2.jsonc
 ├── .steward
 ├── AGENTS.md
 ├── CHANGELOG.md
@@ -76,6 +77,8 @@
 │       ├── review-synthesis-action-plan.md
 │       └── rule-system-completeness-audit.md
 ├── dgitstewarddocsreviews
+├── package-lock.json
+├── package.json
 ├── README.md
 ├── repository-steward-master-requirements.md
 ├── scripts/
@@ -122,6 +125,7 @@
     │   ├── ConfigSettingsTests.cs
     │   ├── ExitCodeTests.cs
     │   ├── ExplainCommandTests.cs
+    │   ├── ExplainRemediationConsistencyTests.cs
     │   ├── GlobalOptionsTests.cs
     │   ├── GovernanceCoverageTests.cs
     │   ├── Helpers
@@ -147,7 +151,9 @@
     │   ├── ArtifactFamilyValidationTests.cs
     │   ├── BootstrapAnalyzerTests.cs
     │   ├── BrokenArtifactReferenceRuleTests.cs
+    │   ├── BrokenFragmentAnchorRuleTests.cs
     │   ├── BrokenInternalLinkRuleTests.cs
+    │   ├── ConfigIntegrityTests.cs
     │   ├── ConfigLoaderFamilyValidationTests.cs
     │   ├── ConfigLoaderTests.cs
     │   ├── DiagnosticTests.cs
@@ -157,6 +163,7 @@
     │   ├── FamilyNamingPatternRuleTests.cs
     │   ├── FileDiscoveryServiceTests.cs
     │   ├── ForbiddenPathRuleTests.cs
+    │   ├── FreshnessRuleFixTests.cs
     │   ├── FreshnessRuleTests.cs
     │   ├── FrontmatterEditorTests.cs
     │   ├── FrontmatterValidationRuleTests.cs
@@ -165,6 +172,7 @@
     │   ├── Maintenance
     │   ├── MaintenanceDependencyTests.cs
     │   ├── ManagedRegionIntegrityRuleTests.cs
+    │   ├── ManagedScopeViolationRuleTests.cs
     │   ├── MarkdownParserTests.cs
     │   ├── MdPathSelectorTests.cs
     │   ├── MoveEngineTests.cs

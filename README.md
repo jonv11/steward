@@ -44,6 +44,7 @@ Both roles use the same CLI binary. This README covers both paths and marks sect
 ### Development Prerequisites
 
 - **[.NET 10 SDK](https://dotnet.microsoft.com/download)** (10.0 or later) — Steward targets `net10.0`; earlier SDK versions (.NET 8, .NET 9) will not build and produce a clear error. Run `dotnet --version` to verify your installed version.
+- **Node.js** (24.x is what CI uses) — only needed when contributing to this repository and running the repo-local Markdown lint commands; the shipped `steward` CLI itself does not depend on Node.js.
 
 ### From source
 
@@ -554,7 +555,7 @@ This was a known defect resolved in v0.11.0. If you see false positives for STWD
 
 Steward is at `v0.15.0` on a pre-`1.0.0` release line. Intentional public `0.x` releases are allowed when the repo is ready and the release process is followed. The version `1.0.0` still requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) and has not been scheduled.
 
-**What works today:** All 17 validation rules, all commands listed above, three built-in profiles, artifact family classification, deterministic maintenance, Markdown structural editing, and JSON output for automation.
+**What works today:** All 18 validation rules, all commands listed above, three built-in profiles, artifact family classification, deterministic maintenance, Markdown structural editing, and JSON output for automation.
 
 **Release operations today:** The repo has a changelog-backed, tag-driven GitHub Release workflow and repo-managed release-intent labels for pre-`1.0.0` releases. See [docs/planning/release-process.md](docs/planning/release-process.md).
 
@@ -582,9 +583,25 @@ dotnet build steward.sln
 dotnet test steward.sln
 ```
 
+### Markdown Lint
+
+```bash
+npm ci
+npm run lint:md
+```
+
+For repo Markdown cleanup, an auto-fix command is also available:
+
+```bash
+npm run lint:md:fix
+```
+
+Markdown linting is pinned with `markdownlint-cli2` and configured in `.markdownlint-cli2.jsonc`. The config intentionally excludes generated artifacts, historical audit records, imported source material, and embedded fixture repositories. It also disables line-length, mixed table-style, duplicate-heading, emphasis-as-heading, and fenced-code-language rules to avoid noisy churn or duplicate reporting against Steward's own Markdown checks.
+The dependency is pinned in `package.json` so local, agent, and CI behavior stay identical instead of drifting with `npx` or an unreviewed latest-version pull.
+
 ### CI
 
-The repository includes a GitHub Actions matrix in `.github/workflows/ci.yml` that runs `dotnet build`, `dotnet test`, and `dotnet pack src/Steward.Cli/Steward.Cli.csproj -c Release` on Windows, macOS, and Linux.
+The repository includes a GitHub Actions matrix in `.github/workflows/ci.yml` that runs `dotnet build`, `dotnet test`, and `dotnet pack src/Steward.Cli/Steward.Cli.csproj -c Release` on Windows, macOS, and Linux. The Linux leg also runs `npm run lint:md` and `dotnet run --project src/Steward.Cli -c Release --no-build -- check` so Markdown quality and Steward governance stay enforced in normal CI. The release workflow repeats those lint/governance checks before publishing assets.
 
 ### Dependency posture
 

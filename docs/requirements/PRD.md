@@ -4,7 +4,7 @@ document_id: PRD-0001
 version: 0.10.0
 status: Accepted
 source: Derived from MRD-0001 (repository-steward-master-requirements.md)
-last_updated: 2026-04-15
+last_updated: 2026-04-18
 ---
 
 # Repository Steward — Product Requirements Document
@@ -80,33 +80,43 @@ The CLI must support varied repository types without hardcoding any single shape
 ## 7. Primary Use Cases
 
 ### UC-01: Session-start orientation
+
 A human or agent opens a repository and runs `steward orient` to understand what it contains, what matters, and where to start.
 
 ### UC-02: Pre-commit or CI validation
+
 A developer runs `steward check` on changed files before committing—or CI runs it as a gate—to detect repository contract violations.
 
 ### UC-03: Full repository audit
+
 A maintainer runs `steward check` with full scope to get a complete compliance report across the entire repository.
 
 ### UC-04: Repository-wide search
+
 A developer or agent runs `steward search` to find content, headings, or artifacts across the repository with Markdown-aware context.
 
 ### UC-05: Structural Markdown inspection
+
 An agent runs `steward md query` to extract specific sections, frontmatter, or structural elements from governed documents.
 
 ### UC-06: Structural Markdown editing
+
 An agent or script runs `steward md edit` to insert, update, or ensure sections in governed documents with preview and apply modes.
 
 ### UC-07: Deterministic maintenance
+
 A maintainer runs `steward maintain` to refresh indexes, structure docs, registries, or other governed machine-maintained artifacts.
 
 ### UC-08: Workflow completeness check
+
 An agent runs `steward check` to determine what is still pending, what artifacts are stale, and whether the current work is complete per policy.
 
 ### UC-09: Policy authoring and validation
+
 A maintainer creates or updates `.steward/policy.yaml` and runs `steward config validate` to check it for correctness.
 
 ### UC-10: Rule explainability
+
 A developer runs `steward explain <rule-id>` to understand why a rule exists, what it checks, and how to remediate failures.
 
 ## 8. Functional Requirements
@@ -373,6 +383,7 @@ Requirements are grouped by capability area. Full traceability to MRD-0001 requi
 All product-level open questions have been resolved through accepted RFCs. See [Decision Index](../decisions/decision-index.md).
 
 Remaining forward-looking items intentionally scheduled later on the pre-1.0 line:
+
 - REQ-ADDR-002/003: Typed URI-like resource address model
 - REQ-MD-012: Split/extract workflows
 - REQ-SEARCH-012: Canonical resource addresses in search results

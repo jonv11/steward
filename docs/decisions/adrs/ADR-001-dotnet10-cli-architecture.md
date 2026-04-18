@@ -63,6 +63,7 @@ Cross-platform path handling uses `Path.Combine`, `Path.DirectorySeparatorChar`,
 ### Dependency injection
 
 Use `Microsoft.Extensions.DependencyInjection` for service registration. Keep it simple:
+
 - Register services in `Program.cs` or a dedicated `ServiceRegistration` class.
 - Inject via constructor injection in command handlers.
 - No complex DI frameworks.

@@ -51,6 +51,7 @@ public interface IValidationEngine
 ```
 
 The engine:
+
 1. Resolves the target paths based on scope (full, changed, staged, explicit paths).
 2. Loads the effective policy.
 3. Runs all applicable rules against the context.
@@ -121,6 +122,7 @@ public sealed class FileEdit
 ### Secret filtering
 
 The output pipeline applies a `SecretFilter` to all diagnostic messages and snippets before they are emitted. The filter:
+
 - Redacts strings matching common patterns (e.g., `[A-Za-z0-9]{32,}` adjacent to keywords like `key`, `token`, `secret`, `password`).
 - Redacts content from paths matching configured sensitive patterns.
 - Is best-effort; not a substitute for secret management.

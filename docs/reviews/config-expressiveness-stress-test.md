@@ -562,16 +562,21 @@ For a small focused library, Steward's config model covers the meaningful govern
 The following friction points appeared in multiple repos and represent systemic gaps rather than one-repo edge cases:
 
 ### 1. RST / Non-Markdown Content Governance
+
 All three repos have important non-Markdown artifacts. Two (sphinx, requests) use RST extensively. Steward can declare these files as governed artifacts, apply naming conventions, and enforce presence — but cannot validate their content or structure. A config that declares `required_sections` on RST files silently produces no enforcement. This creates a credibility gap: the policy *reads* as if it governs RST content, but it does not.
 
 ### 2. Intra-Family Referential Integrity
+
 Two repos (vscode, sphinx) have families where elements should reference or correspond to each other. Extension `package.json` + `README.md` must co-exist. Each `sphinx/ext/{name}.py` should have a `tests/roots/test-{name}/` fixture. There is no config mechanism to express "for every file matching pattern A, a corresponding file matching pattern B (with the same slug) must exist." This is a first-class governance need for any repo with a registry/collection pattern.
 
 ### 3. Conditional/Composite Artifact Requirements
+
 All three repos have cases where policy should be conditional: "require X only if Y exists" or "require A or B (not necessarily both)". The policy model is always-on and additive. This is not just a power-user need — it's fundamental to expressing real repo governance without false positives.
 
 ### 4. No Changelog Entry Validation
+
 All three repos have changelog artifacts. Steward can check that the changelog file exists, is fresh, and (for Markdown) has certain sections. But it cannot validate that:
+
 - A specific version entry exists
 - The entry follows the structural convention
 - The entry was added in this release cycle
@@ -579,12 +584,15 @@ All three repos have changelog artifacts. Steward can check that the changelog f
 This is a high-value governance signal for any library or tool with versioned releases.
 
 ### 5. Per-Directory Ungoverned Zone Declaration
+
 Multiple repos have directories that are intentionally out-of-scope for governance (test fixtures, generated files, locale resources). Currently, the maintainer must list all suppressed rules via `path_overrides` — one override block per directory per rule. There is no mechanism to declare "this directory is intentionally ungoverned; do not apply any artifact-level rules here." The `discovery.exclude` can suppress discovery entirely, but that also removes the path from search and orient results.
 
 ### 6. Grandfathering / Phase-In Policy
+
 All three repos have pre-existing files that would violate new naming or structure rules. There is no mechanism for "this rule applies to new files only" or "this rule is advisory-only for this directory." The policy applies uniformly to all matching files. For mature repos adopting Steward, this makes many rules immediately unusable at `recommended` severity without a phased rollout path.
 
 ### 7. Cross-Artifact Relationship / Index Integrity
+
 Multiple repos have index-like files that should reference a complete set of governed files. `CHANGES.rst` references per-version changelog files. A planning index references ADRs and RFCs. Steward's `index_of` concept is for *maintained* (auto-generated) indexes — it does not validate that a *human-authored* index contains all expected entries. This leaves referential integrity gaps for any repo with a hand-maintained registry or index.
 
 ---
@@ -592,51 +600,60 @@ Multiple repos have index-like files that should reference a complete set of gov
 ## Missing Policy Model Capabilities
 
 ### M-1: RST and Non-Markdown Content Governance
+
 **Problem:** Steward is Markdown-native. Content validation (required sections, structural checks) only works for Markdown.
 **Impact:** Any repo with RST, AsciiDoc, or other structured documentation formats cannot use Steward's content governance features. The config can express intent, but enforcement is silently absent.
 **Note:** This may be by intentional product scope, but the policy model does not communicate this boundary. A maintainer authoring `required_sections` for an RST file receives no error and no indication that the rule will not be enforced.
 
 ### M-2: Intra-Family Co-Presence Constraints
+
 **Problem:** No mechanism to express "for every file in family A, a corresponding file in family B (related by slug or derived name) must exist."
 **Impact:** Extension governance, plugin governance, test fixture integrity, and any registry/collection pattern with multi-file units cannot be expressed.
 **Types of repos unlocked:** Monorepos, plugin ecosystems, framework extension collections.
 
 ### M-3: Conditional Artifact Requirements (OR-logic and IF-THEN-logic)
+
 **Problem:** The policy model is additive and always-on. There is no `requires_if`, `one_of`, or `any_of` concept.
 **Impact:** Realistic governance often requires conditional logic: "require SECURITY.md or docs/community/vulnerabilities.rst, not necessarily both." Without this, a maintainer must either over-specify (require both) or under-specify (require neither).
 **Types of repos unlocked:** Any repo with alternative-but-equivalent governance artifacts, any repo with context-dependent requirements.
 
 ### M-4: Changelog / Version Entry Validation
+
 **Problem:** There is no mechanism to validate that a changelog file contains an entry for a specific version, or that changelog entries follow a structural convention at the entry level (not just the file level).
 **Impact:** Changelog governance is the most common documentation governance need for any maintained library or tool. Steward can check presence and freshness but not versioned entry completeness.
 **Types of repos unlocked:** Every library, tool, or framework with versioned releases.
 **Scope:** Core scope, given the product's documentation-governance positioning.
 
 ### M-5: Ungoverned Zone Declaration
+
 **Problem:** No config concept for "this directory is intentionally outside Steward's artifact-level governance."
 **Impact:** Maintainers must suppress specific rules for specific paths via `path_overrides`. For broad zones (test fixtures, generated output, vendor code), this produces verbose and brittle suppression lists.
 **Types of repos unlocked:** Any repo with mixed governed/ungoverned areas.
 **Scope:** Core scope. Workaround is verbose.
 
 ### M-6: Grandfathering / Phase-In Policy
+
 **Problem:** Rules apply uniformly to all matching files. There is no "applies only to files created after date X" or "advisory-only for this release cycle."
 **Impact:** Any mature repo adopting Steward faces an immediate wall of violations for pre-existing files. Without a phase-in mechanism, the only options are: fix everything now (high cost), suppress everything (defeats the purpose), or use `recommended` severity (but then CI cannot gate on it).
 **Types of repos unlocked:** Any repo with existing files that predate the governance policy.
 **Scope:** Core scope for adoption credibility. Could be as simple as a `new_files_only: true` family option.
 
 ### M-7: Cross-File Referential Integrity (Human-Authored Indexes)
+
 **Problem:** `index_of` in Steward declares a maintained (auto-generated) index. There is no equivalent for human-authored indexes that must reference a complete collection.
 **Impact:** A planning index, decision register, or changelog stub that should enumerate all governed files in a directory cannot be validated for completeness. The `index_of` auto-maintenance solves the generated case but leaves the human-curated case unaddressed.
 **Types of repos unlocked:** Any repo with hand-maintained indexes, registers, or catalogs.
 **Scope:** Advanced scope. Could surface as a `check` diagnostic rather than full maintenance.
 
 ### M-8: Named Maintainer / Ownership Governance
+
 **Problem:** Steward has no concept of declared maintainers or owners at the policy level. CODEOWNERS-style concepts are entirely absent.
 **Impact:** Governance for "this file requires maintainer approval" or "this directory has designated owners" cannot be expressed.
 **Types of repos unlocked:** Any community-governed open-source project with named maintainers.
 **Scope:** Advanced scope; likely requires integration with hosting platform concepts. May be intentionally deferred.
 
 ### M-9: Lifecycle State Transitions (Not Just Vocabulary)
+
 **Problem:** `allowed_values` in `frontmatter_schema` validates that status fields contain permitted values. It does not enforce that transitions between status values are valid.
 **Impact:** A governed ADR can be set from `Accepted` back to `Draft` without any diagnostic. A `Deprecated` ADR can omit a `superseded_by` field. The policy expresses vocabulary but not lifecycle contract.
 **Types of repos unlocked:** Any repo with formal document lifecycle (ADRs, RFCs, proposals, specifications).
@@ -687,6 +704,7 @@ Multiple repos have index-like files that should reference a complete set of gov
 **Missing capability:** A `requires_sibling:` declaration on an artifact family specifying that for each matched file, a corresponding file (with a pattern-derived name) must exist in a parallel location.
 
 Example syntax concept:
+
 ```yaml
 artifact_families:
   - family: extension
@@ -710,6 +728,7 @@ artifact_families:
 **Missing capability:** An `any_of:` or `one_of:` block in the artifacts section expressing that at least one artifact in the group must be present.
 
 Example syntax concept:
+
 ```yaml
 artifacts:
   - any_of:
@@ -734,6 +753,7 @@ artifacts:
 **Missing capability:** A `changelog:` governance concept in policy.yaml that validates a changelog artifact's entry structure — specifically, that a Markdown changelog file contains a top-level heading for the current version (derivable from a version file or declared pattern).
 
 Example syntax concept:
+
 ```yaml
 artifacts:
   - path: HISTORY.md
@@ -757,6 +777,7 @@ artifacts:
 **Missing capability:** A `transitions:` declaration per artifact family or frontmatter schema that specifies allowed status transitions and conditional field requirements per status value.
 
 Example syntax concept:
+
 ```yaml
 artifact_families:
   - family: adr
@@ -783,6 +804,7 @@ artifact_families:
 **Missing capability:** An `index_validates:` option on a declared artifact that causes `steward check` to verify that the file contains links or references to all files in a given directory pattern — without auto-maintaining them.
 
 Example syntax concept:
+
 ```yaml
 artifacts:
   - path: docs/planning-index.md
@@ -810,12 +832,14 @@ artifacts:
 | psf/requests | Workable with Friction | RST content governance; conditional artifact logic missing; changelog entry validation missing |
 
 **Steward's policy model is strongest for:**
+
 - Documentation-centric repos using Markdown
 - Repositories with explicit named artifact collections (ADRs, RFCs, planning docs)
 - Repos where governance is primarily about file presence, naming conventions, and frontmatter contracts
 - Small-to-medium repos where uniform rule application is feasible
 
 **Steward's policy model is weakest for:**
+
 - Monorepos with co-located multi-file units requiring co-presence constraints
 - Repos with RST or non-Markdown primary documentation
 - Repos with conditional or graduated governance requirements

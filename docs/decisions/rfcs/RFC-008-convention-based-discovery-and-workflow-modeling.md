@@ -38,6 +38,7 @@ Maintainer review of the Steward CLI and its self-dogfooding configuration surfa
 ### Relationship to ADR-012
 
 ADR-012 accepted the direction of per-type artifact definitions. This RFC proposes the specific design and extends the scope to include:
+
 - Convention-based discovery (path patterns + frontmatter matching)
 - Artifact family rules (directory-level expectations)
 - Workflow/session modeling (new capability area)
@@ -100,12 +101,14 @@ artifact_families:
 ```
 
 **Matching semantics:**
+
 - `path_pattern`: Glob pattern. Files matching this pattern are candidates.
 - `frontmatter.type`: If specified, the file must also have this frontmatter value.
 - Both criteria can be combined (AND logic).
 - Explicit `artifacts` entries always take precedence over family matches.
 
 **Benefits:**
+
 - New ADRs/RFCs/audits are automatically governed without policy changes.
 - Frontmatter schema is declared once per family, not repeated per file.
 - `steward status` and `steward check` can report family-level completeness.
@@ -177,16 +180,19 @@ workflows:
 ## 4. Migration Path
 
 ### Phase 1 (achievable with current Steward)
+
 - Use `frontmatter_requirements` for path-pattern-based frontmatter enforcement.
 - Keep explicit `artifacts` entries for structurally required files.
 - Remove per-file entries for document families that share common conventions.
 
 ### Phase 2 (requires Steward enhancement)
+
 - Implement `artifact_families` in policy schema and discovery engine.
 - Update `steward status`, `check`, `orient`, and `explain` to recognize family-matched artifacts.
 - Add family-level completeness reporting.
 
 ### Phase 3 (requires Steward enhancement)
+
 - Implement `workflows` configuration surface.
 - Add `steward workflow` command or integrate workflow guidance into existing commands.
 - Add directory expectations validation.

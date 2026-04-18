@@ -78,6 +78,7 @@ Each diagnostic is a structured record:
 ### Output formats
 
 **Human-readable (text):**
+
 ```
 ERROR  path-policy  README.md
   Required artifact is missing: README.md
@@ -91,6 +92,7 @@ WARN   frontmatter  docs/PRD.md:1
 ```
 
 **Machine-readable (JSON):**
+
 ```json
 {
   "summary": {
@@ -120,6 +122,7 @@ WARN   frontmatter  docs/PRD.md:1
 Completion-policy rules are evaluated as part of `steward check` and reported as `completion-policy` category diagnostics. These rules answer "is the work done?" per the repository's definition of done.
 
 Examples:
+
 - STWD-001 (`required artifact(s) missing`)
 - STWD-007 (`maintained artifact(s) stale`)
 - STWD-008 (`broken internal link(s)`)
@@ -128,6 +131,7 @@ Examples:
 ### Secret filtering
 
 Before emitting diagnostics, the output pipeline strips:
+
 - Content matching common secret patterns (API keys, tokens, passwords)
 - File content snippets from paths matching configured sensitive-path patterns
 - Environment variable values

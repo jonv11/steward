@@ -262,6 +262,7 @@ These commands silently ignore the flag. No warning, no indication. An agent usi
 ### 3. `success` semantics are ambiguous
 
 In the standard envelope:
+
 - `check` with violations: `success: false, exitCode: 1` — but the command executed perfectly; the *repo* failed validation.
 - `config validate` with errors: `success: false, exitCode: 2` — the config is bad, which is a usage-level failure.
 
@@ -286,6 +287,7 @@ Exit code 0. No `exists` field. An agent cannot tell whether this is a planned n
 ### 5. Batch vs single-file md query have different shapes
 
 Single file:
+
 ```json
 {
   "selector": "heading[Commands]",
@@ -295,6 +297,7 @@ Single file:
 ```
 
 Batch (`--pattern`):
+
 ```json
 {
   "pattern": "docs/planning/*.md",
@@ -308,11 +311,13 @@ Batch mode adds `results[]` wrapping and drops `matchCount` and `range` from ind
 ### 6. Diagnostic remediation targets lack precision
 
 A broken-link diagnostic says:
+
 ```
 "message": "Broken link to '../decisions/adrs/ADR-013...' — file not found."
 ```
 
 But does not include:
+
 - The target path as a structured field
 - The column of the link in the source file
 - The link text
@@ -329,6 +334,7 @@ Several JSON outputs are serialized from inline anonymous objects (visible in so
 ### 2. Diff payloads are opaque strings
 
 The `md edit` preview returns:
+
 ```json
 {
   "diff": "--- a/file\r\n+++ b/file\r\n ..."
@@ -374,6 +380,7 @@ Each error is a single string combining file name, location, and message. An age
 ### 1. No structured error contract exists
 
 There is no standard error shape like:
+
 ```json
 {
   "error": { "kind": "file-not-found", "code": "E001", "message": "...", "details": {...} }
@@ -385,6 +392,7 @@ Failures are either plain-text stderr (most commands) or ad-hoc JSON with `valid
 ### 2. Error classification is impossible from output alone
 
 An agent cannot distinguish these failure types from the current output:
+
 - Syntax error (invalid MdPath selector)
 - Semantic error (valid selector, no match)
 - File not found
@@ -397,6 +405,7 @@ All produce exit code 2 with plain-text stderr, except "no match" which returns 
 ### 3. No retry hints in failure responses
 
 When a command fails, the response never includes:
+
 - Whether the error is retryable
 - What argument was malformed
 - What format was expected
@@ -449,6 +458,7 @@ Confirmed in source: the apply logic (File.Move, File.WriteAllText for link rewr
 ### 3. Blast radius is under-described
 
 `refactor move --preview` returns:
+
 ```json
 {
   "edits": [{ "file": "docs/audits/artifact-hygiene-cleanup-review-2026-04-16.md" }, { "file": "docs/planning-index.md" }]

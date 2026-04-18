@@ -70,6 +70,7 @@ Detection uses `Console.IsOutputRedirected`.
 ### System.Text.Json
 
 Use `System.Text.Json` (built-in) instead of Newtonsoft.Json:
+
 - No additional dependency.
 - Source generators for AOT-friendly serialization.
 - Better performance for large outputs.

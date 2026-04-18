@@ -16,6 +16,7 @@ Two maintainer use-case files (`docs/audits/maintainer-usecase-expectations.md` 
 These requests are legitimate: the PRD explicitly names "knowledge, content, lore, story, or creative repositories" as a target archetype (PRD §6), and the configuration model is designed to support varied repository types without hardcoded assumptions (REQ-CORE-004, REQ-CORE-007, REQ-CONFIG-005).
 
 The question is whether domain-specific validation and stewardship logic should be:
+
 1. built into the core CLI as hardcoded capabilities (e.g., a `validate-canon` command, a `check-timeline` rule), or
 2. expressed through generic, reusable policy mechanisms that domain-specific repositories configure to their own needs.
 

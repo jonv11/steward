@@ -10,12 +10,13 @@ Steward is currently on **`v0.15.0`** with unreleased `v0.16.0` contract improve
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
 | Current repo version | `0.15.0` (+ unreleased 0.16.0 contract work) |
-| Tests | 210 CLI tests (208 passing, 2 pre-existing failures) |
-| Validation rules | 17 (`STWD-001` through `STWD-017`) |
+| Tests | 703 passing (486 core, 217 CLI) |
+| Validation rules | 18 (`STWD-001` through `STWD-018`) |
 | Artifact families | `artifact_families` section now supported in `policy.yaml`; ADRs and RFCs governed by families in this repo |
 | Maintainer types | 6 (`structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`) |
 | JSON contract | Standard envelope (`--json-envelope standard`), structured errors, CC-01 through CC-10 implemented |
 | Packaging | `dotnet pack` succeeds cleanly for `Steward.0.15.0.nupkg` |
+| Repo quality gates | `markdownlint-cli2` with repo config, `steward check` enforced in CI/release on Linux, build/test/pack matrix across Windows, Linux, and macOS |
 | Public pre-1.0 release path | Tag-driven GitHub Release workflow, changelog-backed notes, automated nuget.org publication, `.nupkg` + curated binary bundles + checksums |
 | Active readiness tracker | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) |
 

@@ -24,6 +24,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install Markdown lint dependencies
+        run: npm ci
+
+      - name: Markdown lint
+        run: npm run lint:md
+
       - name: Resolve target tag
         id: tag
         shell: pwsh
@@ -73,6 +85,9 @@ jobs:
 
       - name: Test
         run: dotnet test steward.sln -c Release --no-build
+
+      - name: Steward check
+        run: dotnet run --project src/Steward.Cli -c Release --no-build -- check
 
       - name: Build release assets
         shell: pwsh

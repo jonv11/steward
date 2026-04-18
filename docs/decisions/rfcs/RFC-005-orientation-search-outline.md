@@ -29,6 +29,7 @@ The requirements define three discovery surfaces—orient, outline, and search�
 **Purpose:** Session-start understanding. A human or agent that has never seen the repository runs this first.
 
 **Output includes:**
+
 - Repository name, type, and profile
 - Configured start-here entry points (prominently displayed)
 - Curated hierarchical map of important directories and files
@@ -37,6 +38,7 @@ The requirements define three discovery surfaces—orient, outline, and search�
 - Optionally: cheap signals (missing required artifacts, stale indexes) via `--signals`
 
 **Output excludes:**
+
 - Full file listings (that's `outline`)
 - Search results
 - Validation diagnostics (that's `check`)
@@ -50,12 +52,14 @@ The requirements define three discovery surfaces—orient, outline, and search�
 **Purpose:** Structural detail for a given scope—directory or file.
 
 **For a directory:**
+
 - Curated tree view (respects .gitignore and excludes)
 - Optional file sizes (`--sizes`)
 - Optional line counts (`--lines`)
 - Spots oversized files (with configurable thresholds)
 
 **For a Markdown file:**
+
 - Heading hierarchy with optional line counts per section
 - Identifies large sections
 - Managed regions listed
@@ -67,11 +71,13 @@ The requirements define three discovery surfaces—orient, outline, and search�
 **Purpose:** Find content across the repository by query.
 
 **Modes:**
+
 - `--mode content` — Full-text content search
 - `--mode headings` — Heading-only search (Markdown files)
 - `--mode all` — Both content and headings (default)
 
 **Result fields:**
+
 - File path
 - Line number
 - Column or character position (when available)
@@ -80,11 +86,13 @@ The requirements define three discovery surfaces—orient, outline, and search�
 - Heading context (the nearest parent heading for content matches in Markdown files)
 
 **Filtering:**
+
 - .gitignore-aware (always)
 - Policy-aware filtering (respects `discovery.exclude`)
 - Scoping by role (`--role requirements`, `--role authoritative`) — maps to policy-defined artifact roles
 
 **Performance:**
+
 - Live-scan-first (REQ-SEARCH-009). Does not require pre-built indexes.
 - Optional enrichment from maintained index artifacts when present and fresh.
 - Default result limit (`--max`, default 100).
@@ -111,6 +119,7 @@ Orient is a high-level map. Outline is a detailed structural view. Search is a t
 ### Unconfigured repository behavior
 
 All three surfaces work on unconfigured repositories using convention-based fallback:
+
 - Orient uses heuristic artifact detection (e.g., README.md, LICENSE, docs/, src/).
 - Outline uses .gitignore and universal excludes.
 - Search uses .gitignore filtering and conservative defaults.

@@ -7,6 +7,7 @@ This file is the primary entry point for coding agents working in this repositor
 Steward is a configurable repository stewardship CLI for humans and AI agents. It validates repository structure against policy, orients contributors to repo content, maintains generated artifacts, and performs Markdown-aware structural editing. The binary is `steward`.
 
 This repo is both the source implementation of the tool and its own self-dogfooded governed repository. That means:
+
 - The source code is under `src/` and `tests/`.
 - The repo uses its own `.steward/` config to enforce governance on its own docs, plans, decisions, and artifacts.
 - Changes to the CLI must also pass the repo's own steward governance checks.
@@ -64,6 +65,7 @@ When creating or updating repository artifacts:
 - **Freshness**: `docs/implementation-status.md` has a 30-day freshness window. `docs/planning/pre-1-0-readiness-plan.md` has a 45-day window. Update them when repo truth changes.
 - **Regenerated artifacts**: `STRUCTURE.md` is generated. Never hand-edit it. Run `steward maintain --artifact structure --apply` after adding, moving, or removing files.
 - **Decision indexes**: `docs/decisions/decision-index.md` is maintained by steward. Run `steward maintain --apply` after adding ADRs or RFCs.
+- **Markdown lint**: When you change Markdown, workflow docs, or agent guidance, run `npm run lint:md`. `npm run lint:md:fix` is safe for the configured auto-fixable rules.
 - **Validation**: Run `steward check` before finishing any artifact work. Fix all errors and review all warnings.
 
 ## Implementation Work Expectations
@@ -71,7 +73,8 @@ When creating or updating repository artifacts:
 When implementing features, fixing bugs, or improving docs:
 
 - **Build**: `dotnet build steward.sln`
-- **Test**: `dotnet test steward.sln` — all 644 tests must pass (450 core, 194 CLI)
+- **Test**: `dotnet test steward.sln` — all 703 tests must pass (486 core, 217 CLI)
+- **Markdown lint**: `npm run lint:md` when touching Markdown or GitHub workflow docs
 - **Validate**: `steward check` — must exit 0
 - **Scope**: One logical change per PR. Do not bundle unrelated fixes.
 - **Changelog**: Add an entry to `CHANGELOG.md` under the appropriate version heading.
@@ -103,6 +106,7 @@ Only perform release or version work when explicitly requested. The release proc
 When orientation, validation, artifact inspection, or Markdown structural work is relevant to your task, use the steward CLI.
 
 See [.agents/skills/steward-cli/SKILL.md](.agents/skills/steward-cli/SKILL.md) for:
+
 - when to use and when to skip the CLI
 - the recommended workflow for this repo specifically
 - high-value commands and their caveats
@@ -125,6 +129,7 @@ scripts/release/       Release asset scripts
 
 - Do not hand-edit `STRUCTURE.md` or `docs/decisions/decision-index.md` — they are managed by steward.
 - Do not introduce new `1.x` version references in active docs or metadata.
+- Do not skip `npm run lint:md` when you modify Markdown or workflow docs.
 - Do not skip `steward check` before finishing any change.
 - Do not treat `search --role` as a complete family-aware search; in this repo it only finds explicit `artifacts[]` role entries, not family-matched docs.
 - Do not commit to version bump, tag, or publish without following the release process.

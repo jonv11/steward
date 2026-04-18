@@ -33,12 +33,14 @@ dotnet run --project src/Steward.Cli -- <command>
 
 - If steward is installed globally or at `.tools/steward/steward`, you can use the bare `steward` command instead.
 - This repo uses all three config files: `.steward/config.yaml`, `.steward/policy.yaml`, and `.steward/path-policy.yaml`. Read `.steward/policy.yaml` before making assumptions about what is governed.
+- Run `npm ci` when you need the repo-local Markdown lint commands (`npm run lint:md`, `npm run lint:md:fix`).
 
 ## How This Repo's Config Shapes Usage
 
 | Config fact | Practical implication |
 |-------------|----------------------|
 | `profile: software` is active | Profile defaults apply, but `.steward/policy.yaml` is the real contract — read it, not the profile docs |
+| `discovery.exclude` removes `node_modules/**` | Installing repo-local npm dependencies for Markdown linting does not pollute steward discovery or coverage |
 | `governance.start_here` defines the session-start spine | `orient --signals` surfaces exactly these docs plus core decision roots |
 | `coverage.exclude` removes `tests/Steward.TestFixtures/Repos/**` | `status --coverage` numbers reflect the main repo, not embedded fixture repos |
 | The only configured maintenance artifact is `STRUCTURE.md` (plus decision indexes in `decision-index.md`) | `maintain` is primarily about keeping those generated files in sync |
@@ -97,7 +99,7 @@ dotnet run --project src/Steward.Cli -- maintain --apply
 dotnet run --project src/Steward.Cli -- check
 ```
 
-Must exit 0. Fix all errors; review all warnings. If you changed CLI code or tests, also run `dotnet test steward.sln`.
+Must exit 0. Fix all errors; review all warnings. If you changed Markdown, also run `npm run lint:md`. If you changed CLI code or tests, also run `dotnet test steward.sln`.
 
 ## High-Value Commands for This Repo
 
@@ -190,6 +192,7 @@ dotnet run --project src/Steward.Cli -- maintain --apply   # all maintained arti
 ## Verification Expectations
 
 After `.steward/*` changes:
+
 ```bash
 dotnet run --project src/Steward.Cli -- config show --effective
 dotnet run --project src/Steward.Cli -- config validate
@@ -198,11 +201,14 @@ dotnet run --project src/Steward.Cli -- check
 ```
 
 After Markdown or structural changes:
+
 1. Link new files from a governed navigation surface (`docs/planning-index.md` or `docs/decisions/decision-index.md`)
 2. Run `maintain --artifact structure --apply` (and `maintain --apply` for decision indexes)
-3. Run `check`
+3. Run `npm run lint:md`
+4. Run `check`
 
 After C# source changes:
+
 ```bash
 dotnet test steward.sln
 dotnet run --project src/Steward.Cli -- check

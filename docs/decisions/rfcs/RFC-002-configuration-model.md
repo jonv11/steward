@@ -136,6 +136,7 @@ A profile is selected in `config.yaml` via `profile: <name>`. Repository-local p
 ### Exclude rules
 
 Exclude patterns are merged from all layers:
+
 1. .gitignore (always respected)
 2. Profile default excludes
 3. config.yaml `discovery.exclude`
@@ -143,6 +144,7 @@ Exclude patterns are merged from all layers:
 ### Config validation
 
 `steward config validate` checks:
+
 - YAML syntax
 - Semantic conformance (profile names, rule ids, maintainer types, glob/regex syntax, `depends_on` links)
 - Profile name is valid
@@ -151,6 +153,7 @@ Exclude patterns are merged from all layers:
 ### Convention-based fallback
 
 When `.steward/` does not exist, the CLI operates in **unconfigured mode** using conservative defaults:
+
 - Treats the repo as `minimal`
 - Respects .gitignore
 - Provides orientation and search with heuristic artifact detection

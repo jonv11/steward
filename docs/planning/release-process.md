@@ -94,8 +94,11 @@ Each GitHub Release currently publishes:
 Run the checklist in [release-publication-checklist.md](release-publication-checklist.md). At minimum:
 
 ```bash
+npm ci
+npm run lint:md
 dotnet build steward.sln -c Release
 dotnet test steward.sln -c Release --no-build
+dotnet run --project src/Steward.Cli -c Release --no-build -- check
 pwsh ./scripts/release/Build-ReleaseAssets.ps1 -Version <VERSION>
 pwsh ./scripts/release/Export-ReleaseNotes.ps1 -Version <VERSION>
 ```
@@ -118,7 +121,7 @@ git push origin v<VERSION>
 
 - `.github/workflows/release.yml` runs on the tag.
 - It validates that the tag matches `Directory.Build.props`.
-- It restores, builds, tests, packages, exports release notes from `CHANGELOG.md`, creates or updates the GitHub Release, and uploads the release assets.
+- It installs the repo-local Markdown lint dependencies, runs `npm run lint:md`, restores, builds, tests, runs `steward check`, packages, exports release notes from `CHANGELOG.md`, creates or updates the GitHub Release, and uploads the release assets.
 
 ### 7. Let GitHub Actions publish to NuGet
 

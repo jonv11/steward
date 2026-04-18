@@ -18,14 +18,17 @@ For the strongest repo-specific orientation flow, start with `README.md`, then [
 
 ## Development Workflow
 
-1. Build: `dotnet build steward.sln`
-2. Test: `dotnet test steward.sln`
-3. Validate repo governance: `steward check`
-4. Pack for local install: `dotnet pack src/Steward.Cli -c Release`
+1. Install repo-local dev dependencies when you need CI-equivalent Markdown checks: `npm ci`
+2. Lint Markdown: `npm run lint:md`
+3. Build: `dotnet build steward.sln`
+4. Test: `dotnet test steward.sln`
+5. Validate repo governance: `steward check`
+6. Pack for local install: `dotnet pack src/Steward.Cli -c Release`
 
 ## Pull Requests
 
 - One logical change per PR.
+- `npm run lint:md` must pass when your change touches Markdown or workflow docs.
 - All `dotnet test` must pass.
 - `steward check` must exit 0 before submitting.
 - Add a CHANGELOG.md entry under the appropriate version heading.

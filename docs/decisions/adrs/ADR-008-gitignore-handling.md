@@ -43,6 +43,7 @@ public sealed class GitIgnoreFilter : IIgnoreFilter
 ```
 
 **Features:**
+
 - Reads `.gitignore` at repository root and all nested directories.
 - Supports negation patterns (`!pattern`).
 - Supports directory-only patterns (`pattern/`).
@@ -51,6 +52,7 @@ public sealed class GitIgnoreFilter : IIgnoreFilter
 - Supports `.steward/config.yaml` `discovery.exclude` patterns merged on top.
 
 **Not implemented (deferred):**
+
 - `.git/info/exclude` (local excludes).
 - Global gitignore (`core.excludesFile`). These are user-specific and not repository-portable.
 
@@ -63,6 +65,7 @@ public sealed class GitIgnoreFilter : IIgnoreFilter
 ### Integration
 
 `IIgnoreFilter` is injected into:
+
 - `FileDiscoveryService` (used by all commands)
 - `SearchEngine`
 - `OrientationEngine`

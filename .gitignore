@@ -11,6 +11,7 @@ TestResults/
 
 # IDE
 .idea/
+node_modules/
 *.swp
 *~
 

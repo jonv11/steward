@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DavidAnson/vscode-markdownlint/main/markdownlint-cli2-config-schema.json",
+  "gitignore": true,
+  "globs": [
+    "**/*.md"
+  ],
+  "ignores": [
+    // Generated artifacts are maintained by Steward and should not be hand-edited
+    // to satisfy lint-only formatting concerns.
+    "STRUCTURE.md",
+    "docs/decisions/decision-index.md",
+
+    // Historical/source material is preserved for provenance rather than normalized
+    // to the active repo style guide.
+    "docs/audits/**/*.md",
+    "repository-steward-master-requirements.md",
+
+    // Embedded fixture repositories intentionally model external content and should
+    // not participate in repo-document quality gates.
+    "tests/Steward.TestFixtures/Repos/**/*.md"
+  ],
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD024": false,
+    "MD029": {
+      "style": "ordered"
+    },
+    "MD036": false,
+    "MD040": false,
+    "MD060": false
+  }
+}

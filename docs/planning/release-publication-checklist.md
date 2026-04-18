@@ -27,19 +27,28 @@ last_updated: 2026-04-18
 Run these commands from the repository root:
 
 ```bash
-# 1. Clean build
+# 1. Install repo-local Markdown lint dependencies
+npm ci
+
+# 2. Lint Markdown
+npm run lint:md
+
+# 3. Clean build
 dotnet build steward.sln -c Release
 
-# 2. Full test suite
+# 4. Full test suite
 dotnet test steward.sln -c Release --no-build
 
-# 3. Build release assets and checksums
+# 5. Repo governance check
+dotnet run --project src/Steward.Cli -c Release --no-build -- check
+
+# 6. Build release assets and checksums
 pwsh ./scripts/release/Build-ReleaseAssets.ps1 -Version <VERSION>
 
-# 4. Export release notes from the changelog
+# 7. Export release notes from the changelog
 pwsh ./scripts/release/Export-ReleaseNotes.ps1 -Version <VERSION>
 
-# 5. Install from the locally built package and smoke-test
+# 8. Install from the locally built package and smoke-test
 dotnet tool install --tool-path ./.tools/steward --add-source ./artifacts/release/v<VERSION> Steward --version <VERSION>
 ./.tools/steward/steward version
 ./.tools/steward/steward orient
@@ -54,7 +63,7 @@ git tag -a v<VERSION> -m "Release v<VERSION>"
 git push origin v<VERSION>
 ```
 
-The push triggers `.github/workflows/release.yml`, which rebuilds/tests, validates the tag against `Directory.Build.props`, creates or updates the GitHub Release, and uploads the published assets.
+The push triggers `.github/workflows/release.yml`, which re-runs Markdown lint, rebuilds/tests, runs `steward check`, validates the tag against `Directory.Build.props`, creates or updates the GitHub Release, and uploads the published assets.
 
 ## NuGet Publication
 

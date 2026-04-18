@@ -45,6 +45,7 @@ heading[Overview].codeblocks    # All code blocks under "Overview"
 ```
 
 **Design principles:**
+
 - Selectors read left-to-right as a path into the document.
 - Ambiguous selectors that match multiple elements fail with an error by default (REQ-MD-007).
 - Indexed selectors (`#N`) provide deterministic addressing when names collide.
@@ -68,6 +69,7 @@ Managed regions use HTML comment markers:
 | `owner` | Yes | Who manages this region (`steward`, `manual`, or custom) |
 
 **Rules:**
+
 - The CLI refuses to modify content inside a managed region unless it is the declared owner.
 - Content outside managed regions is never modified by maintenance operations.
 - Markers are preserved exactly; only the content between them changes.

@@ -19,6 +19,7 @@ The requirements envision the CLI evolving from validator to maintainer: auto-up
 ### Maintenance scope
 
 Maintenance covers deterministic, policy-driven regeneration or update of governed artifacts from actual repository state. Maintenance is:
+
 - **Deterministic:** Same input → same output, always.
 - **Idempotent:** Running twice changes nothing.
 - **Minimal-diff:** Only meaningful changes appear in diffs.
@@ -110,6 +111,7 @@ With `--output json`, the plan is a structured array of planned changes.
 ### Anti-drift detection
 
 `steward check` includes stale-artifact detection for maintained artifacts:
+
 - Compares current artifact content against what maintenance would produce.
 - Reports `stale-artifact` diagnostics when they differ.
 - This is a read-only check; it does not modify files.
@@ -132,6 +134,7 @@ artifacts:
 ```
 
 These roles affect:
+
 - How the artifact appears in `steward orient` (highlighted under memory/state)
 - Whether staleness checks apply
 - Whether governance rules (frontmatter, structure) are enforced
@@ -152,6 +155,7 @@ The CLI can generate machine-readable inventory artifacts:
 ```
 
 These are declared in policy under `maintenance.artifacts` with `type: manifest` or `type: search-index`. They:
+
 - Are deterministic and refreshable (REQ-MRM-002).
 - Support downstream automation (REQ-MRM-003).
 - Are not required for core CLI functionality (REQ-MRM-004).
@@ -159,6 +163,7 @@ These are declared in policy under `maintenance.artifacts` with `type: manifest`
 ### Content preservation
 
 Maintenance operations only modify:
+
 - Content inside managed regions (between markers).
 - Whole files declared as generated (`role: generated` in policy).
 - Specific frontmatter fields declared for auto-maintenance.

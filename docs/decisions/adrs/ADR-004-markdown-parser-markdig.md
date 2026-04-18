@@ -52,6 +52,7 @@ public sealed class Section
 ```
 
 This model:
+
 - Provides heading-hierarchy navigation.
 - Supports mdpath selector evaluation.
 - Tracks source positions for minimal-diff editing.
@@ -67,6 +68,7 @@ Structural edits do **not** serialize the AST back to Markdown. Instead, they op
 4. Apply the text edit to produce the new document.
 
 This ensures:
+
 - Unrelated content is never reformatted.
 - Diffs are minimal (only the intended change appears).
 - Whitespace, blank lines, and formatting choices are preserved outside the edit range.
