@@ -38,8 +38,8 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 
 | Version   | Theme                                                          | Primary outcome                                                                                              |
 |-----------|----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| `v0.16.0` | Bootstrap quality, config surface coherence, and help polish   | `config suggest` precision, clean `init` first-check, explicit-artifact/family inheritance, UX polish        |
-| `v0.17.0` | Optional pre-stable extensions                                 | Typed resource addresses (RFC-009), workflow/session modeling, and remaining later-scope items if justified  |
+| `v0.16.0` | Adoption readiness, onboarding trust, and rule/runtime coherence | Tested first-hour onboarding, version-story alignment, rule/runtime trust fixes, `config suggest` precision, and UX/help polish |
+| `v0.17.0` | Machine contract hardening and targeted pre-stable extensions  | Universal JSON contract behavior, safe JSON mutation/reporting, typed-address handoff follow-on, and scoped config-model/RFC follow-ups if justified |
 
 ## First Stable Release
 
@@ -57,15 +57,33 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 
 ## v0.16.0 Planned Scope
 
-Primary outcome: bootstrap quality, config surface coherence, and CLI help polish. Grounded in findings 3, 5, 6, and 4 (partial) from the 2026-04-17 CLI expectation fidelity assessment.
+Primary outcome: adoption readiness, onboarding trust, and rule/runtime coherence. Refreshed by the 2026-04-18 review synthesis so the next milestone reflects validated current gaps rather than older partially stale carryover items.
 
 | # | Item | Source | Notes |
 |---|------|--------|--------|
-| 1 | Improve `config suggest` precision for mature repos | Assessment finding 3, G7-20 | Honor `validation.path_overrides` excludes; add confidence/heuristic scoring so test-fixture and sample files are not proposed as real artifact candidates |
-| 2 | Make `init` scaffold a clean first-check state | Assessment finding 5 | Fresh `check` on a new software-profile repo should not warn on optional artifacts; either scaffold them or relax default policy messaging for optional-only misses |
-| 3 | Fix help text: command name and value placeholders | Assessment finding 6 | Pin command display name to `steward` instead of `Steward.Cli`; restore value placeholders on `--config`, `--artifact`, `--role`, `--max` |
-| 4 | Resolve explicit-artifact / family-schema inheritance | Assessment finding 4, RFC-008 | Explicit artifacts currently do not inherit family `frontmatter_schema`, forcing duplicate `frontmatter_requirements` in policy; design and implement a clean inheritance or merge model |
-| 5 | Improve Markdown subsystem help and examples | Assessment finding, RFC-004 | Add operational selector examples to `md query` / `md edit` help; reduce "already know MdPath" assumption in subcommand descriptions |
+| 1 | Add a tested README "First 15 Minutes" path | Fresh-eyes onboarding audit, synthesis `SYN-01` | Make the first value path explicit: install or repo-independent executable path -> target repo -> `orient` -> `init` -> `status --coverage` -> `check` |
+| 2 | Document repo-independent source-build usage and the `global.json` hazard | Fresh-eyes onboarding audit, synthesis `SYN-01` | Prefer a built executable or local `--tool-path` install; state that `dotnet run --project ...` can fail when the target repo controls SDK selection |
+| 3 | Reconcile runtime/package/version-story drift | Fresh-eyes onboarding audit, synthesis `SYN-05` | README, changelog, `steward version`, and planning/status artifacts must tell the same version/baseline story before the next release-oriented doc pass |
+| 4 | Fix rule-system trust defects in scoped and family-based validation | Rule-system completeness audit, synthesis `SYN-04` | Correct STWD-008, STWD-011, and STWD-015 behavior; make STWD-012 diagnostics self-contained; narrow STWD-006 if the fix stays bounded |
+| 5 | Fix `refactor move --apply --output json` and add postcondition tests | AI-agent contract review, synthesis `SYN-02` | JSON mode must execute the move, rewrite references, and prove what changed |
+| 6 | Improve `config suggest` precision for mature repos | RFC-007 G7-20, synthesis `SYN-07` | Honor `validation.path_overrides`-style exclusions, add confidence/heuristic scoring, and label conservative suggestions as such |
+| 7 | Fix help text: public command identity and value placeholders | Fresh-eyes onboarding audit, synthesis `SYN-06` | Pin command display name to `steward` instead of `Steward.Cli`; restore value placeholders on `--config`, `--artifact`, `--role`, `--max` |
+| 8 | Tighten status, summary, and diagnostic language coherence | Fresh-eyes onboarding audit, rule-system completeness audit, synthesis `SYN-06` | Reword warning-heavy `check` summaries, clarify `orient --signals`, and clean up the highest-noise messages |
+| 9 | Resolve explicit-artifact / family-schema inheritance | Assessment finding 4, RFC-008 | Explicit artifacts currently do not inherit family `frontmatter_schema`, forcing duplicate `frontmatter_requirements` in policy; design and implement a clean inheritance or merge model |
+| 10 | Improve Markdown subsystem help and examples | Assessment finding, RFC-004 | Add operational selector examples to `md query` / `md edit` help; reduce "already know MdPath" assumption in subcommand descriptions |
+
+## v0.17.0 Planned Scope
+
+Primary outcome: machine contract hardening and targeted pre-stable extensions. This milestone should finish the machine-facing trust floor before Steward takes on broader config-model growth.
+
+| # | Item | Source | Notes |
+|---|------|--------|--------|
+| 1 | Standardize the JSON envelope on every JSON-capable command and failure path | AI-agent contract review, synthesis `SYN-03` | `--output json --json-envelope standard` must guarantee standard-envelope JSON on stdout for both success and expected failure |
+| 2 | Separate process success from domain result and add structured error kinds | AI-agent contract review, synthesis `SYN-03` | Keep validation/result booleans in payload data; add typed error envelopes with recovery hints |
+| 3 | Deepen `explain path`, `refs`, and `search` handoff surfaces | AI-agent contract review, synthesis `SYN-03` | Add `exists`/provenance fields and improve machine handoff fidelity ahead of typed-address work |
+| 4 | Scope and implement the first narrow RFC-009 slice | RFC-009, AI-agent contract review | Focus on reusable address handoff across `search`, `refs`, `check`, and `explain path` rather than a broad address model all at once |
+| 5 | Publish machine-facing contract docs and broaden contract tests | AI-agent contract review | Add coverage for standard-envelope success/failure paths and mutation postconditions |
+| 6 | Decide whether to open an adoption-oriented config-model RFC | Config expressiveness stress test, synthesis `SYN-08` | Only after the trust floor above lands; constrain scope to non-Markdown transparency, intentionally ungoverned zones, and grandfathering/new-files-only |
 
 ---
 

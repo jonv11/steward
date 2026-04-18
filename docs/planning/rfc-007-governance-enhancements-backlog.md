@@ -35,7 +35,7 @@ This artifact is no longer a “post-v1” backlog. It is now a ledger showing w
 | G7-16 | Governance coverage reporting | Implemented | `steward status --coverage` |
 | G7-17 | Staged-scope completeness checks | Implemented | `CheckCommand.ComputeStagedCompleteness` |
 | G7-18 | Reference graph queries | Implemented | `steward refs <path>` |
-| G7-19 | Safe move/rename workflow | Implemented | `steward refactor move` |
+| G7-19 | Safe move/rename workflow | Implemented (baseline) | `steward refactor move` exists, but the 2026-04-18 AI-agent contract review found that `refactor move --apply --output json` still returns success without performing the move; JSON-mode safety follow-on remains |
 | G7-20 | Bootstrap-by-analysis | Implemented (baseline) | `BootstrapAnalyzer` and `config suggest` provide heuristic suggestions including decisions, planning, state docs, and subdirectory indexes; precision on mature repos is still weak (fixture/sample files proposed as artifacts); confidence scoring and path-override exclusion planned for v0.16.0 |
 
 ## Remaining Follow-On Work
@@ -43,5 +43,6 @@ This artifact is no longer a “post-v1” backlog. It is now a ledger showing w
 RFC-007 itself no longer carries the main unfinished stable-readiness load. The one item still marked "Implemented (baseline)" has a known depth gap:
 
 - **G7-20 (config suggest):** Precision on mature repos is weak — `BootstrapAnalyzer` proposes test-fixture and sample files as real artifact candidates. Confidence scoring and `validation.path_overrides`-aware exclusion are planned for `v0.16.0`.
+- **G7-19 (safe move/rename):** Text-mode workflow exists, but JSON-mode mutation safety is still incomplete. `refactor move --apply --output json` must execute the move and report postconditions before this item can be treated as fully trustworthy.
 
 Remaining stable-readiness work is tracked in [pre-1-0-readiness-plan.md](pre-1-0-readiness-plan.md) and [milestone-plan.md](milestone-plan.md).

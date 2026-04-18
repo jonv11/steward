@@ -17,6 +17,7 @@
 ├── Directory.Packages.props
 ├── docs/
 │   ├── audits/
+│   │   ├── ai-agent-contract-review-2026-04-18.md
 │   │   ├── artifact-hygiene-cleanup-review-2026-04-16.md
 │   │   ├── assessment-coding-agent-usefulness.md
 │   │   ├── cli-expectation-fidelity-assessment-2026-04-17.md
@@ -26,6 +27,7 @@
 │   │   ├── code-quality-pass-2026-04-16.md
 │   │   ├── code-quality-review-2025-07-23.md
 │   │   ├── end-user-documentation-path-audit-2026-04-17.md
+│   │   ├── fresh-eyes-onboarding-audit-2026-04-18.md
 │   │   ├── maintainer-review.md
 │   │   ├── maintainer-usecase-expectations.md
 │   │   ├── maintainer-usecase-ideas.md

@@ -14,7 +14,7 @@ Central navigation for the active product, planning, readiness, and decision art
 
 | Document | Purpose |
 |----------|---------|
-| [Implementation Status](implementation-status.md) | Current `0.15.0` baseline, delivered scope, and remaining pre-stable gaps |
+| [Implementation Status](implementation-status.md) | Current runtime/package baseline, landed working-line scope, and remaining pre-stable gaps |
 | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) | Categorized remaining work before the first stable shipment |
 
 ## Decisions
@@ -29,7 +29,8 @@ Central navigation for the active product, planning, readiness, and decision art
 | Document | Purpose |
 |----------|---------|
 | [Delivery Strategy](planning/delivery-strategy.md) | Sequencing principles and versioning strategy |
-| [Milestone Plan](planning/milestone-plan.md) | Delivered lineage through `v0.14.0` plus planned pre-1.0 milestones |
+| [Milestone Plan](planning/milestone-plan.md) | Delivered lineage plus the active `v0.16.0` and `v0.17.0` pre-1.0 scope |
+| [Review Synthesis Action Plan — 2026-04-18](reviews/review-synthesis-action-plan.md) | Canonical synthesis of the April 18 review cycle into validated backlog, priorities, and planning destinations |
 | [Pre-Release Blockers](planning/pre-release-blockers.md) | Critical items that must be resolved before a first meaningful public pre-1.0 release |
 | [Implementation Instructions](planning/implementation-instructions.md) | Contributor execution guide for the active pre-1.0 roadmap |
 | [v0.15.0 Draft Preparation](planning/v0-15-draft-preparation.md) | Evidence-backed preparation memo for the next milestone: scope boundary, sequencing, and open review questions |
@@ -44,6 +45,12 @@ Central navigation for the active product, planning, readiness, and decision art
 |----------|---------|
 | [RFC-009 Typed Resource Addresses and Search Alignment](decisions/rfcs/RFC-009-typed-resource-addresses-and-search-alignment.md) | Deferred typed-address model for file and Markdown resources — revisit in a later pre-1.0 milestone |
 
+## Config and Policy Reviews
+
+| Document | Purpose |
+| -------- | ------- |
+| [Config Expressiveness Stress Test — 2026-04-18](reviews/config-expressiveness-stress-test.md) | Multi-repo adoption stress test of Steward's policy/config model: what expresses well, what is awkward, and what is not credibly expressible |
+
 ## Reviews And Audit Evidence
 
 Historical audits are preserved for evidence and context. Active repository truth lives in the current-state and planning artifacts above. The latest release-gate view is captured by the current release/readiness review records below; earlier reviews remain useful as historical evidence, not as current truth.
@@ -52,6 +59,9 @@ Historical audits are preserved for evidence and context. Active repository trut
 
 | Document | Purpose |
 | -------- | ------- |
+| [Rule-System Completeness Audit — 2026-04-18](audits/rule-system-completeness-audit-2026-04-18.md) | Systematic per-rule and system-wide review of all 16 validation rules: intent clarity, diagnostic quality, remediation quality, coverage gaps, and highest-value governance improvements |
+| [AI-Agent Contract Review - 2026-04-18](audits/ai-agent-contract-review-2026-04-18.md) | Focused contract audit of Steward as an autonomous coding-agent tool: JSON stability, handoff quality, recovery, and mutation safety |
+| [Fresh-Eyes Onboarding Audit - 2026-04-18](audits/fresh-eyes-onboarding-audit-2026-04-18.md) | Fresh-clone, README-only onboarding audit of whether a skeptical newcomer can reach meaningful first value on a real repository without internal knowledge |
 | [CLI Expectation Fidelity Assessment - 2026-04-17](audits/cli-expectation-fidelity-assessment-2026-04-17.md) | Current evidence-based assessment of whether Steward-on-Steward fulfills the repo's stated CLI promise, workflows, and trust expectations |
 | [Pre-1.0 Release Process Pass — 2026-04-17](audits/pre-1-0-release-process-pass-2026-04-17.md) | Release-governance and operator-process pass: labels, changelog, GitHub Release workflow, asset publication, and remaining deferred items |
 | [End-User Documentation Path Audit — 2026-04-17](audits/end-user-documentation-path-audit-2026-04-17.md) | Persona-based audit and remediation of the end-user documentation path for maintainers and contributors |

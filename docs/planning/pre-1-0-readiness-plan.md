@@ -2,7 +2,7 @@
 type: planning
 source_baseline: v0.14.0
 status: Active
-last_updated: 2026-04-17
+last_updated: 2026-04-18
 ---
 
 # Pre-1.0 Readiness Plan
@@ -29,6 +29,9 @@ This document is the authoritative list of remaining work that is still useful b
 | Item | Rationale | Evidence / source | Partly implemented? | Work type | Home |
 |------|-----------|-------------------|---------------------|-----------|------|
 | ~~Broaden stable contract tests~~ | ~~Stable surfaces should have stronger command/output regression coverage.~~ | 10 stable-surface contract tests added in `StableSurfaceContractTests.cs` covering check JSON/text, status JSON/text, orient JSON, version, and B6 scoped regression. | **Completed in v0.11.0** | Tests | Milestone `v0.11.0` |
+| Credible first-hour onboarding and repo-independent execution path | A stable release should not require README improvisation to reach first value, and cross-repo source-build usage should not depend on undocumented workarounds. | Fresh-eyes onboarding audit 2026-04-18; README still lacks a tested "First 15 Minutes" path and a safe cross-repo execution story. | Yes — core commands show real value once invoked correctly | Docs, UX, packaging guidance | Milestone `v0.16.0` |
+| Reliable agent JSON contract and mutation safety | Steward claims AI-agent value, but current JSON mode is not yet a trustworthy contract across success, failure, and mutation flows. | AI-agent contract review 2026-04-18; raw JSON still emitted by some commands, expected failures still return plain text, and `refactor move --apply --output json` currently no-ops. | Yes — legacy JSON surfaces and some standard-envelope support exist today | CLI contract, code, tests, docs | Milestones `v0.16.0` and `v0.17.0` |
+| Version and current-state story consistency | Stable-release readiness requires the runtime, changelog, README, and planning/current-state artifacts to describe the same version line and milestone state. | Fresh-eyes onboarding audit 2026-04-18; runtime/package metadata still report `0.14.0` while planning/status artifacts describe `v0.15.0` as delivered. | No — inconsistency is still visible | Planning, status, release hygiene | Milestone `v0.16.0` |
 | Decide the later pre-1.0 roadmap ordering explicitly | The repo now correctly stays on `0.x`, but later pre-stable scope still needs explicit sequencing as stable criteria are defined. | User guidance now places all future work on pre-`1.0.0` milestones; [milestone-plan.md](milestone-plan.md) now captures delivered lineage through `v0.14.0` plus the planned `v0.15.0+` work. | Yes | Planning, governance | Milestone planning update as criteria evolve |
 | ~~Standardize preview/apply flag conventions~~ | ~~Three different preview/apply patterns across mutation commands (`--fix`/`--dry-run`, `--apply` default-preview, `--preview`+`--apply` required) erode CLI coherence.~~ | `check --fix` now previews by default, `--fix --apply` commits, and deprecated `--dry-run` remains hidden for compatibility. | **Completed in v0.12.0** | Code, docs | Delivered |
 | ~~Fix `md query --pattern` batch mode~~ | ~~Argument parsing ambiguity between positional `file` arg and `--pattern` option prevents multi-file structural queries.~~ | Batch-mode parsing now works correctly for multi-file structural queries. | **Completed in v0.12.0** | Code, tests | Delivered |
@@ -59,6 +62,7 @@ These remain valid future scope, but they are not current stable-release blocker
 | Exclude test fixtures from governance coverage | `status --coverage` counts test-fixture Markdown as ungoverned, diluting the repo's governance signal. | CLI reviews 2026-04-16 (EF-007, F-05, F16) | **Done (v0.12.0)** — `coverage.exclude` config section | Code | Delivered |
 | Heading selector substring/fuzzy matching in MdPath | `md query` requires exact heading text; no contains/substring match mode. | CLI Full Assessment 2026-04-16 F8 | No | Code | Later pre-1.0 milestone |
 | JSON output envelope consistency | Commands use different JSON shapes with no common envelope. | CLI Full Assessment 2026-04-16 F18 | No | Design, code | Later pre-1.0 milestone |
+| Adoption-oriented config-model transparency and phase-in support | The stress-test review identified three recurring adoption gaps that are narrower than a full config-model expansion: unsupported-content transparency, intentionally ungoverned zones, and grandfathering/new-files-only behavior. | Config expressiveness stress test 2026-04-18; review synthesis `SYN-08` | Partial — `config doctor` and `path_overrides` provide only baseline coverage | Design, RFC, code | Follow-on RFC after the machine-trust floor is repaired |
 
 ## No Longer Relevant / Superseded
 
