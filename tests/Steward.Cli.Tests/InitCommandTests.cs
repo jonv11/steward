@@ -69,7 +69,7 @@ public class InitCommandTests : IDisposable
         exitCode.Should().Be(0);
         File.Exists(Path.Combine(_tempDir, "README.md")).Should().BeTrue();
         File.Exists(Path.Combine(_tempDir, "LICENSE")).Should().BeTrue();
-        output.Should().Contain("Scaffolded required artifacts");
+        output.Should().Contain("Scaffolded artifacts");
         output.Should().Contain("README.md");
         output.Should().Contain("LICENSE");
     }

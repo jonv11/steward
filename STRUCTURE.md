@@ -124,6 +124,7 @@
     │   ├── GovernanceCoverageTests.cs
     │   ├── Helpers
     │   ├── InitCommandTests.cs
+    │   ├── JsonContractTests.cs
     │   ├── JsonFormatterTests.cs
     │   ├── MaintainCommandTests.cs
     │   ├── MdEditCommandTests.cs
