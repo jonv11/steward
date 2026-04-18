@@ -45,22 +45,40 @@ After building from source, run commands using:
 dotnet run --project src/Steward.Cli -- <command>
 ```
 
-### Build and install as a global tool
+### Build and install locally
 
 ```bash
 dotnet pack src/Steward.Cli -c Release
 dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward --version 0.15.0
 ```
 
-After installing locally with `--tool-path`, run commands using:
+This installs the binary to `./.tools/steward/`. Add it to your PATH so the bare `steward` command works (matching all examples below):
+
+```bash
+# Unix / Git Bash
+export PATH="$PWD/.tools/steward:$PATH"
+
+# Windows PowerShell
+$env:PATH = "$PWD\.tools\steward;$env:PATH"
+```
+
+Or run commands with the explicit path:
 
 ```bash
 ./.tools/steward/steward <command>
 ```
 
-### Public feed install
+> **Note:** Add `.tools/` to `.gitignore` and to `discovery.exclude` in `.steward/config.yaml` so Steward does not scan its own installation directory.
 
-NuGet publication is intentional and tag-driven. Tagged releases publish the `Steward` .NET tool package to nuget.org from GitHub Actions, but docs in the repo should still avoid implying a package exists before a given release has actually published successfully.
+### Install from NuGet
+
+Once a release is published to nuget.org, install directly without building:
+
+```bash
+dotnet tool install --global Steward --version 0.15.0
+```
+
+NuGet publication is tag-driven via GitHub Actions. Check the [GitHub Releases page](https://github.com/jonv11/steward/releases) to confirm the package is available before running this command.
 
 ### GitHub Releases
 
@@ -94,7 +112,7 @@ This creates a `.steward/` directory with starter `config.yaml` and `policy.yaml
 steward config suggest             # detect artifacts steward can see
 ```
 
-Review the suggestions and edit `.steward/policy.yaml` to declare the artifacts, roles, governance rules, and maintenance targets that match your repository.
+On an existing repository with existing files, review the suggestions and add anything missing to `.steward/policy.yaml`. On a freshly initialized repo the suggestions will already match what `init` scaffolded — this step is most valuable when adopting Steward on a repo that already has content.
 
 ### 3. Validate your configuration
 
@@ -115,9 +133,11 @@ Review the diagnostics. Each violation includes a rule ID you can look up:
 steward explain STWD-003           # understand what the rule checks and how to fix violations
 ```
 
+> **After a fresh `steward init`:** You may see STWD-009 warnings for non-required artifacts like `CHANGELOG.md` or `CONTRIBUTING.md` that are declared in the starter policy but don't exist yet. Either create those files or remove their entries from `.steward/policy.yaml`. These are warnings, not errors — `steward check` will still exit 0.
+
 ### 5. Set up maintenance
 
-If you configured maintenance artifacts (structure documents, indexes, managed sections):
+If you configured maintenance artifacts (structure documents, indexes, managed sections) — look for a `maintenance:` section in `.steward/policy.yaml`:
 
 ```bash
 steward maintain                   # preview what would be generated
@@ -152,6 +172,8 @@ After editing policy, re-run `config validate`, `config doctor`, and `check` to 
 ## Getting Started — Contributor
 
 If you are contributing to a repository that already uses Steward, follow this path. You do not need to understand or modify the `.steward/` configuration — the maintainer has already set that up.
+
+> **No `.steward/` config yet?** `steward orient`, `steward outline`, and `steward check` all work without a policy file. You can use them on any repository immediately after installing — for example, `steward outline docs/` gives you a heading-outline tree of any directory without any configuration.
 
 ### 1. Orient yourself
 
@@ -252,6 +274,7 @@ A clean check returns exit code `0` and reports no errors. In CI, the same `stew
 | `--verbosity quiet\|normal\|verbose\|debug` | Verbosity level (default: normal) |
 | `--no-color` | Disable colored output (overrides config.yaml) |
 | `--config <path>` | Override config directory path |
+| `--json-envelope legacy\|standard` | JSON envelope shape when `--output json` is active. `legacy` (default) uses a flat envelope matching the original schema; `standard` wraps output in a versioned `{"schema":…,"data":…}` envelope for machine consumers. |
 
 ## Validation Rules
 
@@ -300,6 +323,7 @@ discovery:
     - "node_modules/"
     - "dist/"
     - ".vs/"
+    - ".tools/"         # exclude local dotnet tool installs inside the repo
 
 coverage:
   exclude:              # Glob patterns to exclude from governance-coverage calculations

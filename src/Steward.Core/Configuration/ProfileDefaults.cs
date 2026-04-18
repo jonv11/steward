@@ -82,7 +82,7 @@ public static class ProfileDefaults
             Profile = profileName,
             Discovery = new DiscoveryConfig
             {
-                Exclude = ["node_modules/", ".vs/", "*.user"]
+                Exclude = ["node_modules/", ".vs/", "*.user", ".tools/"]
             }
         };
     }

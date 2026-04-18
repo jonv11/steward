@@ -28,7 +28,8 @@ public static class GlobalOptionsSetup
     public static readonly Option<string?> ConfigOption = new(
         "--config", "-c")
     {
-        Description = "Path to .steward configuration directory"
+        Description = "Path to .steward configuration directory",
+        HelpName = "path"
     };
 
     public static readonly Option<JsonEnvelopeMode> JsonEnvelopeOption = new(
