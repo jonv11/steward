@@ -49,7 +49,6 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 
 ## Notes
 
-- Former `v1.1.0` through `v1.6.0` planning has been logically retargeted to `v0.11.0` through `v0.16.0`.
 - The release-process completion work now lives on the active pre-1.0 line; it does not imply that `1.0.0` is scheduled or authorized.
 - The exact boundary between later pre-1.0 milestones may continue to move as stable-release criteria are clarified, but the roadmap must stay on the `0.x` line until that decision is made.
 

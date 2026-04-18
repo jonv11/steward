@@ -2,7 +2,7 @@
 type: planning
 status: Active
 version: 0.10.0
-last_updated: 2026-04-15
+last_updated: 2026-04-18
 ---
 
 # Curation Notes
@@ -51,11 +51,10 @@ No competing artifacts existed. The repository was empty except for the master r
 
 6. **mdpath selector syntax:** MRD referenced "mdpath-style or equivalent" without specifying syntax. RFC-004 designed a concrete selector syntax.
 
-## Retargeting Notes
+## Roadmap Notes
 
-- The previous live "post-v1" framing was superseded because the repository is not yet approved for `1.0.0`.
-- Future work that had been labeled `v1.1.0+` is now retargeted to logical pre-1.0 milestones (`v0.11.0+`).
-- Historical audit documents remain historical, but active planning artifacts now describe one consistent pre-stable story.
+- The active roadmap remains on the `0.x` line until the repository is explicitly authorized for `1.0.0`.
+- Historical audit documents remain historical, but active planning artifacts describe the current pre-stable roadmap.
 
 ## Items Intentionally Deferred Within The Pre-1.0 Line
 

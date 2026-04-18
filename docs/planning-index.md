@@ -49,6 +49,7 @@ Central navigation for the active product, planning, readiness, and decision art
 
 | Document | Purpose |
 | -------- | ------- |
+| [AI-Agent Contract Review](reviews/ai-agent-contract-review.md) | Deep contract audit of Steward's JSON outputs, diagnostics, selectors, error handling, and mutation flows for autonomous agent use |
 | [Config Expressiveness Stress Test — 2026-04-18](reviews/config-expressiveness-stress-test.md) | Multi-repo adoption stress test of Steward's policy/config model: what expresses well, what is awkward, and what is not credibly expressible |
 
 ## Reviews And Audit Evidence
