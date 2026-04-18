@@ -228,26 +228,18 @@ validation:
       disabled_rules:
         - STWD-013
 
-  # Keep scoped path-based frontmatter enforcement for requirements and planning docs.
-  # Explicit artifact entries still take precedence over family classification, so these
-  # patterns continue to carry real governance weight for PRD, roadmap, and execution docs
-  # even after STWD-014 through STWD-016 landed on the active pre-1.0 line.
+  # Keep scoped path-based frontmatter enforcement where this repo intentionally wants
+  # broader or different constraints than the family defaults. Family schema now also
+  # applies to explicit artifacts, but these scoped requirements still matter here
+  # because requirements docs allow both `prd` and `requirements` as valid `type` values.
   frontmatter_requirements:
-    - pattern: "docs/requirements/**"
+    - pattern: "docs/requirements/*.md"
       required_fields:
         - type
         - status
       allowed_values:
         type: [prd, requirements]
         status: [Draft, Accepted, Active, Superseded]
-
-    - pattern: "docs/planning/**"
-      required_fields:
-        - type
-        - status
-      allowed_values:
-        type: [planning]
-        status: [Draft, Active, Accepted, Completed, Superseded]
 
 maintenance:
   artifacts:

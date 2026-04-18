@@ -186,6 +186,28 @@ public class ConfigCommandTests : IDisposable
         output.Should().Contain("\"artifacts\"");
         output.Should().Contain("\"path\": \"README.md\"");
         output.Should().Contain("\"path\": \"docs/requirements/PRD.md\"");
+        output.Should().Contain("\"confidence\": \"high\"");
+    }
+
+    [Fact]
+    public void ConfigSuggest_RespectsPathOverrideExclusions()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Demo");
+        Directory.CreateDirectory(Path.Combine(_tempDir, "tests", "fixtures"));
+        File.WriteAllText(Path.Combine(_tempDir, "tests", "fixtures", "sample-status.md"), "# Sample");
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
+            validation:
+              path_overrides:
+                - pattern: "tests/**"
+                  disabled_rules:
+                    - STWD-013
+            """);
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("config", "suggest", "--output", "json");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("\"path\": \"README.md\"");
+        output.Should().NotContain("sample-status.md");
     }
 
     [Fact]

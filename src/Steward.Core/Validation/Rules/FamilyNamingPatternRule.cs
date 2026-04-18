@@ -28,15 +28,13 @@ public sealed class FamilyNamingPatternRule : IValidationRule
         if (compiled.Count == 0)
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
 
-        var explicitPaths = BuildExplicitPaths(context.Policy);
         var classifier = new ArtifactFamilyClassifier(compiled.Select(c => c.Definition).ToList());
 
         foreach (var file in context.TargetFiles)
         {
             if (file.IsDirectory) continue;
-            if (explicitPaths.Contains(PathHelper.NormalizeAndTrim(file.RelativePath))) continue;
 
-            var matched = classifier.Classify(file.RelativePath, frontmatterFields: null);
+            var matched = classifier.ClassifyFile(file.RelativePath, context.FileSystem, context.RepositoryRoot);
             if (matched == null) continue;
 
             var rule = compiled.FirstOrDefault(c => string.Equals(c.Definition.Family, matched.Family, StringComparison.OrdinalIgnoreCase));
@@ -112,20 +110,5 @@ public sealed class FamilyNamingPatternRule : IValidationRule
         }
         return result;
     }
-
-    private static HashSet<string> BuildExplicitPaths(RepositoryPolicy? policy)
-    {
-        if (policy?.Artifacts == null)
-            return [];
-
-        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var a in policy.Artifacts)
-        {
-            if (!string.IsNullOrWhiteSpace(a.Path))
-                set.Add(PathHelper.NormalizeAndTrim(a.Path!));
-        }
-        return set;
-    }
-
     private sealed record CompiledFamilyNaming(ArtifactFamilyDefinition Definition, Regex Pattern, string RawPattern);
 }

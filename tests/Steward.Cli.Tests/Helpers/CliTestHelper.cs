@@ -14,14 +14,7 @@ internal static class CliTestHelper
 
     public static int Invoke(params string[] args)
     {
-        var rootCommand = CreateRootCommand();
-        var parseResult = rootCommand.Parse(args);
-        var exitCode = parseResult.Invoke();
-
-        if (parseResult.Errors.Count > 0 && exitCode != Steward.Core.ExitCodes.Success)
-            return Steward.Core.ExitCodes.UsageError;
-
-        return exitCode;
+        return Program.InvokeAsync(args).GetAwaiter().GetResult();
     }
 
     public static (int ExitCode, string Output, string Error) InvokeCapture(params string[] args)

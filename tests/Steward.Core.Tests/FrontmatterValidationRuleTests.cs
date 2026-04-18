@@ -354,4 +354,71 @@ public class FrontmatterValidationRuleTests
         diagnostics[0].Message.Should().Contain("description");
         diagnostics[0].Remediation.Should().Contain("generated directory indexes");
     }
+
+    [Fact]
+    public async Task Evaluate_FamilyAllowedValues_MergeWithScopedArtifactException()
+    {
+        var fs = new InMemoryFileSystem();
+        fs.AddFile("root/docs/requirements/PRD.md", "---\ntype: prd\nstatus: Draft\n---\n# PRD\n");
+
+        var policy = new RepositoryPolicy
+        {
+            Artifacts =
+            [
+                new ArtifactDefinition
+                {
+                    Path = "docs/requirements/PRD.md",
+                    Role = "requirements",
+                    Importance = "required"
+                }
+            ],
+            ArtifactFamilies =
+            [
+                new ArtifactFamilyDefinition
+                {
+                    Family = "requirements",
+                    Match = new ArtifactFamilyMatch
+                    {
+                        PathPattern = "docs/requirements/**/*.md"
+                    },
+                    FrontmatterSchema = new ArtifactFamilyFrontmatterSchema
+                    {
+                        Required = ["type", "status"],
+                        AllowedValues = new Dictionary<string, List<string>>
+                        {
+                            ["type"] = ["requirements"]
+                        }
+                    }
+                }
+            ],
+            Validation = new ValidationConfig
+            {
+                FrontmatterRequirements =
+                [
+                    new FrontmatterRequirement
+                    {
+                        Pattern = "docs/requirements/PRD.md",
+                        AllowedValues = new Dictionary<string, List<string>>
+                        {
+                            ["type"] = ["prd", "requirements"]
+                        }
+                    }
+                ]
+            }
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = [new DiscoveredFile("docs/requirements/PRD.md", 40, false)],
+            FileSystem = fs,
+            RepositoryRoot = "root"
+        };
+
+        var rule = new RequiredFrontmatterFieldRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().BeEmpty();
+    }
 }

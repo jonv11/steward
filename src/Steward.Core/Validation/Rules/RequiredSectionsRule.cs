@@ -33,15 +33,9 @@ public sealed class RequiredSectionsRule : IValidationRule
 
         var classifier = new ArtifactFamilyClassifier(applicableFamilies);
 
-        // Build set of explicit artifact paths — families don't apply to these
-        var explicitPaths = BuildExplicitPaths(context.Policy);
-
         foreach (var file in context.TargetFiles)
         {
             if (!file.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            if (explicitPaths.Contains(PathHelper.NormalizeAndTrim(file.RelativePath)))
                 continue;
 
             StructuredDocument? doc = null;
@@ -101,19 +95,5 @@ public sealed class RequiredSectionsRule : IValidationRule
             result.Add(section.Heading);
             CollectRecursive(section.Children, result);
         }
-    }
-
-    private static HashSet<string> BuildExplicitPaths(RepositoryPolicy? policy)
-    {
-        if (policy?.Artifacts == null)
-            return [];
-
-        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var a in policy.Artifacts)
-        {
-            if (!string.IsNullOrWhiteSpace(a.Path))
-                set.Add(PathHelper.NormalizeAndTrim(a.Path!));
-        }
-        return set;
     }
 }

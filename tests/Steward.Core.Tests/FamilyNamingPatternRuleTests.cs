@@ -135,7 +135,7 @@ public class FamilyNamingPatternRuleTests
     }
 
     [Fact]
-    public async Task Evaluate_ExplicitArtifact_PatternNotApplied()
+    public async Task Evaluate_ExplicitArtifact_PatternApplied()
     {
         var fs = new InMemoryFileSystem();
 
@@ -168,7 +168,9 @@ public class FamilyNamingPatternRuleTests
         var rule = new FamilyNamingPatternRule();
         var diagnostics = await rule.EvaluateAsync(context);
 
-        diagnostics.Should().BeEmpty();
+        diagnostics.Should().HaveCount(1);
+        diagnostics[0].RuleId.Should().Be("STWD-016");
+        diagnostics[0].Message.Should().Contain("legacy.md");
     }
 
     [Fact]

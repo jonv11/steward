@@ -1,3 +1,4 @@
+using DotNet.Globbing;
 using Steward.Core;
 using Steward.Core.Abstractions;
 using Steward.Core.Discovery;
@@ -23,6 +24,8 @@ public static class BootstrapAnalyzer
         public required string Role { get; init; }
         public required string Importance { get; init; }
         public string? Reason { get; init; }
+        public required string Confidence { get; init; }
+        public bool Conservative { get; init; }
     }
 
     private static readonly Dictionary<string, (string Role, string Importance)> WellKnownFiles =
@@ -45,9 +48,29 @@ public static class BootstrapAnalyzer
         "vendor/", "__pycache__/", ".next/", "coverage/"
     ];
 
-    public static Suggestion Analyze(IReadOnlyList<DiscoveredFile> files, IFileSystem fileSystem, string repositoryRoot)
+    private static readonly HashSet<string> LowTrustPathSegments =
+    [
+        "test",
+        "tests",
+        "fixture",
+        "fixtures",
+        "sample",
+        "samples",
+        "example",
+        "examples",
+        "testdata",
+        "snapshot",
+        "snapshots"
+    ];
+
+    public static Suggestion Analyze(
+        IReadOnlyList<DiscoveredFile> files,
+        IFileSystem fileSystem,
+        string repositoryRoot,
+        RepositoryPolicy? policy = null)
     {
         var suggestion = new Suggestion();
+        var suppressedSuggestionGlobs = CompileSuppressedSuggestionGlobs(policy);
         var relPaths = new HashSet<string>(
             files.Select(f => PathHelper.NormalizeSeparators(f.RelativePath)),
             StringComparer.OrdinalIgnoreCase);
@@ -55,26 +78,27 @@ public static class BootstrapAnalyzer
         // 1. Well-known files → artifact suggestions
         foreach (var (pattern, (role, importance)) in WellKnownFiles)
         {
-            if (relPaths.Contains(pattern))
+            if (relPaths.Contains(pattern) && !ShouldSkipSuggestionPath(pattern, suppressedSuggestionGlobs))
             {
-                suggestion.Artifacts.Add(new ArtifactSuggestion
-                {
-                    Path = pattern,
-                    Role = role,
-                    Importance = importance,
-                    Reason = "Well-known repository file"
-                });
+                AddArtifactSuggestion(
+                    suggestion,
+                    pattern,
+                    role,
+                    importance,
+                    "Well-known repository file",
+                    confidence: "high");
             }
         }
 
         // 2. Start-here heuristic: README.md, then files in docs/ root
-        if (relPaths.Contains("README.md"))
+        if (relPaths.Contains("README.md") && !ShouldSkipSuggestionPath("README.md", suppressedSuggestionGlobs))
             suggestion.StartHere.Add("README.md");
 
         var docsIndex = files
             .Where(f => PathHelper.NormalizeSeparators(f.RelativePath).Equals("docs/README.md", StringComparison.OrdinalIgnoreCase) ||
                         PathHelper.NormalizeSeparators(f.RelativePath).Equals("docs/index.md", StringComparison.OrdinalIgnoreCase))
             .Select(f => PathHelper.NormalizeSeparators(f.RelativePath))
+            .Where(path => !ShouldSkipSuggestionPath(path, suppressedSuggestionGlobs))
             .FirstOrDefault();
 
         if (docsIndex != null)
@@ -88,46 +112,46 @@ public static class BootstrapAnalyzer
 
         if (docsFiles.Count > 0 && docsIndex != null)
         {
-            suggestion.Artifacts.Add(new ArtifactSuggestion
-            {
-                Path = docsIndex,
-                Role = "authoritative",
-                Importance = "recommended",
-                Reason = "Documentation index file"
-            });
+            AddArtifactSuggestion(
+                suggestion,
+                docsIndex,
+                "authoritative",
+                "recommended",
+                "Documentation index file",
+                confidence: "high");
         }
 
         // 4. Requirements/PRD detection
         foreach (var f in files)
         {
             var rel = PathHelper.NormalizeSeparators(f.RelativePath);
+            if (ShouldSkipSuggestionPath(rel, suppressedSuggestionGlobs))
+                continue;
+
             var name = Path.GetFileName(rel).ToLowerInvariant();
             if (name is "prd.md" or "requirements.md" or "spec.md" or "specification.md")
             {
-                if (!suggestion.Artifacts.Any(a => string.Equals(a.Path, rel, StringComparison.OrdinalIgnoreCase)))
-                {
-                    suggestion.Artifacts.Add(new ArtifactSuggestion
-                    {
-                        Path = rel,
-                        Role = "requirements",
-                        Importance = "required",
-                        Reason = "Requirements/specification document"
-                    });
-                }
+                AddArtifactSuggestion(
+                    suggestion,
+                    rel,
+                    "requirements",
+                    "required",
+                    "Requirements/specification document",
+                    confidence: "high");
             }
         }
 
         // 5. Decisions directory (ADR/RFC patterns)
-        DetectDecisionDirectory(files, suggestion);
+        DetectDecisionDirectory(files, suggestion, suppressedSuggestionGlobs);
 
         // 6. Planning documents
-        DetectPlanningDocuments(files, suggestion);
+        DetectPlanningDocuments(files, suggestion, suppressedSuggestionGlobs);
 
         // 7. State documents (milestone plans, status trackers, etc.)
-        DetectStateDocuments(files, suggestion);
+        DetectStateDocuments(files, suggestion, suppressedSuggestionGlobs);
 
         // 8. Index files in subdirectories
-        DetectIndexFiles(files, suggestion);
+        DetectIndexFiles(files, suggestion, suppressedSuggestionGlobs);
 
         // 9. Exclude patterns
         foreach (var exclude in CommonExcludes)
@@ -142,7 +166,10 @@ public static class BootstrapAnalyzer
         return suggestion;
     }
 
-    private static void DetectDecisionDirectory(IReadOnlyList<DiscoveredFile> files, Suggestion suggestion)
+    private static void DetectDecisionDirectory(
+        IReadOnlyList<DiscoveredFile> files,
+        Suggestion suggestion,
+        IReadOnlyList<Glob> suppressedSuggestionGlobs)
     {
         // Detect ADR/RFC directories and their index files
         var decisionDirs = new[] { "docs/decisions", "docs/adrs", "docs/rfcs", "decisions", "adrs", "rfcs",
@@ -166,21 +193,25 @@ public static class BootstrapAnalyzer
             if (indexFile != null)
             {
                 var rel = PathHelper.NormalizeSeparators(indexFile.RelativePath);
-                if (!suggestion.Artifacts.Any(a => string.Equals(a.Path, rel, StringComparison.OrdinalIgnoreCase)))
-                {
-                    suggestion.Artifacts.Add(new ArtifactSuggestion
-                    {
-                        Path = rel,
-                        Role = "index",
-                        Importance = "recommended",
-                        Reason = "Decision records index"
-                    });
-                }
+                if (ShouldSkipSuggestionPath(rel, suppressedSuggestionGlobs))
+                    continue;
+
+                AddArtifactSuggestion(
+                    suggestion,
+                    rel,
+                    "index",
+                    "recommended",
+                    "Decision records index",
+                    confidence: "medium",
+                    conservative: true);
             }
         }
     }
 
-    private static void DetectPlanningDocuments(IReadOnlyList<DiscoveredFile> files, Suggestion suggestion)
+    private static void DetectPlanningDocuments(
+        IReadOnlyList<DiscoveredFile> files,
+        Suggestion suggestion,
+        IReadOnlyList<Glob> suppressedSuggestionGlobs)
     {
         var planningPatterns = new Dictionary<string, (string Role, string Reason)>(StringComparer.OrdinalIgnoreCase)
         {
@@ -195,20 +226,21 @@ public static class BootstrapAnalyzer
         foreach (var f in files)
         {
             var rel = PathHelper.NormalizeSeparators(f.RelativePath);
+            if (ShouldSkipSuggestionPath(rel, suppressedSuggestionGlobs))
+                continue;
+
             var name = Path.GetFileName(rel).ToLowerInvariant();
 
             if (planningPatterns.TryGetValue(name, out var match))
             {
-                if (!suggestion.Artifacts.Any(a => string.Equals(a.Path, rel, StringComparison.OrdinalIgnoreCase)))
-                {
-                    suggestion.Artifacts.Add(new ArtifactSuggestion
-                    {
-                        Path = rel,
-                        Role = match.Role,
-                        Importance = "optional",
-                        Reason = match.Reason
-                    });
-                }
+                AddArtifactSuggestion(
+                    suggestion,
+                    rel,
+                    match.Role,
+                    "optional",
+                    match.Reason,
+                    confidence: "medium",
+                    conservative: true);
             }
         }
 
@@ -226,48 +258,55 @@ public static class BootstrapAnalyzer
             if (planningIndex != null)
             {
                 var rel = PathHelper.NormalizeSeparators(planningIndex.RelativePath);
-                if (!suggestion.Artifacts.Any(a => string.Equals(a.Path, rel, StringComparison.OrdinalIgnoreCase)))
-                {
-                    suggestion.Artifacts.Add(new ArtifactSuggestion
-                    {
-                        Path = rel,
-                        Role = "index",
-                        Importance = "optional",
-                        Reason = "Planning documents index"
-                    });
-                }
+                if (ShouldSkipSuggestionPath(rel, suppressedSuggestionGlobs))
+                    continue;
+
+                AddArtifactSuggestion(
+                    suggestion,
+                    rel,
+                    "index",
+                    "optional",
+                    "Planning documents index",
+                    confidence: "medium",
+                    conservative: true);
             }
         }
     }
 
-    private static void DetectStateDocuments(IReadOnlyList<DiscoveredFile> files, Suggestion suggestion)
+    private static void DetectStateDocuments(
+        IReadOnlyList<DiscoveredFile> files,
+        Suggestion suggestion,
+        IReadOnlyList<Glob> suppressedSuggestionGlobs)
     {
         // Files with state-tracking patterns in their names
         foreach (var f in files)
         {
             var rel = PathHelper.NormalizeSeparators(f.RelativePath);
             if (!rel.EndsWith(".md", StringComparison.OrdinalIgnoreCase)) continue;
+            if (ShouldSkipSuggestionPath(rel, suppressedSuggestionGlobs))
+                continue;
 
             var name = Path.GetFileNameWithoutExtension(rel).ToLowerInvariant();
 
             // Pattern: *-status.md, *-tracker.md, *-progress.md
             if (name.EndsWith("-status") || name.EndsWith("-tracker") || name.EndsWith("-progress"))
             {
-                if (!suggestion.Artifacts.Any(a => string.Equals(a.Path, rel, StringComparison.OrdinalIgnoreCase)))
-                {
-                    suggestion.Artifacts.Add(new ArtifactSuggestion
-                    {
-                        Path = rel,
-                        Role = "state-document",
-                        Importance = "optional",
-                        Reason = "State tracking document"
-                    });
-                }
+                AddArtifactSuggestion(
+                    suggestion,
+                    rel,
+                    "state-document",
+                    "optional",
+                    "State tracking document",
+                    confidence: "medium",
+                    conservative: true);
             }
         }
     }
 
-    private static void DetectIndexFiles(IReadOnlyList<DiscoveredFile> files, Suggestion suggestion)
+    private static void DetectIndexFiles(
+        IReadOnlyList<DiscoveredFile> files,
+        Suggestion suggestion,
+        IReadOnlyList<Glob> suppressedSuggestionGlobs)
     {
         // Detect index.md files in subdirectories (not already suggested)
         var indexFiles = files
@@ -282,19 +321,87 @@ public static class BootstrapAnalyzer
         foreach (var f in indexFiles)
         {
             var rel = PathHelper.NormalizeSeparators(f.RelativePath);
+            if (ShouldSkipSuggestionPath(rel, suppressedSuggestionGlobs))
+                continue;
+
             if (suggestion.Artifacts.Any(a => string.Equals(a.Path, rel, StringComparison.OrdinalIgnoreCase)))
                 continue;
 
             var dir = PathHelper.NormalizeSeparators(Path.GetDirectoryName(rel) ?? "");
             if (string.IsNullOrEmpty(dir)) continue;
 
-            suggestion.Artifacts.Add(new ArtifactSuggestion
-            {
-                Path = rel,
-                Role = "index",
-                Importance = "optional",
-                Reason = $"Index file for {dir}/"
-            });
+            AddArtifactSuggestion(
+                suggestion,
+                rel,
+                "index",
+                "optional",
+                $"Index file for {dir}/",
+                confidence: "low",
+                conservative: true);
         }
+    }
+
+    private static void AddArtifactSuggestion(
+        Suggestion suggestion,
+        string path,
+        string role,
+        string importance,
+        string reason,
+        string confidence,
+        bool conservative = false)
+    {
+        if (suggestion.Artifacts.Any(a => string.Equals(a.Path, path, StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        suggestion.Artifacts.Add(new ArtifactSuggestion
+        {
+            Path = path,
+            Role = role,
+            Importance = importance,
+            Reason = reason,
+            Confidence = confidence,
+            Conservative = conservative
+        });
+    }
+
+    private static IReadOnlyList<Glob> CompileSuppressedSuggestionGlobs(RepositoryPolicy? policy)
+    {
+        if (policy?.Validation?.PathOverrides == null || policy.Validation.PathOverrides.Count == 0)
+            return [];
+
+        var globs = new List<Glob>();
+        foreach (var pathOverride in policy.Validation.PathOverrides)
+        {
+            if (string.IsNullOrWhiteSpace(pathOverride.Pattern))
+                continue;
+
+            try
+            {
+                globs.Add(Glob.Parse(pathOverride.Pattern));
+            }
+            catch
+            {
+                // config validate should catch invalid patterns; ignore defensively here.
+            }
+        }
+
+        return globs;
+    }
+
+    private static bool ShouldSkipSuggestionPath(string relativePath, IReadOnlyList<Glob> suppressedSuggestionGlobs)
+    {
+        if (suppressedSuggestionGlobs.Any(glob => glob.IsMatch(relativePath)))
+            return true;
+
+        var segments = PathHelper.NormalizeSeparators(relativePath)
+            .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var segment in segments)
+        {
+            if (LowTrustPathSegments.Contains(segment.ToLowerInvariant()))
+                return true;
+        }
+
+        return false;
     }
 }

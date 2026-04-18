@@ -21,7 +21,7 @@ public static class OrientCommand
 
         var signalsOption = new Option<bool>("--signals")
         {
-            Description = "Include cheap required/stale signals without running full validation"
+            Description = "Include cheap missing-required and stale-maintenance signals; not a full validation pass"
         };
         command.Add(signalsOption);
 
@@ -184,11 +184,11 @@ public static class OrientCommand
         if (includeSignals)
         {
             formatter.WriteMessage("");
-            formatter.WriteMessage(OutputStyler.Style(formatter, "Signals", CliTextStyle.Heading));
+            formatter.WriteMessage(OutputStyler.Style(formatter, "Signals (cheap, not exhaustive)", CliTextStyle.Heading));
 
             if (result.Signals.Count == 0)
             {
-                formatter.WriteMessage($"  {OutputStyler.Style(formatter, "none", CliTextStyle.Muted)}");
+                formatter.WriteMessage($"  {OutputStyler.Style(formatter, "none detected", CliTextStyle.Muted)}");
             }
             else
             {

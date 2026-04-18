@@ -36,18 +36,81 @@ public static class Program
         return rootCommand;
     }
 
-    public static async Task<int> Main(string[] args)
+    internal static async Task<int> InvokeAsync(string[] args)
     {
-        // Ensure invariant culture for deterministic output regardless of system locale.
-        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-
         var parseResult = CreateRootCommand().Parse(args);
+        using var helpScope = ShouldRewriteHelpOutput(args, parseResult)
+            ? new HelpOutputRewriteScope("Steward.Cli", "steward")
+            : null;
+
         var exitCode = await parseResult.InvokeAsync(CancellationToken.None);
 
         if (parseResult.Errors.Count > 0 && exitCode != ExitCodes.Success)
             return ExitCodes.UsageError;
 
         return exitCode;
+    }
+
+    public static async Task<int> Main(string[] args)
+    {
+        // Ensure invariant culture for deterministic output regardless of system locale.
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
+        return await InvokeAsync(args);
+    }
+
+    private static bool ShouldRewriteHelpOutput(string[] args, ParseResult parseResult)
+    {
+        return args.Length == 0
+            || args.Any(static arg => arg is "--help" or "-h" or "-?")
+            || parseResult.Errors.Count > 0;
+    }
+
+    private sealed class HelpOutputRewriteScope : IDisposable
+    {
+        private readonly string internalName;
+        private readonly string publicName;
+        private readonly TextWriter originalOut = Console.Out;
+        private readonly TextWriter originalErr = Console.Error;
+        private readonly StringWriter captureOut = new();
+        private readonly StringWriter captureErr = new();
+        private bool disposed;
+
+        public HelpOutputRewriteScope(string internalName, string publicName)
+        {
+            this.internalName = internalName;
+            this.publicName = publicName;
+            Console.SetOut(captureOut);
+            Console.SetError(captureErr);
+        }
+
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            disposed = true;
+
+            Console.SetOut(originalOut);
+            Console.SetError(originalErr);
+
+            WriteRewritten(originalOut, captureOut.ToString(), internalName, publicName);
+            WriteRewritten(originalErr, captureErr.ToString(), internalName, publicName);
+        }
+
+        private static void WriteRewritten(TextWriter writer, string content, string internalName, string publicName)
+        {
+            if (content.Length == 0)
+                return;
+
+            var rewritten = content
+                .Replace($"Usage: {internalName}", $"Usage: {publicName}", StringComparison.Ordinal)
+                .Replace($"{internalName} [", $"{publicName} [", StringComparison.Ordinal)
+                .Replace($"{internalName} ", $"{publicName} ", StringComparison.Ordinal);
+
+            writer.Write(rewritten);
+            writer.Flush();
+        }
     }
 }

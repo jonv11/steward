@@ -12,7 +12,7 @@ public static class MdCommand
 {
     public static Command Create()
     {
-        var command = new Command("md", "Markdown structural operations");
+        var command = new Command("md", "Markdown structural operations: query headings/frontmatter, inspect outlines, and edit documents safely");
 
         command.Add(CreateQueryCommand());
         command.Add(CreateOutlineCommand());

@@ -6,25 +6,30 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ## [Unreleased]
 
-### Added In Unreleased
+## [0.16.0] - 2026-04-18
 
-- Standard JSON envelope mode (`--json-envelope standard`) wrapping all JSON output in `{ schemaVersion, command, toolVersion, success, exitCode, data }` (CC-02).
-- Structured JSON error responses via `JsonEnvelopeWriter.WriteError()` with `{ kind, message, details, retryable, suggestedNextStep }` on all command error paths (CC-01).
-- `exists` boolean field in `explain path` JSON output indicating whether the queried file is present on disk (CC-05).
-- `details` field on `Diagnostic` record and JSON diagnostic output, populated by STWD-008 (`targetPath`), STWD-003 (`missingField`), STWD-010/STWD-016 (`expectedPattern`) (CC-06).
-- Enriched `refactor move --preview` JSON with `sourceExists`, `destinationExists`, `collision`, `applied`, `affectedFileCount`, per-edit `linkCount` and `rewrites` array (CC-10).
-- 16 new contract tests in `JsonContractTests.cs` covering envelope shape, error structure, CC-03 semantics, CC-05/CC-07/CC-08/CC-10 output.
+### Added In 0.16.0
 
-### Changed In Unreleased
+- A tested README "First 15 Minutes" path plus repo-independent source-build guidance, including the `global.json` cross-repo hazard.
+- Standard JSON envelope mode (`--json-envelope standard`) and structured JSON error responses across the core command surface (CC-01 through CC-03).
+- Richer machine-facing JSON details such as `explain path.exists`, diagnostic `details`, normalized `md query` result shape, and enriched `refactor move` preview/apply payloads (CC-05 through CC-10).
+- Confidence and conservative-hint reporting in `config suggest`, plus path-override-aware suppression of low-trust suggestions.
+- Clearer Markdown subsystem help and README examples for `md query`, `md edit`, and `fm-validate`.
 
-- `check` and `config doctor` JSON envelope now reports `success: true` for domain outcomes (violations/findings); exit code still differentiates pass from fail (CC-03).
-- `md query` single-file JSON output normalized to match batch shape with `results[]` wrapper containing `matchCount` and `range` per match (CC-07).
-- `config validate` JSON errors structured as `[{ file, message }]` objects instead of plain strings (CC-08).
-- `refactor move --apply` now executes before output formatting so JSON mode apply actually moves files (CC-04).
-- JSON error paths added to `md outline`, `md edit`, `search`, `config validate`, `orient`, `status`, and `maintain` commands (CC-01).
+### Changed In 0.16.0
+
+- `refactor move --apply --output json` now executes the move before formatting output so JSON-mode apply behaves like text-mode apply (CC-04).
+- `check` and `config doctor` now keep `success: true` for domain outcomes inside the standard envelope while still using exit codes to distinguish pass from fail.
+- Runtime help now consistently uses the public command identity `steward`, and value placeholders are restored on `--config`, `--artifact`, `--role`, and `--max`.
+- `check` now distinguishes clean passes from "pass with warnings", and `orient --signals` explicitly describes its cheap/non-exhaustive signal semantics.
 - Unified maintenance-source matching across `check`, `status`, and `config doctor` so directory-style and glob-based `maintenance.artifacts[].source` values are interpreted consistently.
-- `status` family summaries and `orient` classification now honor frontmatter-based artifact-family criteria instead of path-only matching on those reporting surfaces.
-- `config doctor` now reports conflicting frontmatter `allowed_values` only when family and scoped requirement patterns actually overlap on discovered files.
+- `status` family summaries, `orient` classification, and family min-count enforcement now honor frontmatter-sensitive family criteria instead of path-only matching.
+
+### Fixed In 0.16.0
+
+- Explicit artifacts now inherit family frontmatter, section, naming, and min-count governance instead of silently opting out of family schema.
+- Scoped frontmatter overlays now merge allowed-value exceptions with family schema instead of being overwritten, so explicit files like this repo's PRD can intentionally broaden a family baseline.
+- Rule-system trust fixes from the completeness/review cycle landed on the release line, including self-contained freshness diagnostics and narrower managed-scope signaling.
 
 ## [0.15.0] - 2026-04-18
 

@@ -208,7 +208,7 @@ public class FamilyMinCountRuleTests
     }
 
     [Fact]
-    public async Task Evaluate_ExplicitArtifact_NotCountedInFamily()
+    public async Task Evaluate_ExplicitArtifact_CountedInFamily()
     {
         var fs = new InMemoryFileSystem();
         var allFiles = new[]
@@ -247,7 +247,55 @@ public class FamilyMinCountRuleTests
         var rule = new FamilyMinCountRule();
         var diagnostics = await rule.EvaluateAsync(context);
 
-        // ADR-001 is explicit, so only ADR-002 counts → 1 < 2
+        diagnostics.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Evaluate_FrontmatterMatchedFamily_UsesFrontmatterForCount()
+    {
+        var fs = new InMemoryFileSystem();
+        fs.AddFile("root/docs/records/doc-1.md", "---\ndoc_type: adr\n---\n# ADR\n");
+        fs.AddFile("root/docs/records/doc-2.md", "---\ndoc_type: note\n---\n# Note\n");
+
+        var policy = new RepositoryPolicy
+        {
+            ArtifactFamilies =
+            [
+                new ArtifactFamilyDefinition
+                {
+                    Family = "adr",
+                    Match = new ArtifactFamilyMatch
+                    {
+                        PathPattern = "docs/records/*.md",
+                        Frontmatter = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["doc_type"] = "adr"
+                        }
+                    },
+                    DirectoryExpectations = new DirectoryExpectations { MinCount = 2 }
+                }
+            ]
+        };
+
+        var allFiles = new[]
+        {
+            new DiscoveredFile("docs/records/doc-1.md", 50, false),
+            new DiscoveredFile("docs/records/doc-2.md", 50, false)
+        };
+
+        var context = new ValidationContext
+        {
+            Policy = policy,
+            PathPolicy = null,
+            TargetFiles = allFiles,
+            AllDiscoveredFiles = allFiles,
+            FileSystem = fs,
+            RepositoryRoot = "root"
+        };
+
+        var rule = new FamilyMinCountRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
         diagnostics.Should().HaveCount(1);
         diagnostics[0].RuleId.Should().Be("STWD-015");
     }

@@ -2,7 +2,7 @@
 
 A configurable repository stewardship CLI for humans and AI agents. Steward helps maintain documentation structure, enforce governance policies, and keep repository artifacts in sync — all driven by declarative YAML configuration.
 
-Current repository baseline: **`0.15.0`**. Steward is pre-`1.0.0`: intentional public `0.x` releases are allowed when the documented release process is satisfied, but `1.0.0` remains separately gated by explicit stable-release authorization. See [Current Status](#current-status) for what works today and what is still planned.
+Current repository baseline: **`0.16.0`**. Steward is pre-`1.0.0`: intentional public `0.x` releases are allowed when the documented release process is satisfied, but `1.0.0` remains separately gated by explicit stable-release authorization. See [Current Status](#current-status) for what works today and what is still planned.
 
 ## Quick Start
 
@@ -54,11 +54,13 @@ cd steward
 dotnet build
 ```
 
-After building from source, run commands using:
+After building from source inside the Steward repo, run commands using:
 
 ```bash
 dotnet run --project src/Steward.Cli -- <command>
 ```
+
+For repo-independent use on another repository, prefer the local tool-path install below or run the built executable directly. Avoid relying on `dotnet run --project ...` from inside the target repository, because that repository's `global.json` can select a different SDK and break Steward startup even when Steward itself builds cleanly.
 
 ### Build and install locally
 
@@ -104,6 +106,59 @@ When Steward cuts an intentional public `0.x` release, the GitHub Releases page 
 - a `SHA256SUMS.txt` checksum file
 
 The release operator path is documented in [docs/planning/release-process.md](docs/planning/release-process.md).
+
+## First 15 Minutes
+
+This is the tested maintainer path from "I have the binary" to "I can see value on a real repo."
+
+### 1. Build or install Steward in a repo-independent way
+
+From the Steward source repository:
+
+```bash
+dotnet build steward.sln -c Release
+dotnet pack src/Steward.Cli -c Release --no-build
+dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward
+```
+
+Then either:
+
+- add `./.tools/steward` to `PATH`, or
+- invoke the binary by explicit path such as `./.tools/steward/steward`
+
+### 2. Change to the target repository
+
+Steward operates on the current working directory. The following commands should be run from the repository you want to inspect or govern, not from the Steward source repo.
+
+### 3. Run the first-value flow
+
+```bash
+steward orient
+steward init --profile software
+steward status --coverage
+steward check
+```
+
+What each step does:
+
+- `orient` gives a session-start map before any config exists.
+- `init --profile software` scaffolds a usable `.steward/` baseline.
+- `status --coverage` shows what is governed, what is missing, and how much Markdown is covered.
+- `check` validates the repo contract and surfaces concrete remediation guidance.
+
+### 4. Avoid the `global.json` trap
+
+If you run:
+
+```bash
+dotnet run --project /path/to/steward/src/Steward.Cli -- <command>
+```
+
+from inside another repository, that repository's `global.json` can control SDK selection and cause Steward to fail before the command runs. For cross-repo use, prefer:
+
+- a local tool-path install as shown above
+- a global install from NuGet when the version is published
+- the built executable path from the Steward repo
 
 ## Getting Started — Maintainer
 
@@ -275,11 +330,11 @@ A clean check returns exit code `0` and reports no errors. In CI, the same `stew
 | `steward refactor move <old> <new>` | Move/rename a file and update all Markdown references (`--preview`, `--apply`) |
 | `steward md outline <file>` | Show Markdown heading hierarchy with line counts |
 | `steward md query <file> <selector>` | Extract content using an MdPath selector or Markdown anchor slug such as `#who-is-steward-for` (`--pattern` for batch) |
-| `steward md edit <operation> <file>` | Structural Markdown editing (sections, frontmatter, blocks) |
+| `steward md edit <operation> <file>` | Structural Markdown editing (sections, frontmatter, blocks) with preview/apply safety |
 | `steward config show [--effective]` | Print raw config files and (with `--effective`) the resolved runtime defaults plus merged policy |
 | `steward config validate` | Check .steward/ YAML files for syntax and field errors |
 | `steward config doctor` | Detect valid-but-ineffective config: dead `start_here` entries, unmatched patterns, unreachable families |
-| `steward config suggest` | Analyze the repository and suggest artifact declarations for policy.yaml |
+| `steward config suggest` | Analyze the repository and suggest artifact declarations with confidence hints for `policy.yaml` |
 
 ### Global Options
 
@@ -289,7 +344,29 @@ A clean check returns exit code `0` and reports no errors. In CI, the same `stew
 | `--verbosity quiet\|normal\|verbose\|debug` | Verbosity level (default: normal) |
 | `--no-color` | Disable colored output (overrides config.yaml) |
 | `--config <path>` | Override config directory path |
-| `--json-envelope legacy\|standard` | JSON envelope shape when `--output json` is active. `legacy` (default) uses a flat envelope matching the original schema; `standard` wraps output in a versioned `{"schema":…,"data":…}` envelope for machine consumers. |
+| `--json-envelope legacy\|standard` | JSON envelope shape when `--output json` is active. `legacy` (default) uses the original payload shape; `standard` wraps output in `{ schemaVersion, command, toolVersion, success, exitCode, data }` for machine consumers. |
+
+### Markdown Examples
+
+```bash
+# Query a section by heading text
+steward md query README.md "heading[Getting Started — Maintainer]"
+
+# Query by Markdown anchor slug
+steward md query README.md "#who-is-steward-for"
+
+# Batch-query a heading across many files
+steward md query --pattern "docs/planning/*.md" "heading[Purpose]"
+
+# Ensure a heading exists under a parent section
+steward md edit ensure-section README.md --heading "FAQ" --under "Commands"
+
+# Validate frontmatter against the current repo policy
+steward md edit fm-validate docs/planning/milestone-plan.md
+
+# Preview extracting a section into a new file
+steward md edit extract-section README.md --selector "heading[Features]" --to docs/features.md
+```
 
 ## Validation Rules
 
@@ -300,7 +377,7 @@ A clean check returns exit code `0` and reports no errors. In CI, the same `stew
 | STWD-003 | error | frontmatter | Required frontmatter fields must be present (global, scoped, or family-level) |
 | STWD-004 | info | governance | Sections should not exceed the configured size threshold |
 | STWD-005 | error | structure | Managed region markers must be well-formed |
-| STWD-006 | warning | ownership | Content in steward-managed regions should not be edited manually |
+| STWD-006 | warning | managed-region | Managed regions should not be empty once declared |
 | STWD-007 | warning | stale-artifact | Maintained artifacts must match expected state |
 | STWD-008 | warning | broken-link | Internal Markdown links should resolve |
 | STWD-009 | warning | broken-reference | Policy-declared artifact paths should resolve to existing files |
@@ -312,6 +389,7 @@ A clean check returns exit code `0` and reports no errors. In CI, the same `stew
 | STWD-015 | warning | family-completeness | Artifact families with `min_count` must meet the declared minimum |
 | STWD-016 | warning | naming | Files matched by an artifact family must satisfy the family's `naming_pattern` |
 | STWD-017 | warning | structure | Heading text must be unique within a Markdown file after anchor-style normalization |
+| STWD-018 | warning | broken-fragment-anchor | Markdown fragment links should reference headings that actually exist in the target file |
 
 Use `steward explain <rule-id>` for detailed guidance on any rule. Run `steward explain` (no argument) to list all rules with their current severity and description.
 
@@ -553,7 +631,7 @@ This was a known defect resolved in v0.11.0. If you see false positives for STWD
 
 ## Current Status
 
-Steward is at `v0.15.0` on a pre-`1.0.0` release line. Intentional public `0.x` releases are allowed when the repo is ready and the release process is followed. The version `1.0.0` still requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) and has not been scheduled.
+Steward is at `v0.16.0` on a pre-`1.0.0` release line. Intentional public `0.x` releases are allowed when the repo is ready and the release process is followed. The version `1.0.0` still requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) and has not been scheduled.
 
 **What works today:** All 18 validation rules, all commands listed above, three built-in profiles, artifact family classification, deterministic maintenance, Markdown structural editing, and JSON output for automation.
 

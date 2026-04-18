@@ -18,7 +18,8 @@ public static class MaintainCommand
 
         var scopeOption = new Option<string?>("--artifact", "-a")
         {
-            Description = "Maintain only the artifact with this id (from policy.yaml maintenance.artifacts)"
+            Description = "Maintain only the artifact with this id (from policy.yaml maintenance.artifacts)",
+            HelpName = "id"
         };
 
         var applyOption = new Option<bool>("--apply")

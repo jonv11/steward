@@ -32,7 +32,6 @@ public sealed class FamilyMinCountRule : IValidationRule
         // Use the full repository file set for this repo-wide obligation check
         var allFiles = context.AllDiscoveredFiles ?? context.TargetFiles;
 
-        var explicitPaths = BuildExplicitPaths(context.Policy);
         var classifier = new ArtifactFamilyClassifier(applicableFamilies);
 
         // Count matched files per family (path-pattern only — no frontmatter read needed for count)
@@ -43,9 +42,8 @@ public sealed class FamilyMinCountRule : IValidationRule
         foreach (var file in allFiles)
         {
             if (file.IsDirectory) continue;
-            if (explicitPaths.Contains(PathHelper.NormalizeAndTrim(file.RelativePath))) continue;
 
-            var matched = classifier.Classify(file.RelativePath, frontmatterFields: null);
+            var matched = classifier.ClassifyFile(file.RelativePath, context.FileSystem, context.RepositoryRoot);
             if (matched?.Family != null && counts.ContainsKey(matched.Family))
                 counts[matched.Family]++;
         }
@@ -78,19 +76,5 @@ public sealed class FamilyMinCountRule : IValidationRule
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
-    }
-
-    private static HashSet<string> BuildExplicitPaths(RepositoryPolicy? policy)
-    {
-        if (policy?.Artifacts == null)
-            return [];
-
-        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var a in policy.Artifacts)
-        {
-            if (!string.IsNullOrWhiteSpace(a.Path))
-                set.Add(PathHelper.NormalizeAndTrim(a.Path!));
-        }
-        return set;
     }
 }

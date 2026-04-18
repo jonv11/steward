@@ -134,7 +134,7 @@ public class RequiredSectionsRuleTests
     }
 
     [Fact]
-    public async Task Evaluate_ExplicitArtifact_FamilySectionsNotApplied()
+    public async Task Evaluate_ExplicitArtifact_FamilySectionsApplied()
     {
         var fs = new InMemoryFileSystem();
         fs.AddFile("root/docs/adrs/ADR-001.md", "# ADR-001\n\n## Context\n\nSome context.\n");
@@ -168,7 +168,9 @@ public class RequiredSectionsRuleTests
         var rule = new RequiredSectionsRule();
         var diagnostics = await rule.EvaluateAsync(context);
 
-        diagnostics.Should().BeEmpty();
+        diagnostics.Should().HaveCount(1);
+        diagnostics[0].RuleId.Should().Be("STWD-014");
+        diagnostics[0].Message.Should().Contain("Decision");
     }
 
     [Fact]

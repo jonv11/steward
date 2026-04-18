@@ -1,7 +1,7 @@
 ---
 type: planning
 document_id: PLAN-0002
-version: 0.15.0
+version: 0.16.0
 status: Active
 last_updated: 2026-04-18
 ---
@@ -33,13 +33,13 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 | `v0.13.0` | Artifact type schema RFC and base implementation | Delivered |
 | `v0.14.0` | Release automation and public pre-1.0 distribution discipline | Delivered |
 | `v0.15.0` | JSON envelope, Markdown split/extract, release alignment, and config/explainability trust | Delivered |
+| `v0.16.0` | Adoption readiness, onboarding trust, contract hardening, and rule/runtime coherence | Delivered |
 
 ## Planned Pre-1.0 Milestones
 
 | Version   | Theme                                                          | Primary outcome                                                                                              |
 |-----------|----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| `v0.16.0` | Adoption readiness, onboarding trust, and rule/runtime coherence | Tested first-hour onboarding, hosted release evidence, rule/runtime trust fixes, `config suggest` precision, and UX/help polish |
-| `v0.17.0` | Machine contract hardening and targeted pre-stable extensions  | Universal JSON contract behavior, safe JSON mutation/reporting, typed-address handoff follow-on, and scoped config-model/RFC follow-ups if justified |
+| `v0.17.0` | Hosted release evidence and machine contract hardening | First hosted CI/release evidence, universal JSON contract guarantees, deeper machine handoff fidelity, and targeted pre-stable follow-ons |
 
 ## First Stable Release
 
@@ -54,34 +54,35 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 
 ---
 
-## v0.16.0 Planned Scope
+## v0.16.0 Delivered Scope
 
-Primary outcome: adoption readiness, onboarding trust, and rule/runtime coherence. Refreshed by the 2026-04-18 review synthesis so the next milestone reflects validated current gaps rather than older partially stale carryover items.
+All locally finishable items planned for `v0.16.0` are now implemented and verified. The primary outcome: Steward now has a tested first-hour onboarding path, agent-safer JSON surfaces, clearer help/runtime behavior, deeper `config suggest` trust, and family-governance behavior that stays coherent for explicit artifacts and frontmatter-sensitive reporting.
 
-| # | Item | Source | Notes |
+| # | Item | Source | Status |
 |---|------|--------|--------|
-| 1 | Add a tested README "First 15 Minutes" path | Fresh-eyes onboarding audit, synthesis `SYN-01` | Make the first value path explicit: install or repo-independent executable path -> target repo -> `orient` -> `init` -> `status --coverage` -> `check` |
-| 2 | Document repo-independent source-build usage and the `global.json` hazard | Fresh-eyes onboarding audit, synthesis `SYN-01` | Prefer a built executable or local `--tool-path` install; state that `dotnet run --project ...` can fail when the target repo controls SDK selection |
-| 3 | Capture first hosted release + NuGet publication evidence | Release readiness tracker, maintainer pass 2026-04-18 | The workflow is now configured to publish GitHub Release assets and the `Steward` NuGet package; the next milestone needs hosted green evidence and a verified public package page |
-| 4 | Fix rule-system trust defects in scoped and family-based validation | Rule-system completeness audit, synthesis `SYN-04` | Correct STWD-008, STWD-011, and STWD-015 behavior; make STWD-012 diagnostics self-contained; narrow STWD-006 if the fix stays bounded |
-| 5 | Fix `refactor move --apply --output json` and add postcondition tests | AI-agent contract review, synthesis `SYN-02` | JSON mode must execute the move, rewrite references, and prove what changed |
-| 6 | Improve `config suggest` precision for mature repos | RFC-007 G7-20, synthesis `SYN-07` | Honor `validation.path_overrides`-style exclusions, add confidence/heuristic scoring, and label conservative suggestions as such |
-| 7 | Fix help text: public command identity and value placeholders | Fresh-eyes onboarding audit, synthesis `SYN-06` | Pin command display name to `steward` instead of `Steward.Cli`; restore value placeholders on `--config`, `--artifact`, `--role`, `--max` |
-| 8 | Tighten status, summary, and diagnostic language coherence | Fresh-eyes onboarding audit, rule-system completeness audit, synthesis `SYN-06` | Reword warning-heavy `check` summaries, clarify `orient --signals`, and clean up the highest-noise messages |
-| 9 | Resolve explicit-artifact / family-schema inheritance | Assessment finding 4, RFC-008 | Explicit artifacts currently do not inherit family `frontmatter_schema`, forcing duplicate `frontmatter_requirements` in policy; design and implement a clean inheritance or merge model |
-| 10 | Improve Markdown subsystem help and examples | Assessment finding, RFC-004 | Add operational selector examples to `md query` / `md edit` help; reduce "already know MdPath" assumption in subcommand descriptions |
+| 1 | Add a tested README "First 15 Minutes" path | Fresh-eyes onboarding audit, synthesis `SYN-01` | Done — README now provides a repo-independent first-value sequence: install/build -> target repo -> `orient` -> `init` -> `status --coverage` -> `check` |
+| 2 | Document repo-independent source-build usage and the `global.json` hazard | Fresh-eyes onboarding audit, synthesis `SYN-01` | Done — source-build guidance now prefers a built executable or local `--tool-path` install and warns against target-repo SDK pinning surprises |
+| 3 | Fix rule-system trust defects in scoped and family-based validation | Rule-system completeness audit, synthesis `SYN-04` | Done — STWD-008/STWD-011/STWD-015 behavior hardened, STWD-012 is self-contained, and STWD-006 remains narrowed to managed-scope anomalies |
+| 4 | Fix `refactor move --apply --output json` and add postcondition tests | AI-agent contract review, synthesis `SYN-02` | Done — JSON mode now performs the move, rewrites references, and reports the postcondition shape |
+| 5 | Improve `config suggest` precision for mature repos | RFC-007 G7-20, synthesis `SYN-07` | Done — suggestions now honor path-override-style exclusions, emit confidence hints, and mark conservative inferences |
+| 6 | Fix help text: public command identity and value placeholders | Fresh-eyes onboarding audit, synthesis `SYN-06` | Done — runtime help uses `steward`, and value placeholders are restored on `--config`, `--artifact`, `--role`, and `--max` |
+| 7 | Tighten status, summary, and diagnostic language coherence | Fresh-eyes onboarding audit, rule-system completeness audit, synthesis `SYN-06` | Done — `check` now distinguishes warning-bearing passes, `orient --signals` explains its cheap/non-exhaustive semantics, and noisy diagnostics were tightened |
+| 8 | Resolve explicit-artifact / family-schema inheritance | Assessment finding 4, RFC-008 | Done — explicit artifacts now inherit family frontmatter/section/naming/min-count governance while scoped path rules can still provide local allowed-value exceptions |
+| 9 | Improve Markdown subsystem help and examples | Assessment finding, RFC-004 | Done — `md`/`md edit` help and README examples now show practical selector and edit flows instead of assuming prior MdPath knowledge |
+
+Hosted CI and tag-driven release evidence remain open in the active readiness plan because they can only close once the pushed `v0.16.0` tag runs remotely.
 
 ## v0.17.0 Planned Scope
 
-Primary outcome: machine contract hardening and targeted pre-stable extensions. This milestone should finish the machine-facing trust floor before Steward takes on broader config-model growth.
+Primary outcome: hosted release evidence and machine contract hardening. This milestone should finish the remaining pre-stable trust floor after the local `v0.16.0` adoption/runtime pass.
 
 | # | Item | Source | Notes |
 |---|------|--------|--------|
-| 1 | Standardize the JSON envelope on every JSON-capable command and failure path | AI-agent contract review, synthesis `SYN-03` | `--output json --json-envelope standard` must guarantee standard-envelope JSON on stdout for both success and expected failure |
-| 2 | Separate process success from domain result and add structured error kinds | AI-agent contract review, synthesis `SYN-03` | Keep validation/result booleans in payload data; add typed error envelopes with recovery hints |
-| 3 | Deepen `explain path`, `refs`, and `search` handoff surfaces | AI-agent contract review, synthesis `SYN-03` | Add `exists`/provenance fields and improve machine handoff fidelity ahead of typed-address work |
-| 4 | Scope and implement the first narrow RFC-009 slice | RFC-009, AI-agent contract review | Focus on reusable address handoff across `search`, `refs`, `check`, and `explain path` rather than a broad address model all at once |
-| 5 | Publish machine-facing contract docs and broaden contract tests | AI-agent contract review | Add coverage for standard-envelope success/failure paths and mutation postconditions |
+| 1 | Capture the first hosted green CI and tag-driven release runs | Readiness tracker, release process | Close the remaining operational evidence gap with a real hosted matrix pass, GitHub Release, and NuGet publication record |
+| 2 | Standardize the JSON envelope on every JSON-capable command and expected failure path | AI-agent contract review, synthesis `SYN-03` | `--output json --json-envelope standard` must become a guaranteed contract, not a mostly-complete convention |
+| 3 | Deepen `explain path`, `refs`, and `search` handoff surfaces | AI-agent contract review, synthesis `SYN-03` | Add richer provenance/exists fields and improve machine handoff fidelity ahead of typed-address work |
+| 4 | Publish machine-facing contract docs and broaden contract tests | AI-agent contract review | Add coverage for standard-envelope success/failure paths and mutation postconditions |
+| 5 | Scope and implement the first narrow RFC-009 slice | RFC-009, AI-agent contract review | Focus on reusable address handoff across `search`, `refs`, `check`, and `explain path` rather than a broad address model all at once |
 | 6 | Decide whether to open an adoption-oriented config-model RFC | Config expressiveness stress test, synthesis `SYN-08` | Only after the trust floor above lands; constrain scope to non-Markdown transparency, intentionally ungoverned zones, and grandfathering/new-files-only |
 
 ---

@@ -287,12 +287,6 @@ public static class StatusCommand
             return [];
 
         var classifier = new ArtifactFamilyClassifier(families);
-        var explicitPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var a in policy?.Artifacts ?? [])
-        {
-            if (!string.IsNullOrWhiteSpace(a.Path))
-                explicitPaths.Add(PathHelper.NormalizeAndTrim(a.Path!));
-        }
 
         var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var family in families)
@@ -302,8 +296,7 @@ public static class StatusCommand
         }
 
         foreach (var file in files.Where(f =>
-            f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase) &&
-            !explicitPaths.Contains(f.RelativePath)))
+            f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase)))
         {
             var matched = classifier.ClassifyFile(file.RelativePath, fileSystem, repositoryRoot);
             if (matched?.Family != null && counts.ContainsKey(matched.Family))

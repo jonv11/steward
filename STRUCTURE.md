@@ -122,6 +122,7 @@
     │   ├── ChangeImpactTests.cs
     │   ├── CheckCommandTests.cs
     │   ├── CheckFixTests.cs
+    │   ├── CliIdentityTests.cs
     │   ├── CliSnapshotTests.CheckJson_IsStable.verified.txt
     │   ├── CliSnapshotTests.cs
     │   ├── CliSnapshotTests.RootHelp_IsStable.verified.txt

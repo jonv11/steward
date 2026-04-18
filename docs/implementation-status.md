@@ -4,18 +4,18 @@ Last updated: 2026-04-18
 
 ## Current Baseline
 
-Steward is currently on **`v0.15.0`** with unreleased `v0.16.0` contract improvements in progress. The repository is **still pre-1.0**: intentional public `0.x` releases are allowed when readiness evidence is green and the release process is followed, but `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Steward is currently on **`v0.16.0`**. The repository is **still pre-1.0**: intentional public `0.x` releases are allowed when readiness evidence is green and the release process is followed, but `v1.0.0` is reserved for a future stable release and is not authorized yet. Versioning governance is recorded in [ADR-013](decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
 | Area | Current state |
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
-| Current repo version | `0.15.0` (+ unreleased 0.16.0 contract work) |
-| Tests | 703 passing (486 core, 217 CLI) |
+| Current repo version | `0.16.0` |
+| Tests | 717 passing (491 core, 226 CLI) |
 | Validation rules | 18 (`STWD-001` through `STWD-018`) |
 | Artifact families | `artifact_families` section now supported in `policy.yaml`; ADRs and RFCs governed by families in this repo |
 | Maintainer types | 6 (`structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`) |
-| JSON contract | Standard envelope (`--json-envelope standard`), structured errors, CC-01 through CC-10 implemented |
-| Packaging | `dotnet pack` succeeds cleanly for `Steward.0.15.0.nupkg` |
+| JSON contract | Agent-safe baseline delivered: standard envelope mode, structured errors, CC-01 through CC-10 implemented; universal envelope guarantees still remain later pre-1.0 work |
+| Packaging | `dotnet pack` succeeds cleanly for `Steward.0.16.0.nupkg` |
 | Repo quality gates | `markdownlint-cli2` with repo config, `steward check` enforced in CI/release on Linux, build/test/pack matrix across Windows, Linux, and macOS |
 | Public pre-1.0 release path | Tag-driven GitHub Release workflow, changelog-backed notes, automated nuget.org publication, `.nupkg` + curated binary bundles + checksums |
 | Active readiness tracker | [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md) |
@@ -39,7 +39,7 @@ Steward is currently on **`v0.15.0`** with unreleased `v0.16.0` contract improve
 | `v0.13.0` | Delivered | Artifact type schema RFC and base implementation: `artifact_families` in policy, deterministic family classification, type-aware frontmatter validation, family awareness in `status`, `orient`, `explain path`, `config doctor` |
 | `v0.14.0` | Delivered | Release automation and public pre-1.0 distribution discipline: changelog-backed release notes, GitHub Release workflow and assets, release-intent labels, release docs, and publication metadata hardening |
 | `v0.15.0` | Delivered | JSON output envelope consistency (RFC-010), Markdown split/extract workflows (RFC-011), severity_overrides runtime implementation, explain path family-applicability fixes |
-| `v0.16.0` | In Progress | Agent-safe JSON CLI contracts: universal envelope (CC-02), structured errors (CC-01), process/domain success separation (CC-03), refactor move apply fix (CC-04), explain path exists (CC-05), diagnostic details (CC-06), md query shape normalization (CC-07), config validate structured errors (CC-08), contract tests (CC-09), refactor move enrichment (CC-10) |
+| `v0.16.0` | Delivered | First-hour onboarding path, repo-independent source-build guidance, agent-safe JSON contract baseline (CC-01 through CC-10), `config suggest` confidence/exclusions, help/runtime polish, and explicit-artifact/family-governance coherence |
 
 ## What Was Established In `v0.10.0`
 
@@ -140,12 +140,23 @@ A comprehensive maintainer review pass also addressed several cross-cutting conc
 - **Local-change frontmatter date refresh:** `governance.frontmatter.auto_fields` now synthesizes `frontmatter-auto` maintenance that updates existing fields like `last_updated` to today's date when `git diff --name-only HEAD` reports a local change.
 - **Package/release alignment:** The published tool package is now `Steward`, and the release workflow pushes tagged packages to nuget.org using `NUGET_ORG_API_KEY`.
 
+## What Is New In v0.16.0
+
+- **Tested first-hour onboarding path:** `README.md` now includes a repo-independent "First 15 Minutes" flow, explicit `global.json` hazard guidance, and clearer source-build/install instructions for using Steward against another repository.
+- **Agent-safe JSON contract baseline (CC-01 through CC-10):** Standard envelope mode, structured errors, process/domain success separation, normalized `md query` JSON, richer `refactor move` output, and contract tests are now on the release line.
+- **`config suggest` trust improvements:** Suggestions now respect path-override-style exclusions, emit `confidence` hints, and mark conservative inferences so mature repos can treat the command as a safer bootstrap surface.
+- **Help and text UX polish:** Runtime help now presents the public command name `steward`, option placeholders are restored, `md`/`md edit` help is more operational, `check` distinguishes warning-bearing passes, and `orient --signals` clarifies that it is a cheap/non-exhaustive signal surface.
+- **Explicit-artifact/family coherence:** Explicit artifacts now inherit family frontmatter, sections, naming, and min-count governance, while path-scoped frontmatter overlays can still express intentional local exceptions such as `type: prd`.
+- **Repo-self-stewardship alignment:** The repo policy, generated structure file, README, changelog, and active planning docs now align on the `0.16.0` release line.
+
 ## Remaining Before First Stable Shipment
 
 The detailed categorized list lives in [Pre-1.0 Readiness Plan](planning/pre-1-0-readiness-plan.md). At a high level, the remaining work is now concentrated in a smaller set of release-hardening items:
 
 ### Required
 
+- Hosted green cross-platform CI evidence
+- Hosted GitHub Release / nuget.org publication evidence
 - Explicit stable-release authorization for `v1.0.0` per ADR-013
 
 ### Strongly Recommended
@@ -154,10 +165,11 @@ The detailed categorized list lives in [Pre-1.0 Readiness Plan](planning/pre-1-0
 
 ### Optional / Later Pre-1.0
 
+- Universal JSON envelope guarantees on every JSON-capable success and expected-failure path
 - Heading selector fuzzy matching in MdPath
 - Typed resource addresses (RFC-009, deferred)
 - Re-enabling deferred profiles (`mixed`, `knowledge`) when their contracts are enriched (see [ADR-014](decisions/adrs/ADR-014-non-software-profile-scope.md))
-- Workflow/session modeling (RFC-008 Phase 3, v0.16.0+)
+- Workflow/session modeling (RFC-008 Phase 3, `v0.17.0+`)
 
 ## Manual Follow-Up Outside The Repo
 

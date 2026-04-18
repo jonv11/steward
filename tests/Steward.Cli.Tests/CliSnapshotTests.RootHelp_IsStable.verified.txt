@@ -20,7 +20,7 @@ Commands:
   init               Initialize .steward configuration
   config             Inspect and validate .steward configuration
   check              Validate repository against policy: required artifacts, frontmatter, links, naming, freshness
-  md                 Markdown structural operations
+  md                 Markdown structural operations: query headings/frontmatter, inspect outlines, and edit documents safely
   search <query>     Search repository content and headings
   maintain           Deterministic maintenance of governed artifacts
   status             Show current repository state at a glance

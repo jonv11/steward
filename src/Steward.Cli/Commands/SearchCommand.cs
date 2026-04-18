@@ -25,13 +25,15 @@ public static class SearchCommand
 
         var scopeOption = new Option<string?>("--role", "-r")
         {
-            Description = "Restrict search to artifacts with this policy-defined role (e.g. requirements, planning)"
+            Description = "Restrict search to artifacts with this policy-defined role (e.g. requirements, planning)",
+            HelpName = "role"
         };
         command.Add(scopeOption);
 
         var maxOption = new Option<int>("--max")
         {
             Description = "Maximum number of results",
+            HelpName = "count",
             DefaultValueFactory = _ => 100
         };
         command.Add(maxOption);

@@ -560,14 +560,14 @@ public static class ConfigCommand
 
     private static Command CreateSuggestCommand()
     {
-        var command = new Command("suggest", "Analyze the repository and suggest artifact declarations and exclude patterns for policy.yaml");
+        var command = new Command("suggest", "Analyze the repository and suggest artifact declarations with confidence hints plus exclude patterns for policy.yaml");
 
         command.SetAction(parseResult =>
         {
             if (!CommandSetup.TryBuild(parseResult, out var ctx))
                 return ExitCodes.UsageError;
 
-            var suggestion = BootstrapAnalyzer.Analyze(ctx!.Files!, ctx.FileSystem, ctx.RootPath);
+            var suggestion = BootstrapAnalyzer.Analyze(ctx!.Files!, ctx.FileSystem, ctx.RootPath, ctx.Policy);
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
@@ -587,7 +587,11 @@ public static class ConfigCommand
                 {
                     ctx.Formatter.WriteMessage("Suggested artifacts:");
                     foreach (var a in suggestion.Artifacts)
-                        ctx.Formatter.WriteMessage($"  - {a.Path} (role: {a.Role}, importance: {a.Importance}) — {a.Reason}");
+                    {
+                        var conservativeLabel = a.Conservative ? " [conservative]" : "";
+                        ctx.Formatter.WriteMessage(
+                            $"  - {a.Path} (role: {a.Role}, importance: {a.Importance}, confidence: {a.Confidence}){conservativeLabel} — {a.Reason}");
+                    }
                     ctx.Formatter.WriteMessage("");
                 }
 
@@ -605,7 +609,7 @@ public static class ConfigCommand
                 }
                 else
                 {
-                    ctx.Formatter.WriteMessage("These are suggestions only. Apply them by editing .steward/policy.yaml.");
+                    ctx.Formatter.WriteMessage("These are suggestions only. Review low-confidence or [conservative] entries before editing .steward/policy.yaml.");
                 }
             }
 

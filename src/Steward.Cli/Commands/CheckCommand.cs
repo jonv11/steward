@@ -253,10 +253,14 @@ public static class CheckCommand
                     $"Errors: {result.Summary.Errors}  Warnings: {result.Summary.Warnings}  Info: {result.Summary.Infos}");
                 if (scopeLabel != "full")
                     ctx.Formatter.WriteMessage($"Scope: {scopeLabel}");
-                if (result.Summary.Pass)
-                    ctx.Formatter.WriteSuccess("Result: PASS");
-                else
+                if (!result.Summary.Pass)
                     ctx.Formatter.WriteDiagnostic("error", "Result: FAIL");
+                else if (result.Summary.Warnings > 0)
+                    ctx.Formatter.WriteDiagnostic("warn", "Result: PASS with warnings");
+                else if (result.Summary.Infos > 0)
+                    ctx.Formatter.WriteSuccess("Result: PASS (informational findings only)");
+                else
+                    ctx.Formatter.WriteSuccess("Result: PASS");
 
                 // Completion policy summary
                 WriteCompletionSummary(ctx, result.Diagnostics);

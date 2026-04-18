@@ -126,7 +126,7 @@ public class ArtifactFamilyValidationTests
     }
 
     [Fact]
-    public async Task Evaluate_ExplicitArtifact_FamilySchemaNotApplied()
+    public async Task Evaluate_ExplicitArtifact_FamilySchemaApplied()
     {
         var fs = new InMemoryFileSystem();
         // File matches the family path pattern but is declared as explicit artifact
@@ -169,8 +169,10 @@ public class ArtifactFamilyValidationTests
         var rule = new RequiredFrontmatterFieldRule();
         var diagnostics = await rule.EvaluateAsync(context);
 
-        // Explicit artifact: no family schema applied, so missing 'status' is not reported
-        diagnostics.Should().BeEmpty();
+        diagnostics.Should().HaveCount(1);
+        diagnostics[0].RuleId.Should().Be("STWD-003");
+        diagnostics[0].Message.Should().Contain("status");
+        diagnostics[0].Message.Should().Contain("[family: adr]");
     }
 
     [Fact]

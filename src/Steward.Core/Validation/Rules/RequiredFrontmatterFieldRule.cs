@@ -39,9 +39,6 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
         // Build family classifier
         var familyClassifier = new ArtifactFamilyClassifier(context.Policy?.ArtifactFamilies);
 
-        // Build set of explicit artifact paths (families do not apply to these)
-        var explicitArtifactPaths = BuildExplicitArtifactPaths(context.Policy);
-
         var hasFamilies = context.Policy?.ArtifactFamilies is { Count: > 0 };
 
         if (globalRequired.Count == 0 && scopedRequirements.Count == 0 && generatedIndexRequirements.Count == 0 && !hasFamilies)
@@ -84,9 +81,11 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
                 continue;
             }
 
-            // Apply family schema if the file is not an explicit artifact
+            // Apply family schema even when the file is also declared as an explicit artifact.
+            // Explicit artifacts keep their explicit role/classification, but family governance
+            // still contributes frontmatter requirements and allowed values.
             string? matchedFamilyName = null;
-            if (hasFamilies && !explicitArtifactPaths.Contains(file.RelativePath))
+            if (hasFamilies)
             {
                 var frontmatterFields = doc.Frontmatter?.Fields != null
                     ? (IReadOnlyDictionary<string, object?>)doc.Frontmatter.Fields
@@ -105,11 +104,12 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
                             effectiveFields = [.. effectiveFields, field];
                     }
 
-                    // Merge family allowed_values (family takes precedence over scoped for the same field)
+                    // Merge family allowed_values with any scoped overrides so explicit
+                    // path-specific requirements can broaden or specialize a family schema.
                     if (matchedFamily.FrontmatterSchema?.AllowedValues != null)
                     {
                         foreach (var (field, values) in matchedFamily.FrontmatterSchema.AllowedValues)
-                            effectiveAllowedValues[field] = values;
+                            MergeAllowedValues(effectiveAllowedValues, field, values);
                     }
                 }
             }
@@ -254,20 +254,6 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
         return fixes;
     }
 
-    private static HashSet<string> BuildExplicitArtifactPaths(RepositoryPolicy? policy)
-    {
-        if (policy?.Artifacts == null)
-            return [];
-
-        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var a in policy.Artifacts)
-        {
-            if (!string.IsNullOrWhiteSpace(a.Path))
-                set.Add(PathHelper.NormalizeAndTrim(a.Path!));
-        }
-        return set;
-    }
-
     private static List<string> GetEffectiveRequiredFields(
         string relativePath,
         List<string> globalRequired,
@@ -308,11 +294,31 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
             if (req.AppliesTo(relativePath) && req.AllowedValues != null)
             {
                 foreach (var (field, values) in req.AllowedValues)
-                    result[field] = values;
+                    MergeAllowedValues(result, field, values);
             }
         }
 
         return result;
+    }
+
+    private static void MergeAllowedValues(
+        Dictionary<string, List<string>> target,
+        string field,
+        IEnumerable<string> values)
+    {
+        if (!target.TryGetValue(field, out var existing))
+        {
+            target[field] = values
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            return;
+        }
+
+        var merged = existing
+            .Union(values, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        target[field] = merged;
     }
 
     private static List<CompiledFrontmatterReq> CompileScopedRequirements(

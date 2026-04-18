@@ -22,7 +22,7 @@ public static class MdEditCommand
 
     public static Command Create()
     {
-        var command = new Command("edit", "Structural Markdown editing with preview/apply workflow");
+        var command = new Command("edit", "Structural Markdown editing with preview/apply workflow (for example: ensure-section, fm-set, or extract-section)");
 
         command.Add(CreateEnsureSectionCommand());
         command.Add(CreateSetSectionCommand());
@@ -51,7 +51,7 @@ public static class MdEditCommand
 
     private static Command CreateEnsureSectionCommand()
     {
-        var command = new Command("ensure-section", "Create a section if it does not exist");
+        var command = new Command("ensure-section", "Create a section if it does not exist (for example: --heading Goals --under Overview)");
         var (fileArg, applyOption) = AddCommonParams(command);
         var headingOpt = new Option<string>("--heading") { Description = "Heading text for the section" };
         headingOpt.Required = true;
@@ -78,7 +78,7 @@ public static class MdEditCommand
 
     private static Command CreateSetSectionCommand()
     {
-        var command = new Command("set-section", "Replace the content of a section");
+        var command = new Command("set-section", "Replace the content of a section (for example: --heading Status --content \"Ready\")");
         var (fileArg, applyOption) = AddCommonParams(command);
         var headingOpt = new Option<string>("--heading") { Description = "Heading of the target section" };
         headingOpt.Required = true;
@@ -103,7 +103,7 @@ public static class MdEditCommand
 
     private static Command CreateInsertSectionCommand()
     {
-        var command = new Command("insert-section", "Insert a new section");
+        var command = new Command("insert-section", "Insert a new section before/after a sibling or under a parent heading");
         var (fileArg, applyOption) = AddCommonParams(command);
         var headingOpt = new Option<string>("--heading") { Description = "Heading text for the new section" };
         headingOpt.Required = true;
@@ -139,7 +139,7 @@ public static class MdEditCommand
 
     private static Command CreateAppendBlockCommand()
     {
-        var command = new Command("append-block", "Append content to a section");
+        var command = new Command("append-block", "Append content to a section (for example: --under Notes --content \"- Follow up\")");
         var (fileArg, applyOption) = AddCommonParams(command);
         var underOpt = new Option<string>("--under") { Description = "Target section heading" };
         underOpt.Required = true;
@@ -164,7 +164,7 @@ public static class MdEditCommand
 
     private static Command CreatePrependBlockCommand()
     {
-        var command = new Command("prepend-block", "Prepend content to a section");
+        var command = new Command("prepend-block", "Prepend content to a section (for example: --under Notes --content \"- Summary\")");
         var (fileArg, applyOption) = AddCommonParams(command);
         var underOpt = new Option<string>("--under") { Description = "Target section heading" };
         underOpt.Required = true;
@@ -189,7 +189,7 @@ public static class MdEditCommand
 
     private static Command CreateFmSetCommand()
     {
-        var command = new Command("fm-set", "Set a frontmatter field");
+        var command = new Command("fm-set", "Set a frontmatter field (for example: --key status --value Active)");
         var (fileArg, applyOption) = AddCommonParams(command);
         var keyOpt = new Option<string>("--key") { Description = "Field key" };
         keyOpt.Required = true;
@@ -214,7 +214,7 @@ public static class MdEditCommand
 
     private static Command CreateFmMergeCommand()
     {
-        var command = new Command("fm-merge", "Merge YAML into frontmatter");
+        var command = new Command("fm-merge", "Merge YAML into frontmatter from --input text or a YAML file");
         var (fileArg, applyOption) = AddCommonParams(command);
         var inputOpt = new Option<string>("--input") { Description = "YAML string or file path to merge" };
         inputOpt.Required = true;
@@ -241,7 +241,7 @@ public static class MdEditCommand
 
     private static Command CreateFmValidateCommand()
     {
-        var command = new Command("fm-validate", "Validate frontmatter against policy requirements");
+        var command = new Command("fm-validate", "Validate frontmatter against policy requirements for a Markdown file");
         var fileArg = new Argument<string>("file") { Description = "Path to the Markdown file" };
         command.Add(fileArg);
 
@@ -386,7 +386,7 @@ public static class MdEditCommand
 
     private static Command CreateExtractSectionCommand()
     {
-        var command = new Command("extract-section", "Extract a section into a new file (preview/apply workflow)");
+        var command = new Command("extract-section", "Extract a section into a new file (for example: --selector \"heading[Goals]\" --to docs/goals.md)");
 
         var fileArg = new Argument<string>("file") { Description = "Path to the source Markdown file" };
         var selectorOpt = new Option<string>("--selector") { Description = "MdPath selector for the section to extract (e.g. heading[Goals])" };
