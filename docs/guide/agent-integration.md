@@ -11,7 +11,7 @@ Steward is designed to work well in agent-driven workflows. AI coding agents can
 ## Why agents benefit from Steward
 
 - **Structured diagnostics.** Every violation includes a rule ID, file path, severity, message, and remediation guidance.
-- **JSON output.** All commands support `--output json` with a standard envelope, machine-readable error codes, and suggested next steps.
+- **JSON output.** The main command surface supports `--output json` with a standard envelope, machine-readable error codes, and suggested next steps; remaining universal expected-failure-path cleanup is tracked as later pre-1.0 work.
 - **Deterministic behavior.** Same input produces same output. No network calls, no non-determinism.
 - **Scoped validation.** `--scope changed` and `--scope staged` validate only modified files, keeping feedback tight.
 - **Explainability.** `steward explain <rule-id>` and `steward explain path <file>` give agents the context needed to fix issues without guessing.

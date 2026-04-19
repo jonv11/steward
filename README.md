@@ -2,7 +2,7 @@
 
 A configurable repository stewardship CLI for humans and AI agents. Steward validates documentation structure, enforces governance policies, and keeps repository artifacts in sync — all driven by declarative YAML configuration.
 
-Current version: **`v0.16.0`** (pre-`1.0.0`). See [Current Status](#current-status).
+Current version: **`v0.17.0`** (pre-`1.0.0`). See [Current Status](#current-status).
 
 ## Quick Start
 
@@ -175,13 +175,13 @@ For complete field documentation, valid values, defaults, and configuration exam
 
 ## Current Status
 
-Steward is at `v0.16.0` on a pre-`1.0.0` release line. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Steward is at `v0.17.0` on a pre-`1.0.0` release line. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
 **What works today:** All 18 validation rules, all commands listed above, three built-in profiles (`software`, `docs`, `minimal`), artifact family classification, deterministic maintenance, Markdown structural editing, JSON output, and scoped validation.
 
 **Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 3 of 18 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
 
-**Remaining before stable release:** Cross-platform CI evidence. See [implementation status](docs/implementation-status.md).
+**Remaining before stable release:** Hosted CI and hosted release evidence. See [implementation status](docs/implementation-status.md).
 
 ## Documentation
 

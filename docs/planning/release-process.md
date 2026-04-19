@@ -1,8 +1,8 @@
 ---
 type: planning
-source_baseline: v0.16.0
+source_baseline: v0.17.0
 status: Active
-last_updated: 2026-04-18
+last_updated: 2026-04-19
 ---
 
 # Release Process

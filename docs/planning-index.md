@@ -30,7 +30,7 @@ Central navigation for the active product, planning, readiness, and decision art
 |----------|---------|
 | [Workflow Guide](planning/workflow-guide.md) | Canonical reference for how all categories of work should be performed in this repo |
 | [Delivery Strategy](planning/delivery-strategy.md) | Sequencing principles and versioning strategy |
-| [Milestone Plan](planning/milestone-plan.md) | Delivered lineage plus the active `v0.16.0` and `v0.17.0` pre-1.0 scope |
+| [Milestone Plan](planning/milestone-plan.md) | Delivered lineage plus the shipped `v0.17.0` and active `v0.18.0` pre-1.0 scope |
 | [Repo Quality Hardening Pass Plan](planning/repo-quality-hardening-pass-plan.md) | Execution plan for the April 18 implementation-quality hardening pass: must-fix clusters, behavior-preservation cautions, and explicit deferrals |
 | [Review Synthesis Action Plan — 2026-04-18](reviews/review-synthesis-action-plan.md) | Canonical synthesis of the April 18 review cycle into validated backlog, priorities, and planning destinations |
 | [Pre-Release Blockers](planning/pre-release-blockers.md) | Critical items that must be resolved before a first meaningful public pre-1.0 release |

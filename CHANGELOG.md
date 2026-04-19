@@ -6,14 +6,25 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ## [Unreleased]
 
-### Removed
+## [0.17.0] - 2026-04-19
 
-- `--json-envelope` global option removed; the standard envelope (`{ schemaVersion, command, toolVersion, success, exitCode, data }`) is now always applied when `--output json` is active.
+### Added In 0.17.0
 
-### Fixed
+- Dedicated end-user documentation for maintainers, contributors, AI agents, and configuration authors, plus a guide index under `docs/guide/`.
+- Richer machine handoff data in `explain path`, `refs`, and `search`, including provenance, concrete link instances, and section-context selectors.
+- A `skill` artifact family that governs `.agents/skills/**/SKILL.md` files and enforces the shared `name`/`description` frontmatter contract.
+
+### Changed In 0.17.0
+
+- `--output json` now always uses the standard envelope (`{ schemaVersion, command, toolVersion, success, exitCode, data }`); the legacy `--json-envelope` compatibility option is removed.
+- Deprecated pre-`1.0.0` compatibility shims were narrowed: `check --dry-run` is removed and `validation.required_frontmatter_fields` compatibility is dropped in favor of `governance.frontmatter.required_fields`.
+- The README and docs navigation now present Steward through clearer maintainer/contributor/agent paths instead of relying on one large contributor-oriented entry document.
+
+### Fixed In 0.17.0
 
 - Repository discovery now skips inaccessible directories and unreadable nested `.gitignore` files instead of crashing commands like `orient` when run from large or permission-constrained working trees.
 - Unhandled CLI exceptions now terminate with stable exit codes and structured error output instead of dumping a raw stack trace to the terminal.
+- Contract tests and structured JSON error handling now cover more command and handoff surfaces, while the remaining universal expected-failure-path cleanup is deferred to `v0.18.0`.
 
 ## [0.16.0] - 2026-04-18
 
