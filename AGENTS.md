@@ -1,5 +1,7 @@
 # Agent Guidance — Steward Repository
 
+> **Scope note:** This file is for AI agents contributing to the Steward source code repository. If you are looking for guidance on using Steward as a tool in your own repository's agent workflows, see the [Agent Integration Guide](docs/guide/agent-integration.md).
+
 This file is the primary entry point for coding agents working in this repository. Read it before making any changes.
 
 ## What This Repo Is

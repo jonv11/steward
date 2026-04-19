@@ -1,6 +1,6 @@
 # Contributing to Steward
 
-Thank you for contributing. This file covers everything specific to working on the Steward repository itself.
+Thank you for contributing. This file covers working on the Steward source code repository itself. If you are a contributor working in a repository that *uses* Steward, see the [Contributor Guide](docs/guide/contributor-guide.md) instead.
 
 ## Workflow Guide
 

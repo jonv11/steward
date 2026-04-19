@@ -1,75 +1,64 @@
 # Steward
 
-A configurable repository stewardship CLI for humans and AI agents. Steward helps maintain documentation structure, enforce governance policies, and keep repository artifacts in sync — all driven by declarative YAML configuration.
+A configurable repository stewardship CLI for humans and AI agents. Steward validates documentation structure, enforces governance policies, and keeps repository artifacts in sync — all driven by declarative YAML configuration.
 
-Current repository baseline: **`0.16.0`**. Steward is pre-`1.0.0`: intentional public `0.x` releases are allowed when the documented release process is satisfied, but `1.0.0` remains separately gated by explicit stable-release authorization. See [Current Status](#current-status) for what works today and what is still planned.
+Current version: **`v0.16.0`** (pre-`1.0.0`). See [Current Status](#current-status).
 
 ## Quick Start
 
 ```bash
-# Install (see Installation for all options)
-dotnet tool install --global Steward
+# Build and install (requires .NET 10 SDK)
+git clone https://github.com/jonv11/steward.git
+cd steward
+dotnet build steward.sln -c Release
+dotnet pack src/Steward.Cli -c Release --no-build
+dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward
+export PATH="$PWD/.tools/steward:$PATH"    # or add to .bashrc / PowerShell profile
 
-cd your-repo
-steward orient          # see what the repo contains
-steward init --profile software   # set up governance (maintainers)
-steward check           # validate against policy
+# Use on any repository
+cd /path/to/your-repo
+steward orient                       # see what the repo contains
+steward init --profile software      # set up governance (maintainers)
+steward check                        # validate against policy
 ```
 
-No `.steward/` config needed for `orient`, `outline`, or `check` — they work on any repo immediately after install.
+`orient`, `outline`, and `check` work on any repository immediately — no `.steward/` config needed for basic structural analysis. A configured `.steward/` directory unlocks policy-driven validation, frontmatter enforcement, and artifact maintenance.
 
 ## Who Is Steward For?
 
-Steward serves two distinct user roles. The same person may fill both roles, but the tasks and workflows differ.
+**Maintainers** configure Steward for a repository: define required artifacts, naming conventions, frontmatter standards, and auto-generated indexes. See the [Maintainer Guide](docs/guide/maintainer-guide.md).
 
-**Maintainer** — You configure Steward for a repository. You define what artifacts must exist, what naming conventions apply, what frontmatter is required, and what gets auto-generated. You author the `.steward/` configuration files and evolve them as the repository grows.
+**Contributors** validate their changes against the configured rules before committing. See the [Contributor Guide](docs/guide/contributor-guide.md).
 
-**Contributor** — You add or modify content in a repository that uses Steward. You run validation to check your work against the configured rules, interpret any failures, and fix issues before committing.
-
-Both roles use the same CLI binary. This README covers both paths and marks sections by role where the distinction matters.
+**AI agents** use Steward's structured diagnostics and JSON output for automated validation loops. See [Agent Integration](docs/guide/agent-integration.md).
 
 ## Features
 
-- **Repository orientation** — Auto-classify and outline repository structure
-- **Policy-driven validation** — Enforce required artifacts, frontmatter fields, section sizes, naming conventions, and path policies
-- **Artifact families** — Group recurring document types (ADRs, RFCs, etc.) with convention-based discovery and type-aware validation
-- **Markdown structural editing** — Query, edit, and manage Markdown documents with section and frontmatter operations
-- **Deterministic maintenance** — Auto-generate structure documents, indexes, and managed sections
-- **Broken link detection** — Find internal Markdown links that don't resolve
-- **Rule explainability** — Every validation rule is explainable with remediation guidance
-- **Multi-format output** — Text and JSON output for human and agent consumption
+- **Repository orientation** — auto-classify and outline repository structure
+- **Policy-driven validation** — enforce required artifacts, frontmatter fields, section sizes, naming conventions, and path policies via 18 rules
+- **Artifact families** — group recurring document types (ADRs, RFCs, etc.) with convention-based discovery and type-aware validation
+- **Markdown structural editing** — query, edit, and manage Markdown documents with section and frontmatter operations
+- **Deterministic maintenance** — auto-generate structure documents, indexes, and managed sections
+- **Broken link detection** — find internal Markdown links that don't resolve
+- **Rule explainability** — every validation rule is explainable with remediation guidance
+- **Multi-format output** — text and JSON output for human and agent consumption
+- **Auto-fix** — 3 rules (STWD-003, STWD-007, STWD-012) support deterministic auto-fix via `steward check --fix --apply`
 
 ## Installation
 
-### Development Prerequisites
+Steward requires the **[.NET 10 SDK](https://dotnet.microsoft.com/download)** (10.0 or later). Run `dotnet --version` to verify. Earlier SDK versions will not work.
 
-- **[.NET 10 SDK](https://dotnet.microsoft.com/download)** (10.0 or later) — Steward targets `net10.0`; earlier SDK versions (.NET 8, .NET 9) will not build and produce a clear error. Run `dotnet --version` to verify your installed version.
-- **Node.js** (24.x is what CI uses) — only needed when contributing to this repository and running the repo-local Markdown lint commands; the shipped `steward` CLI itself does not depend on Node.js.
-
-### From source
+### Build and install locally (recommended)
 
 ```bash
 git clone https://github.com/jonv11/steward.git
 cd steward
-dotnet build
-```
-
-After building from source inside the Steward repo, run commands using:
-
-```bash
-dotnet run --project src/Steward.Cli -- <command>
-```
-
-For repo-independent use on another repository, prefer the local tool-path install below or run the built executable directly. Avoid relying on `dotnet run --project ...` from inside the target repository, because that repository's `global.json` can select a different SDK and break Steward startup even when Steward itself builds cleanly.
-
-### Build and install locally
-
-```bash
-dotnet pack src/Steward.Cli -c Release
+dotnet build steward.sln -c Release
+dotnet pack src/Steward.Cli -c Release --no-build
 dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward
 ```
 
-This installs the binary to `./.tools/steward/`. Add it to your PATH so the bare `steward` command works (matching all examples below):
+Add to your PATH:
 
 ```bash
 # Unix / Git Bash
@@ -79,231 +68,23 @@ export PATH="$PWD/.tools/steward:$PATH"
 $env:PATH = "$PWD\.tools\steward;$env:PATH"
 ```
 
-Or run commands with the explicit path:
-
-```bash
-./.tools/steward/steward <command>
-```
-
-> **Note:** Add `.tools/` to `.gitignore` and to `discovery.exclude` in `.steward/config.yaml` so Steward does not scan its own installation directory.
-
-### Install from NuGet
-
-When a release is available on nuget.org, install directly without building:
+### Install from NuGet (when published)
 
 ```bash
 dotnet tool install --global Steward
 ```
 
-NuGet publication is tag-driven via GitHub Actions. If the above command fails with "package not found", the latest version has not yet been published — use the [GitHub Releases page](https://github.com/jonv11/steward/releases) to download the `.nupkg` and install with `--add-source`, or build from source.
+If this fails with "package not found," the latest version has not yet been published to NuGet. Use the source build above or download from [GitHub Releases](https://github.com/jonv11/steward/releases).
 
 ### GitHub Releases
 
-When Steward cuts an intentional public `0.x` release, the GitHub Releases page is the primary download surface. Each tagged release attaches:
+Tagged releases attach `.nupkg`, self-contained bundles for `win-x64`/`linux-x64`/`osx-arm64`, and a `SHA256SUMS.txt` checksum file.
 
-- the `.nupkg` for `dotnet tool install --add-source`
-- self-contained bundles for `win-x64`, `linux-x64`, and `osx-arm64`
-- a `SHA256SUMS.txt` checksum file
+### The global.json trap
 
-The release operator path is documented in [docs/planning/release-process.md](docs/planning/release-process.md).
+If you run Steward via `dotnet run --project` from inside another repository, that repository's `global.json` can select a different SDK and break Steward. Always use a tool-path install or the built executable for cross-repo use.
 
-## First 15 Minutes
-
-This is the tested maintainer path from "I have the binary" to "I can see value on a real repo."
-
-### 1. Build or install Steward in a repo-independent way
-
-From the Steward source repository:
-
-```bash
-dotnet build steward.sln -c Release
-dotnet pack src/Steward.Cli -c Release --no-build
-dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward
-```
-
-Then either:
-
-- add `./.tools/steward` to `PATH`, or
-- invoke the binary by explicit path such as `./.tools/steward/steward`
-
-### 2. Change to the target repository
-
-Steward operates on the current working directory. The following commands should be run from the repository you want to inspect or govern, not from the Steward source repo.
-
-### 3. Run the first-value flow
-
-```bash
-steward orient
-steward init --profile software
-steward status --coverage
-steward check
-```
-
-What each step does:
-
-- `orient` gives a session-start map before any config exists.
-- `init --profile software` scaffolds a usable `.steward/` baseline.
-- `status --coverage` shows what is governed, what is missing, and how much Markdown is covered.
-- `check` validates the repo contract and surfaces concrete remediation guidance.
-
-### 4. Avoid the `global.json` trap
-
-If you run:
-
-```bash
-dotnet run --project /path/to/steward/src/Steward.Cli -- <command>
-```
-
-from inside another repository, that repository's `global.json` can control SDK selection and cause Steward to fail before the command runs. For cross-repo use, prefer:
-
-- a local tool-path install as shown above
-- a global install from NuGet when the version is published
-- the built executable path from the Steward repo
-
-## Getting Started — Maintainer
-
-If you are setting up Steward for a repository, follow this path.
-
-### 1. Initialize configuration
-
-```bash
-steward init --profile software    # or: docs, minimal
-```
-
-This creates a `.steward/` directory with starter `config.yaml` and `policy.yaml` files, plus placeholder files for required artifacts declared by the chosen profile. Add `path-policy.yaml` separately when you want explicit naming or forbidden-path rules.
-
-### 2. Discover your repository
-
-```bash
-steward config suggest             # detect artifacts steward can see
-```
-
-On an existing repository with existing files, review the suggestions and add anything missing to `.steward/policy.yaml`. On a freshly initialized repo the suggestions will already match what `init` scaffolded — this step is most valuable when adopting Steward on a repo that already has content.
-
-### 3. Validate your configuration
-
-```bash
-steward config validate            # check YAML syntax and semantic references
-steward config doctor              # detect dead declarations, unmatched patterns, unreachable families
-```
-
-### 4. Run a full check
-
-```bash
-steward check                      # validate the entire repository against your policy
-```
-
-Review the diagnostics. Each violation includes a rule ID you can look up:
-
-```bash
-steward explain STWD-003           # understand what the rule checks and how to fix violations
-```
-
-### 5. Set up maintenance
-
-If you configured maintenance artifacts (structure documents, indexes, managed sections) — look for a `maintenance:` section in `.steward/policy.yaml`:
-
-```bash
-steward maintain                   # preview what would be generated
-steward maintain --apply           # apply changes
-```
-
-### 6. Iterate
-
-After editing policy, re-run `config validate`, `config doctor`, and `check` to verify correctness. Use `steward config show --effective` to inspect the fully resolved runtime configuration including profile defaults.
-
-### Maintainer reference: what can be enforced today
-
-| Enforcement area | How to configure | Rule(s) |
-| ---------------- | ---------------- | ------- |
-| Required artifacts | `artifacts[].required: true` in policy.yaml | STWD-001 |
-| Forbidden paths | `category: forbidden` in path-policy.yaml | STWD-002 |
-| Required frontmatter fields | `governance.frontmatter.required_fields` or `frontmatter_requirements` in policy.yaml, or `frontmatter_schema` on artifact families | STWD-003 |
-| Section size limits | `governance.section_size_warning_threshold` in policy.yaml | STWD-004 |
-| Managed region integrity | Automatically enforced when maintenance artifacts use managed sections | STWD-005, STWD-006 |
-| Stale maintained artifacts | Automatically enforced for configured maintenance artifacts | STWD-007 |
-| Broken internal links | Automatically enforced on all Markdown files | STWD-008 |
-| Broken policy references | Automatically enforced when declared artifact paths don't exist | STWD-009 |
-| Naming conventions | `must_match` in path-policy.yaml | STWD-010 |
-| Index completeness | `index_of` on artifacts in policy.yaml | STWD-011 |
-| Document freshness | `freshness.max_age_days` on artifacts in policy.yaml | STWD-012 |
-| Document discoverability | Automatically enforced — Markdown files should be reachable from navigation | STWD-013 |
-| Required sections per family | `required_sections` on artifact families in policy.yaml | STWD-014 |
-| Minimum file count per family | `directory_expectations.min_count` on artifact families in policy.yaml | STWD-015 |
-| Naming pattern per family | `naming_pattern` on artifact families in policy.yaml | STWD-016 |
-| Unique Markdown heading text | Automatically enforced on Markdown files after anchor-style normalization | STWD-017 |
-
-## Getting Started — Contributor
-
-If you are contributing to a repository that already uses Steward, follow this path. You do not need to understand or modify the `.steward/` configuration — the maintainer has already set that up.
-
-**No `.steward/` config needed.** `steward orient`, `steward outline`, and `steward check` all work on any repository immediately after installing — no policy file required. You get immediate value without any setup:
-
-```bash
-steward orient                     # classify and list the repo's key files
-steward outline docs/              # heading-outline tree of any directory
-steward check                      # validate against policy (if configured) or run structural checks
-```
-
-### 1. Orient yourself
-
-```bash
-steward orient                     # see what the repo contains and where to start
-steward orient --signals           # also show quick missing/stale signals
-```
-
-### 2. Make your changes
-
-Add or edit files normally. Steward does not interfere with your editing workflow.
-
-### 3. Validate your work
-
-Before committing, check that your changes comply with the repository's rules:
-
-```bash
-steward check                      # full repository validation
-steward check --scope changed      # only validate git-modified files
-steward check --scope staged       # only validate git-staged files
-```
-
-### 4. Understand failures
-
-If `steward check` reports violations, each diagnostic includes a rule ID. Look up what the rule enforces and how to fix it:
-
-```bash
-steward explain STWD-008           # explain the broken-link rule
-steward explain path docs/my-doc.md  # show all rules that apply to a specific file
-```
-
-### 5. Fix issues
-
-Some rules have deterministic auto-fixes. Preview and apply them:
-
-```bash
-steward check --fix                # preview what steward would fix
-steward check --fix --apply        # apply the fixes
-```
-
-For rules without auto-fix, `steward explain <rule-id>` provides remediation guidance.
-
-### 6. Refresh maintained artifacts
-
-If you added, moved, or renamed files, generated artifacts like `STRUCTURE.md` or indexes may be stale:
-
-```bash
-steward maintain                   # preview changes
-steward maintain --apply           # apply changes
-```
-
-### 7. Re-check
-
-```bash
-steward check                      # confirm everything passes
-```
-
-A clean check returns exit code `0` and reports no errors. In CI, the same `steward check` command can run as a gate.
-
-### Exit codes
+## Exit codes
 
 | Code | Meaning |
 | ---- | ------- |
@@ -336,7 +117,7 @@ A clean check returns exit code `0` and reports no errors. In CI, the same `stew
 | `steward config doctor` | Detect valid-but-ineffective config: dead `start_here` entries, unmatched patterns, unreachable families |
 | `steward config suggest` | Analyze the repository and suggest artifact declarations with confidence hints for `policy.yaml` |
 
-### Global Options
+### Global options
 
 | Option | Description |
 | ------ | ----------- |
@@ -345,350 +126,98 @@ A clean check returns exit code `0` and reports no errors. In CI, the same `stew
 | `--no-color` | Disable colored output (overrides config.yaml) |
 | `--config <path>` | Override config directory path |
 
-### Markdown Examples
-
-```bash
-# Query a section by heading text
-steward md query README.md "heading[Getting Started — Maintainer]"
-
-# Query by Markdown anchor slug
-steward md query README.md "#who-is-steward-for"
-
-# Batch-query a heading across many files
-steward md query --pattern "docs/planning/*.md" "heading[Purpose]"
-
-# Ensure a heading exists under a parent section
-steward md edit ensure-section README.md --heading "FAQ" --under "Commands"
-
-# Validate frontmatter against the current repo policy
-steward md edit fm-validate docs/planning/milestone-plan.md
-
-# Preview extracting a section into a new file
-steward md edit extract-section README.md --selector "heading[Features]" --to docs/features.md
-```
-
 ## Validation Rules
 
-| Rule | Default Severity | Category | Description |
-| ---- | ---------------- | -------- | ----------- |
-| STWD-001 | error | path-policy | Required artifacts must exist |
-| STWD-002 | error | path-policy | Forbidden path patterns must not match |
-| STWD-003 | error | frontmatter | Required frontmatter fields must be present (global, scoped, or family-level) |
-| STWD-004 | info | governance | Sections should not exceed the configured size threshold |
-| STWD-005 | error | structure | Managed region markers must be well-formed |
-| STWD-006 | warning | managed-region | Managed regions should not be empty once declared |
-| STWD-007 | warning | stale-artifact | Maintained artifacts must match expected state |
-| STWD-008 | warning | broken-link | Internal Markdown links should resolve |
-| STWD-009 | warning | broken-reference | Policy-declared artifact paths should resolve to existing files |
-| STWD-010 | warning | path-policy | Files in governed directories must match declared naming conventions |
-| STWD-011 | warning | index-completeness | All Markdown files in indexed directories should be linked from the index |
-| STWD-012 | warning | freshness | State documents with freshness declarations should be updated within window |
-| STWD-013 | info | discoverability | Markdown files should be reachable from at least one navigation surface |
-| STWD-014 | warning | structure | Files in an artifact family must contain all required section headings |
-| STWD-015 | warning | family-completeness | Artifact families with `min_count` must meet the declared minimum |
-| STWD-016 | warning | naming | Files matched by an artifact family must satisfy the family's `naming_pattern` |
-| STWD-017 | warning | structure | Heading text must be unique within a Markdown file after anchor-style normalization |
-| STWD-018 | warning | broken-fragment-anchor | Markdown fragment links should reference headings that actually exist in the target file |
+| Rule | Default Severity | Description |
+| ---- | ---------------- | ----------- |
+| STWD-001 | error | Required artifacts must exist |
+| STWD-002 | error | Forbidden path patterns must not match |
+| STWD-003 | error | Required frontmatter fields must be present |
+| STWD-004 | info | Sections should not exceed size threshold |
+| STWD-005 | error | Managed region markers must be well-formed |
+| STWD-006 | warning | Managed regions should not be empty once declared |
+| STWD-007 | warning | Maintained artifacts must match expected state |
+| STWD-008 | warning | Internal Markdown links should resolve |
+| STWD-009 | warning | Policy-declared artifact paths should exist |
+| STWD-010 | warning | Files must match declared naming conventions |
+| STWD-011 | warning | Indexed directories should have complete index coverage |
+| STWD-012 | warning | State documents should be updated within freshness window |
+| STWD-013 | info | Markdown files should be reachable from navigation |
+| STWD-014 | warning | Family files must contain required section headings |
+| STWD-015 | warning | Artifact families must meet declared minimum file count |
+| STWD-016 | warning | Family files must satisfy the family's naming pattern |
+| STWD-017 | warning | Heading text must be unique within a file |
+| STWD-018 | warning | Fragment links should reference headings that exist |
 
-Use `steward explain <rule-id>` for detailed guidance on any rule. Run `steward explain` (no argument) to list all rules with their current severity and description.
-
-Severities can be overridden per repository via `validation.severity_overrides` in policy.yaml. Rules can be suppressed globally via `validation.disabled_rules` or per-path via `validation.path_overrides`.
+Use `steward explain <rule-id>` for detailed guidance on any rule. Severities can be overridden via `validation.severity_overrides` in policy.yaml. Rules can be suppressed globally or per-path.
 
 ## Configuration
 
-Steward uses a `.steward/` directory with three optional YAML configuration files. Run `steward init` to scaffold the initial files, then `steward config suggest` to get artifact suggestions for your specific repository.
+Steward uses a `.steward/` directory with three optional YAML configuration files:
 
-### config.yaml — Runtime settings
+| File | Purpose |
+|------|---------|
+| `config.yaml` | Runtime settings: output format, file discovery exclusions, coverage reporting |
+| `policy.yaml` | Repository contract: required artifacts, frontmatter rules, artifact families, maintenance |
+| `path-policy.yaml` | Naming conventions and forbidden/required path patterns |
 
-Controls output defaults, file discovery, and coverage reporting. CLI flags always override these settings.
+Run `steward init --profile <name>` to scaffold initial files. Available profiles: `software`, `docs`, `minimal`.
 
-```yaml
-profile: software       # Built-in profile that supplies default artifact declarations
+For complete field documentation, valid values, defaults, and configuration examples, see the [Configuration Reference](docs/guide/configuration-reference.md).
 
-output:
-  format: text          # Default output format: text or json
-  no_color: false       # Disable colored output
-  verbosity: normal     # quiet, normal, verbose, or debug
+## What Steward Does Not Do
 
-discovery:
-  exclude:              # Glob patterns to exclude beyond .gitignore
-    - "node_modules/"
-    - "dist/"
-    - ".vs/"
-    - ".tools/"         # exclude local dotnet tool installs inside the repo
-
-coverage:
-  exclude:              # Glob patterns to exclude from governance-coverage calculations
-    - "tests/fixtures/**"
-```
-
-### policy.yaml — Repository contract
-
-Declares what the repository contains, what governance rules apply, what artifact families exist, and what artifacts are maintained automatically. This is the core of Steward's configuration.
-
-```yaml
-repository:
-  name: my-project
-  description: A sample project
-  type: software        # Informational: software, docs, mixed, knowledge, minimal
-
-artifacts:
-  - path: README.md
-    role: readme          # Role used by orient, search --role, and discoverability rules
-    description: Project overview
-    required: true
-    importance: required  # required, recommended, or optional
-  - path: CHANGELOG.md
-    role: changelog
-    importance: recommended
-  - path: docs/adr/
-    role: decision
-    description: Architecture Decision Records
-    index_of: docs/adr/   # Signals that this artifact is a directory index
-  - path: docs/status.md
-    role: current-state
-    freshness:
-      max_age_days: 30    # STWD-012 fires if not updated within this window
-
-artifact_families:        # Convention-based document type grouping (v0.13.0+)
-  - family: adr
-    display_name: Architecture Decision Record
-    match:
-      path_pattern: "docs/adr/ADR-*.md"
-    role: governance
-    importance: recommended
-    frontmatter_schema:
-      required: [type, status]
-      allowed_values:
-        type: [adr]
-        status: [Draft, Proposed, Accepted, Superseded, Deprecated]
-    required_sections: [Context, Decision, Consequences]
-    naming_pattern: "^ADR-[0-9]{3}-[a-z0-9-]+\\.md$"
-    directory_expectations:
-      min_count: 1
-
-governance:
-  section_size_warning_threshold: 500   # Lines per section before STWD-004 fires
-  start_here:
-    - README.md
-    - docs/index.md
-
-  frontmatter:
-    required_fields: [status, owner]    # Fields all governed Markdown files must declare
-    auto_fields:
-      updated_at: true                  # Update existing updated_at fields to today's date on locally changed Markdown files
-
-validation:
-  disabled_rules: [STWD-004]           # Suppress rules globally
-  severity_overrides:
-    STWD-008: error                     # Upgrade broken-link from warning to error
-  path_overrides:
-    - pattern: "src/**/*.md"
-      disabled_rules: [STWD-003]       # No frontmatter required in source-adjacent docs
-  frontmatter_requirements:
-    - pattern: "docs/decisions/**/*.md"
-      required_fields: [status, date, deciders]
-      allowed_values:
-        status: [proposed, accepted, deprecated, superseded]
-
-maintenance:
-  artifacts:
-    - id: structure
-      path: STRUCTURE.md
-      type: structure-document          # Auto-generates a directory tree document
-      options:
-        depth: 3
-        exclude:
-          - ".git/**"
-          - "node_modules/**"
-    - id: docs-index
-      path: docs/index.md
-      type: directory-index             # Auto-generates an index of a directory
-      source: "docs/*.md"
-      sort: filename
-```
-
-Supported maintenance types: `structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`.
-
-`directory-index` maintenance requires each indexed Markdown file to declare a non-empty `description` field in frontmatter so generated tables stay reviewable without hand-authored summaries.
-
-`governance.frontmatter.auto_fields.<field>: true` is shorthand for maintaining that existing frontmatter field with today's date when the file is reported as locally changed by `git diff --name-only HEAD`. Steward updates existing fields only; it does not create new date fields implicitly.
-
-### path-policy.yaml — Path and naming rules
-
-Enforces naming conventions and file presence/absence patterns. This file is optional.
-
-```yaml
-rulesets:
-  - name: core-files
-    rules:
-      - pattern: "README.md"
-        category: required
-        exact: true
-      - pattern: ".env"
-        category: forbidden             # forbidden files must never exist
-
-  - name: adr-naming
-    rules:
-      - pattern: "docs/adr/**/*.md"
-        category: required
-        must_match: "^[0-9]{4}-[a-z0-9-]+\\.md$"   # Enforce e.g. 0001-use-postgres.md
-```
-
-### Configuration precedence
-
-Settings are resolved in this order (highest to lowest):
-
-1. Explicit CLI flag (e.g. `--output json`)
-2. `config.yaml` setting (e.g. `output.format: json`)
-3. Built-in default (e.g. text output)
-
-Use `steward config validate` to check YAML syntax and semantic references (rule IDs, maintainer types, glob patterns, `depends_on` links). Use `steward config show --effective` to print the resolved runtime defaults plus the merged effective policy. Use `steward config doctor` to detect silent problems like `start_here` entries that point to missing files, dead suppressions, unreachable patterns, or families whose path patterns match nothing.
-
-For global Markdown frontmatter requirements, `governance.frontmatter.required_fields` is the canonical location. Steward still accepts the legacy `validation.required_frontmatter_fields`; if both are present, they are treated additively and `steward config doctor` warns so the policy can be simplified.
-
-### Built-in profiles
-
-`steward init --profile <name>` scaffolds starting-point defaults for common repository types, including placeholder files for required artifacts so that an immediate `steward check` does not fail on missing files. At runtime, profile defaults merge in shallowly: repository-local scalar/object values override profile values, while repository-local list sections such as `artifacts:` replace the corresponding profile list as a whole.
-
-| Profile | Description | Status |
-| ------- | ----------- | ------ |
-| `software` | Software project with README, LICENSE, CHANGELOG | Actively used on this repository |
-| `docs` | Documentation repository | Tested via fixtures; usable starting point |
-| `minimal` | README-first baseline with minimal additional defaults | Tested via fixtures; intentionally sparse |
-
-> **Note:** `mixed` and `knowledge` profiles are not yet offered via `init`. They remain in code for backward compatibility and will be enabled when their governance contracts are enriched. See [ADR-014](docs/decisions/adrs/ADR-014-non-software-profile-scope.md).
-
-## Common Workflows
-
-### Maintainer: adding a new artifact family
-
-To enforce conventions on a group of recurring documents (e.g., ADRs, RFCs, runbooks):
-
-1. Add an `artifact_families` entry in `.steward/policy.yaml` with a `match` section (path glob and/or frontmatter criteria)
-2. Optionally declare `frontmatter_schema`, `required_sections`, `naming_pattern`, and `directory_expectations`
-3. Run `steward config validate` and `steward config doctor` to verify the family matches the expected files
-4. Run `steward check` to see any new violations the family introduces
-
-### Maintainer: tuning severity and suppression
-
-```yaml
-# In policy.yaml → validation:
-severity_overrides:
-  STWD-008: error         # Promote broken links to errors
-disabled_rules: [STWD-013] # Suppress discoverability warnings globally
-path_overrides:
-  - pattern: "drafts/**"
-    disabled_rules: [STWD-003, STWD-012]  # No frontmatter or freshness for drafts
-```
-
-### Contributor: pre-commit check on staged files
-
-```bash
-steward check --scope staged
-```
-
-This validates only files in the git staging area. Use `--scope changed` for all modified files (staged and unstaged).
-
-### Contributor: understanding a specific file's governance
-
-```bash
-steward explain path docs/planning/my-doc.md
-```
-
-This shows which rules apply to that file, including any artifact family membership, required frontmatter, and naming expectations.
-
-### Contributor: searching for content
-
-```bash
-steward search "deployment"                    # search content and headings
-steward search "TODO" --mode content --regex   # regex search in content only
-steward search "architecture" --mode headings  # search only headings
-```
-
-## Troubleshooting
-
-### `steward check` fails immediately after `steward init`
-
-This usually means the profile declared required artifacts that don't have placeholder files. As of v0.12.0, `steward init --profile software` scaffolds placeholders for required artifacts. If you initialized with an older version, create the missing files manually or re-run `steward init`.
-
-### STWD-007 keeps firing even after edits
-
-STWD-007 means a maintained artifact is stale — its content doesn't match what `steward maintain` would generate. Run `steward maintain --apply` to regenerate it. Do not hand-edit files that are managed by Steward's maintenance engine.
-
-### STWD-003 fires for files that shouldn't need frontmatter
-
-The maintainer can suppress frontmatter requirements per-path using `validation.path_overrides` in policy.yaml. If you are a contributor and this seems wrong, raise the issue with the repository maintainer.
-
-### Scoped check (`--scope changed`) reports false positives
-
-This was a known defect resolved in v0.11.0. If you see false positives for STWD-001, STWD-007, or STWD-009 on a clean tree with `--scope changed` or `--scope staged`, update to the latest version.
-
-### `steward config suggest` doesn't detect all my artifacts
-
-`config suggest` uses heuristics to detect common patterns. It may miss artifacts with unusual paths or roles. Treat its output as a starting point and add missing artifacts manually.
+- **Not a code linter.** Steward validates documentation structure and repository governance, not source code.
+- **Not a CI system.** Steward is a validation command you run in CI — it does not replace CI.
+- **Not a content generator.** Steward generates structure indexes and managed sections. It does not write documentation content.
+- **Not a hosting platform tool.** No GitHub/GitLab API integration. Steward operates on the local filesystem and git state.
+- **No IDE plugin.** CLI-only. No LSP, no editor extension.
 
 ## Current Status
 
-Steward is at `v0.16.0` on a pre-`1.0.0` release line. Intentional public `0.x` releases are allowed when the repo is ready and the release process is followed. The version `1.0.0` still requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) and has not been scheduled.
+Steward is at `v0.16.0` on a pre-`1.0.0` release line. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
-**What works today:** All 18 validation rules, all commands listed above, three built-in profiles, artifact family classification, deterministic maintenance, Markdown structural editing, and JSON output for automation.
+**What works today:** All 18 validation rules, all commands listed above, three built-in profiles (`software`, `docs`, `minimal`), artifact family classification, deterministic maintenance, Markdown structural editing, JSON output, and scoped validation.
 
-**Release operations today:** The repo has a changelog-backed, tag-driven GitHub Release workflow and repo-managed release-intent labels for pre-`1.0.0` releases. See [docs/planning/release-process.md](docs/planning/release-process.md).
+**Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 3 of 18 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
 
-**Remaining before first stable release:** Cross-platform CI and release-workflow green evidence from GitHub-hosted runs. See [implementation status](docs/implementation-status.md) for the full picture.
+**Remaining before stable release:** Cross-platform CI evidence. See [implementation status](docs/implementation-status.md).
 
-**Planned for later pre-1.0 milestones:** Heading selector fuzzy matching in MdPath, workflow/session modeling, and broader machine-contract hardening. See [pre-1.0 readiness plan](docs/planning/pre-1-0-readiness-plan.md) for the categorized list.
+## Documentation
+
+| Document | Audience |
+|----------|----------|
+| [Maintainer Guide](docs/guide/maintainer-guide.md) | Repo maintainers adopting Steward |
+| [Contributor Guide](docs/guide/contributor-guide.md) | Contributors in Steward-governed repos |
+| [Configuration Reference](docs/guide/configuration-reference.md) | All config fields, values, and defaults |
+| [Agent Integration](docs/guide/agent-integration.md) | Using Steward with AI coding agents |
+
+Internal project documents (planning, decisions, audits) are under [docs/](docs/README.md).
 
 ## Development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contributor workflow, pull request guidelines, and how to use Steward on this repo.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contributor workflow and pull request guidelines.
 
 ### Prerequisites
 
 - .NET 10 SDK
+- Node.js (24.x) — only for Markdown linting, not required by the CLI itself
 
-### Build
+### Build and test
 
 ```bash
 dotnet build steward.sln
-```
-
-### Test
-
-```bash
 dotnet test steward.sln
 ```
 
-### Markdown Lint
+### Markdown lint
 
 ```bash
 npm ci
 npm run lint:md
 ```
 
-For repo Markdown cleanup, an auto-fix command is also available:
-
-```bash
-npm run lint:md:fix
-```
-
-Markdown linting is pinned with `markdownlint-cli2` and configured in `.markdownlint-cli2.jsonc`. The config intentionally excludes generated artifacts, historical audit records, imported source material, and embedded fixture repositories. It also disables line-length, mixed table-style, duplicate-heading, emphasis-as-heading, and fenced-code-language rules to avoid noisy churn or duplicate reporting against Steward's own Markdown checks.
-The dependency is pinned in `package.json` so local, agent, and CI behavior stay identical instead of drifting with `npx` or an unreviewed latest-version pull.
-
-### CI
-
-The repository includes a GitHub Actions matrix in `.github/workflows/ci.yml` that runs `dotnet build`, `dotnet test`, and `dotnet pack src/Steward.Cli/Steward.Cli.csproj -c Release` on Windows, macOS, and Linux. The Linux leg also runs `npm run lint:md` and `dotnet run --project src/Steward.Cli -c Release --no-build -- check` so Markdown quality and Steward governance stay enforced in normal CI. The release workflow repeats those lint/governance checks before publishing assets.
-
-### Dependency posture
-
-Steward currently pins exact prerelease CLI-stack versions in [Directory.Packages.props](Directory.Packages.props), including `System.CommandLine` beta5. All other runtime dependencies are at stable GA versions. That is an intentional pre-`1.0.0` tradeoff for the current repo line, not a claim that stable-release dependency hardening is already complete.
-
-### Release Process
-
-Pre-`1.0.0` release operations are documented in [docs/planning/release-process.md](docs/planning/release-process.md) and summarized in [CHANGELOG.md](CHANGELOG.md). GitHub Release notes are sourced from changelog entries, and pull requests use repo-managed release-intent labels to make bump decisions reviewable.
-
-### Project Structure
+### Project structure
 
 - `src/Steward.Cli` — CLI entry point and commands
 - `src/Steward.Core` — Core library (validation, Markdown, maintenance)

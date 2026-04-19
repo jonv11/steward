@@ -66,6 +66,7 @@ Historical audits are preserved for evidence and context. Active repository trut
 
 | Document | Purpose |
 | -------- | ------- |
+| [V1 Product Readiness Review — 2026-04-19](audits/v1-product-readiness-review-2026-04-19.md) | Deep product-experience and promise-vs-reality review from external maintainer and contributor POVs: product clarity, trust, adoption readiness, and prioritized action list |
 | [Draft RFC Disposition Review — 2026-04-18](reviews/draft-rfc-disposition-review-2026-04-18.md) | Disposition synthesis for the 7 draft RFCs: 2 accepted as deferred RFCs, 5 absorbed into enhancement backlog |
 | [Workflow Model Analysis — 2026-04-18](audits/workflow-analysis-2026-04-18.md) | Git history analysis, pattern evaluation, and design rationale behind the canonical workflow guide |
 | [Maintainer Remarks Implementation Summary — 2026-04-18](audits/maintainer-remarks-implementation-summary-2026-04-18.md) | Repo-grounded implementation summary for the 2026-04-18 maintainer pass: code, tests, docs, package naming, and release automation outcomes |

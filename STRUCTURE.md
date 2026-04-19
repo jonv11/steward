@@ -32,6 +32,7 @@
 │   │   ├── cli-expectation-fidelity-review-2026-04-16.md
 │   │   ├── cli-full-assessment-2026-04-16.md
 │   │   ├── code-quality-pass-2026-04-16.md
+│   │   ├── documentation-overhaul-completion-2026-04-19.md
 │   │   ├── end-user-documentation-path-audit-2026-04-17.md
 │   │   ├── fresh-eyes-onboarding-audit-2026-04-18.md
 │   │   ├── fresh-eyes-reaudit-onboarding-2026-04-18.md
@@ -51,11 +52,18 @@
 │   │   ├── rule-system-completeness-audit-2026-04-18.md
 │   │   ├── usability-review-2026-04-15.md
 │   │   ├── usecase-consolidation-proposal.md
+│   │   ├── v1-product-readiness-review-2026-04-19.md
 │   │   └── workflow-analysis-2026-04-18.md
 │   ├── decisions/
 │   │   ├── adrs
 │   │   ├── decision-index.md
 │   │   └── rfcs
+│   ├── guide/
+│   │   ├── agent-integration.md
+│   │   ├── configuration-reference.md
+│   │   ├── contributor-guide.md
+│   │   ├── maintainer-guide.md
+│   │   └── README.md
 │   ├── implementation-status.md
 │   ├── planning/
 │   │   ├── curation-notes.md
@@ -72,6 +80,7 @@
 │   │   ├── v0-15-draft-preparation.md
 │   │   └── workflow-guide.md
 │   ├── planning-index.md
+│   ├── README.md
 │   ├── requirements/
 │   │   ├── assumptions-constraints.md
 │   │   ├── PRD.md
