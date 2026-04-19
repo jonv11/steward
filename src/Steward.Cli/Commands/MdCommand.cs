@@ -172,7 +172,7 @@ public static class MdCommand
     {
         var root = Directory.GetCurrentDirectory();
         var glob = DotNet.Globbing.Glob.Parse(pattern);
-        var allFiles = Directory.EnumerateFiles(root, "*.md", SearchOption.AllDirectories)
+        var allFiles = fileSystem.GetFiles(root, "*.md", SearchOption.AllDirectories)
             .Select(f => PathHelper.NormalizeSeparators(Path.GetRelativePath(root, f)))
             .Where(f => glob.IsMatch(f))
             .OrderBy(f => f)

@@ -17,7 +17,26 @@ internal static class CliTestHelper
         return Program.InvokeAsync(args).GetAwaiter().GetResult();
     }
 
+    public static int InvokeWithHandler(Func<string[], Task<int>> invoker, params string[] args)
+    {
+        return Program.InvokeWithTopLevelHandlingAsync(args, invoker).GetAwaiter().GetResult();
+    }
+
     public static (int ExitCode, string Output, string Error) InvokeCapture(params string[] args)
+    {
+        return InvokeCaptureCore(static invocationArgs => Program.InvokeAsync(invocationArgs), args);
+    }
+
+    public static (int ExitCode, string Output, string Error) InvokeCapture(
+        Func<string[], Task<int>> invoker,
+        params string[] args)
+    {
+        return InvokeCaptureCore(invocationArgs => Program.InvokeWithTopLevelHandlingAsync(invocationArgs, invoker), args);
+    }
+
+    private static (int ExitCode, string Output, string Error) InvokeCaptureCore(
+        Func<string[], Task<int>> invoker,
+        string[] args)
     {
         lock (ConsoleLock)
         {
@@ -36,7 +55,7 @@ internal static class CliTestHelper
 
             try
             {
-                var exitCode = Invoke(args);
+                var exitCode = invoker(args).GetAwaiter().GetResult();
                 return (exitCode, NormalizeOutput(stdOut.ToString()), NormalizeOutput(stdErr.ToString()));
             }
             finally

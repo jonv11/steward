@@ -38,6 +38,54 @@ public static class Program
 
     internal static async Task<int> InvokeAsync(string[] args)
     {
+        return await InvokeWithTopLevelHandlingAsync(args, InvokeCoreAsync);
+    }
+
+    internal static async Task<int> InvokeWithTopLevelHandlingAsync(
+        string[] args,
+        Func<string[], Task<int>> invoker)
+    {
+        try
+        {
+            return await invoker(args);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            WriteTopLevelError(
+                args,
+                ExitCodes.UsageError,
+                "access-denied",
+                $"Access denied: {ex.Message}",
+                ex,
+                "Check that the target repository and scanned paths are readable, then try again.");
+            return ExitCodes.UsageError;
+        }
+        catch (IOException ex)
+        {
+            WriteTopLevelError(
+                args,
+                ExitCodes.UsageError,
+                "file-system-error",
+                $"File system error: {ex.Message}",
+                ex,
+                "Check that the target repository exists and that the relevant paths are available, then try again.");
+            return ExitCodes.UsageError;
+        }
+        catch (Exception ex)
+        {
+            WriteTopLevelError(
+                args,
+                ExitCodes.InternalError,
+                "internal-error",
+                $"Internal error: {ex.Message}",
+                ex,
+                "This is an unexpected failure. Please report it if it persists.");
+            return ExitCodes.InternalError;
+        }
+    }
+
+    private static async Task<int> InvokeCoreAsync(string[] args)
+    {
         var parseResult = CreateRootCommand().Parse(args);
 
         if (parseResult.Errors.Count > 0 && CommandSetup.ResolveRequestedOutputFormat(rawArgs: args) == OutputFormat.Json)
@@ -75,6 +123,68 @@ public static class Program
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
         return await InvokeAsync(args);
+    }
+
+    private static void WriteTopLevelError(
+        string[] args,
+        int exitCode,
+        string kind,
+        string message,
+        Exception exception,
+        string suggestedNextStep)
+    {
+        CommandSetup.WriteCommandError(
+            args,
+            ResolveCommandName(args),
+            exitCode,
+            kind,
+            message,
+            details: new Dictionary<string, object>
+            {
+                ["exceptionType"] = exception.GetType().Name
+            },
+            suggestedNextStep: suggestedNextStep);
+    }
+
+    private static string ResolveCommandName(IReadOnlyList<string> args)
+    {
+        var tokens = new List<string>();
+
+        for (var i = 0; i < args.Count; i++)
+        {
+            var arg = args[i];
+
+            if (arg is "--output" or "-o" or "--verbosity" or "-v" or "--config" or "-c")
+            {
+                i++;
+                continue;
+            }
+
+            if (arg.StartsWith("--output=", StringComparison.Ordinal) ||
+                arg.StartsWith("--verbosity=", StringComparison.Ordinal) ||
+                arg.StartsWith("--config=", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (arg.StartsWith('-'))
+                continue;
+
+            tokens.Add(arg);
+        }
+
+        if (tokens.Count == 0)
+            return "steward";
+
+        return tokens[0] switch
+        {
+            "config" when tokens.Count > 1 => $"config {tokens[1]}",
+            "explain" when tokens.Count > 1 && tokens[1] == "path" => "explain path",
+            "md" when tokens.Count > 2 && (tokens[1] == "edit" || tokens[1] == "split") => $"md {tokens[1]} {tokens[2]}",
+            "md" when tokens.Count > 1 => $"md {tokens[1]}",
+            "refactor" when tokens.Count > 1 => $"refactor {tokens[1]}",
+            _ => tokens[0]
+        };
     }
 
     private static bool ShouldRewriteHelpOutput(string[] args, ParseResult parseResult)

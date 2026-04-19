@@ -109,7 +109,7 @@ output:
   format: json
 ```
 
-4. **Add an AGENTS.md** to your repo that tells agents to use Steward:
+1. **Add an AGENTS.md** to your repo that tells agents to use Steward:
 
 ```markdown
 ## Validation
@@ -121,7 +121,7 @@ Before finishing any change, run:
 Fix all errors. Review warnings. Use `steward explain <rule-id>` for guidance.
 ```
 
-5. **Use `steward check` in CI** so agents get the same feedback as the CI gate.
+1. **Use `steward check` in CI** so agents get the same feedback as the CI gate.
 
 ## Markdown structural operations
 

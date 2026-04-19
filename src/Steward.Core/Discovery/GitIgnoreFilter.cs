@@ -70,16 +70,23 @@ public sealed class GitIgnoreFilter : IIgnoreFilter
         var gitignorePath = Path.Combine(currentDir, ".gitignore");
         if (fileSystem.FileExists(gitignorePath))
         {
-            var content = fileSystem.ReadAllText(gitignorePath);
-            var basePath = GetRelativePath(repositoryRoot, currentDir);
-            var rules = ParseGitignore(content);
-            if (rules.Count > 0)
-                ruleSets.Add(new IgnoreRuleSet(basePath, rules));
+            try
+            {
+                var content = fileSystem.ReadAllText(gitignorePath);
+                var basePath = GetRelativePath(repositoryRoot, currentDir);
+                var rules = ParseGitignore(content);
+                if (rules.Count > 0)
+                    ruleSets.Add(new IgnoreRuleSet(basePath, rules));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Skip unreadable .gitignore files so discovery can continue.
+            }
         }
 
         if (!fileSystem.DirectoryExists(currentDir)) return;
 
-        foreach (var subDir in fileSystem.GetDirectories(currentDir))
+        foreach (var subDir in EnumerateDirectoriesSafe(currentDir, fileSystem))
         {
             var dirName = Path.GetFileName(subDir);
             if (dirName is ".git" or ".hg" or ".svn") continue;
@@ -92,6 +99,18 @@ public sealed class GitIgnoreFilter : IIgnoreFilter
         if (root == dir) return "";
         var rel = PathHelper.NormalizeSeparators(Path.GetRelativePath(root, dir));
         return rel == "." ? "" : rel;
+    }
+
+    private static IReadOnlyList<string> EnumerateDirectoriesSafe(string path, IFileSystem fileSystem)
+    {
+        try
+        {
+            return fileSystem.GetDirectories(path).ToArray();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return [];
+        }
     }
 
     private static List<IgnoreRule> ParseGitignore(string content)

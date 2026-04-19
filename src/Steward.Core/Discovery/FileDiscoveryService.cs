@@ -25,7 +25,7 @@ public sealed class FileDiscoveryService
     private void WalkDirectory(string currentPath, string rootPath, List<DiscoveredFile> results)
     {
         // Add subdirectories
-        foreach (var dirPath in _fileSystem.GetDirectories(currentPath))
+        foreach (var dirPath in EnumerateDirectoriesSafe(currentPath))
         {
             var relativePath = GetRelativePath(rootPath, dirPath);
 
@@ -37,14 +37,23 @@ public sealed class FileDiscoveryService
         }
 
         // Add files
-        foreach (var filePath in _fileSystem.GetFiles(currentPath))
+        foreach (var filePath in EnumerateFilesSafe(currentPath))
         {
             var relativePath = GetRelativePath(rootPath, filePath);
 
             if (_ignoreFilter.IsIgnored(relativePath, isDirectory: false))
                 continue;
 
-            var size = _fileSystem.GetFileSize(filePath);
+            long size;
+            try
+            {
+                size = _fileSystem.GetFileSize(filePath);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                continue;
+            }
+
             results.Add(new DiscoveredFile(relativePath, size, IsDirectory: false));
         }
     }
@@ -52,5 +61,29 @@ public sealed class FileDiscoveryService
     private static string GetRelativePath(string root, string fullPath)
     {
         return PathHelper.NormalizeSeparators(Path.GetRelativePath(root, fullPath));
+    }
+
+    private IReadOnlyList<string> EnumerateDirectoriesSafe(string path)
+    {
+        try
+        {
+            return _fileSystem.GetDirectories(path).ToArray();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return [];
+        }
+    }
+
+    private IReadOnlyList<string> EnumerateFilesSafe(string path)
+    {
+        try
+        {
+            return _fileSystem.GetFiles(path).ToArray();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return [];
+        }
     }
 }

@@ -10,6 +10,11 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 - `--json-envelope` global option removed; the standard envelope (`{ schemaVersion, command, toolVersion, success, exitCode, data }`) is now always applied when `--output json` is active.
 
+### Fixed
+
+- Repository discovery now skips inaccessible directories and unreadable nested `.gitignore` files instead of crashing commands like `orient` when run from large or permission-constrained working trees.
+- Unhandled CLI exceptions now terminate with stable exit codes and structured error output instead of dumping a raw stack trace to the terminal.
+
 ## [0.16.0] - 2026-04-18
 
 ### Added In 0.16.0

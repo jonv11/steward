@@ -98,4 +98,26 @@ public class FileDiscoveryServiceTests
         files.Should().NotContain(f => f.RelativePath.StartsWith(".git"));
         files.Should().Contain(f => f.RelativePath == "readme.md");
     }
+
+    [Fact]
+    public void Discover_InaccessibleSubdirectory_SkipsUnreadableTraversal()
+    {
+        var fs = new FaultInjectingFileSystem()
+            .AddDirectory("root")
+            .AddDirectory("root/readable")
+            .AddDirectory("root/locked")
+            .AddFile("root/readable/app.cs", "class App {}")
+            .AddFile("root/locked/secret.txt", "secret")
+            .DenyTraversal("root/locked");
+
+        var filter = GitIgnoreFilter.Load("root", fs);
+        var service = new FileDiscoveryService(fs, filter);
+
+        var files = service.Discover("root");
+
+        files.Should().Contain(f => f.RelativePath == "readable" && f.IsDirectory);
+        files.Should().Contain(f => f.RelativePath == "readable/app.cs" && !f.IsDirectory);
+        files.Should().Contain(f => f.RelativePath == "locked" && f.IsDirectory);
+        files.Should().NotContain(f => f.RelativePath == "locked/secret.txt");
+    }
 }

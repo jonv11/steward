@@ -1,6 +1,6 @@
 # Implementation Status
 
-Last updated: 2026-04-18
+Last updated: 2026-04-19
 
 ## Current Baseline
 
@@ -10,7 +10,7 @@ Steward is currently on **`v0.16.0`**. The repository is **still pre-1.0**: inte
 |------|---------------|
 | Version line | `0.x.y` only until explicit stable-release approval |
 | Current repo version | `0.16.0` |
-| Tests | 717 passing (491 core, 226 CLI) |
+| Tests | 732 passing (493 core, 239 CLI) |
 | Validation rules | 18 (`STWD-001` through `STWD-018`) |
 | Artifact families | `artifact_families` section now supported in `policy.yaml`; ADRs and RFCs governed by families in this repo |
 | Maintainer types | 6 (`structure-document`, `index`, `directory-index`, `managed-section`, `frontmatter-auto`, `manifest`) |

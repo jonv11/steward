@@ -153,6 +153,7 @@
     │   ├── OrientCommandTests.cs
     │   ├── OutlineCommandTests.cs
     │   ├── ProfileReadinessTests.cs
+    │   ├── ProgramErrorHandlingTests.cs
     │   ├── RefsCommandTests.cs
     │   ├── SearchCommandTests.cs
     │   ├── StableSurfaceContractTests.cs
@@ -210,6 +211,7 @@
     │   ├── ValidationEngineTests.cs
     │   └── WellKnownRolesTests.cs
     └── Steward.TestFixtures/
+        ├── FaultInjectingFileSystem.cs
         ├── InMemoryFileSystem.cs
         ├── Repos
         ├── RepositoryFixture.cs

@@ -149,6 +149,7 @@ Result: FAIL
 ```
 
 Each line includes:
+
 - **Severity:** `[error]`, `[warn ]`, or `[info ]`
 - **Rule ID:** e.g., `STWD-003` — look it up with `steward explain STWD-003`
 - **File and line:** where the issue is

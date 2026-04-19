@@ -115,6 +115,24 @@ public class GitIgnoreFilterTests
     }
 
     [Fact]
+    public void Load_InaccessibleSubdirectory_DoesNotThrow_AndPreservesReadableRules()
+    {
+        var fs = new FaultInjectingFileSystem()
+            .AddDirectory("root")
+            .AddDirectory("root/readable")
+            .AddDirectory("root/locked")
+            .AddFile("root/.gitignore", "*.log\n")
+            .AddFile("root/readable/.gitignore", "*.tmp\n")
+            .DenyTraversal("root/locked");
+
+        var filter = GitIgnoreFilter.Load("root", fs);
+
+        filter.IsIgnored("trace.log", isDirectory: false).Should().BeTrue();
+        filter.IsIgnored("readable/cache.tmp", isDirectory: false).Should().BeTrue();
+        filter.IsIgnored("notes.md", isDirectory: false).Should().BeFalse();
+    }
+
+    [Fact]
     public void IsIgnored_AdditionalExcludes_Applied()
     {
         var fs = new InMemoryFileSystem()
