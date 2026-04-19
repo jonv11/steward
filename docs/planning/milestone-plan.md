@@ -3,7 +3,7 @@ type: planning
 document_id: PLAN-0002
 version: 0.16.0
 status: Active
-last_updated: 2026-04-18
+last_updated: 2026-04-19
 ---
 
 # Milestone Plan — Pre-1.0 Mainline
@@ -91,7 +91,7 @@ Primary outcome: hosted release evidence and machine contract hardening. This mi
 | # | Item | Source | Notes |
 |---|------|--------|--------|
 | 1 | Capture the first hosted green CI and tag-driven release runs | Readiness tracker, release process | Close the remaining operational evidence gap with a real hosted matrix pass, GitHub Release, and NuGet publication record |
-| 2 | Standardize the JSON envelope on every JSON-capable command and expected failure path | AI-agent contract review, synthesis `SYN-03` | `--output json --json-envelope standard` must become a guaranteed contract, not a mostly-complete convention |
+| 2 | Standardize the JSON envelope on every JSON-capable command and expected failure path | AI-agent contract review, synthesis `SYN-03` | `--output json` must become a guaranteed contract, not a mostly-complete convention |
 | 3 | Deepen `explain path`, `refs`, and `search` handoff surfaces | AI-agent contract review, synthesis `SYN-03` | Add richer provenance/exists fields and improve machine handoff fidelity ahead of typed-address work |
 | 4 | Publish machine-facing contract docs and broaden contract tests | AI-agent contract review | Add coverage for standard-envelope success/failure paths and mutation postconditions |
 | 5 | Scope and implement the first narrow RFC-009 slice | RFC-009, AI-agent contract review | Focus on reusable address handoff across `search`, `refs`, `check`, and `explain path` rather than a broad address model all at once |

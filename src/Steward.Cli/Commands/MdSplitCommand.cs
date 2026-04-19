@@ -49,7 +49,16 @@ public static class MdSplitCommand
             var fullPath = Path.GetFullPath(file);
             if (!fileSystem.FileExists(fullPath))
             {
-                formatter.WriteError($"File not found: {file}");
+                CommandSetup.WriteCommandError(
+                    parseResult,
+                    "md split plan",
+                    ExitCodes.UsageError,
+                    "file-not-found",
+                    $"File not found: {file}",
+                    details: new Dictionary<string, object>
+                    {
+                        ["file"] = file
+                    });
                 return ExitCodes.UsageError;
             }
 

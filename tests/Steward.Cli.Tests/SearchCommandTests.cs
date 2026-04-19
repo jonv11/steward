@@ -77,6 +77,21 @@ public class SearchCommandTests : IDisposable
     }
 
     [Fact]
+    public void Search_JsonOutput_ProvidesHandoffFields()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Intro\n\nSearchable content.\n");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("search", "Searchable", "--output", "json");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("\"sectionHeading\"");
+        output.Should().Contain("\"sectionRange\"");
+        output.Should().Contain("\"mdQuerySelector\"");
+        output.Should().Contain("\"sectionHeading\": \"Intro\"");
+        output.Should().Contain("\"mdQuerySelector\": \"#intro\"");
+    }
+
+    [Fact]
     public void Search_HeadingsMode_MatchesOnlyHeadings()
     {
         File.WriteAllText(Path.Combine(_tempDir, "doc.md"), "# Goals\nWe have goals here.\n");

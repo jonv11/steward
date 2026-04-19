@@ -2,6 +2,7 @@ using System.CommandLine;
 using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Discovery;
+using Steward.Core.Markdown;
 using Steward.Core.Validation.Rules;
 
 namespace Steward.Cli.Commands;
@@ -31,7 +32,7 @@ public static class RefsCommand
 
         command.SetAction(parseResult =>
         {
-            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "refs"))
                 return ExitCodes.UsageError;
 
             var targetPath = PathHelper.NormalizeSeparators(parseResult.GetValue(pathArg) ?? "");
@@ -45,7 +46,8 @@ public static class RefsCommand
                 showFrom = true;
             }
 
-            var graph = BuildReferenceGraph(ctx!.Files!, ctx.FileSystem, ctx.RootPath);
+            var linkInstances = BuildReferenceLinks(ctx!.Files!, ctx.FileSystem, ctx.RootPath);
+            var graph = BuildReferenceGraph(linkInstances);
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
@@ -53,7 +55,9 @@ public static class RefsCommand
                 {
                     Path = targetPath,
                     Outbound = showFrom ? GetOutbound(graph, targetPath) : [],
-                    Inbound = showTo ? GetInbound(graph, targetPath) : []
+                    Inbound = showTo ? GetInbound(graph, targetPath) : [],
+                    OutboundLinks = showFrom ? GetOutboundLinks(linkInstances, targetPath) : [],
+                    InboundLinks = showTo ? GetInboundLinks(linkInstances, targetPath) : []
                 };
                 JsonEnvelopeWriter.Write(ctx.Formatter, "refs", true, ExitCodes.Success, response);
             }
@@ -90,12 +94,24 @@ public static class RefsCommand
     }
 
     internal static Dictionary<string, List<string>> BuildReferenceGraph(
+        IReadOnlyList<ReferenceLink> linkInstances)
+    {
+        return linkInstances
+            .GroupBy(link => link.SourcePath, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(link => link.ResolvedPath)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList(),
+                StringComparer.OrdinalIgnoreCase);
+    }
+
+    internal static List<ReferenceLink> BuildReferenceLinks(
         IReadOnlyList<DiscoveredFile> files,
         Core.Abstractions.IFileSystem fileSystem,
         string repositoryRoot)
     {
-        // Key: source file, Value: list of resolved target paths
-        var graph = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        var links = new List<ReferenceLink>();
 
         foreach (var file in files)
         {
@@ -107,22 +123,37 @@ public static class RefsCommand
                 continue;
 
             var content = fileSystem.ReadAllText(fullPath);
-            var links = BrokenInternalLinkRule.ExtractInternalLinks(content);
             var relPath = PathHelper.NormalizeSeparators(file.RelativePath);
+            var document = MarkdownParser.Parse(relPath, content);
+            var extractedLinks = BrokenInternalLinkRule.ExtractInternalLinkReferences(content);
 
-            var targets = new List<string>();
-            foreach (var (target, _) in links)
+            foreach (var link in extractedLinks)
             {
-                var resolved = BrokenInternalLinkRule.ResolveLinkTarget(relPath, target);
-                if (resolved != null)
-                    targets.Add(resolved);
-            }
+                var resolved = BrokenInternalLinkRule.ResolveLinkTarget(relPath, link.Target);
+                if (resolved == null)
+                    continue;
 
-            if (targets.Count > 0)
-                graph[relPath] = targets;
+                string? selector = null;
+                if (MarkdownHeadings.TryFindSectionAtLine(document.Sections, link.Line, out var section, out var headingPath) &&
+                    section != null)
+                {
+                    selector = MarkdownHeadings.TryCreateSafeSelector(document, headingPath, section);
+                }
+
+                links.Add(new ReferenceLink
+                {
+                    SourcePath = relPath,
+                    SourceLine = link.Line,
+                    LinkText = link.LinkText,
+                    RawTarget = link.RawTarget,
+                    ResolvedPath = resolved,
+                    Fragment = link.Fragment,
+                    MdQuerySelector = selector
+                });
+            }
         }
 
-        return graph;
+        return links;
     }
 
     internal static List<string> GetOutbound(Dictionary<string, List<string>> graph, string path)
@@ -143,10 +174,45 @@ public static class RefsCommand
         return inbound.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
+    internal static List<ReferenceLink> GetOutboundLinks(IReadOnlyList<ReferenceLink> links, string sourcePath)
+    {
+        return
+        [
+            .. links
+                .Where(link => string.Equals(link.SourcePath, sourcePath, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(link => link.SourceLine)
+                .ThenBy(link => link.ResolvedPath, StringComparer.OrdinalIgnoreCase)
+        ];
+    }
+
+    internal static List<ReferenceLink> GetInboundLinks(IReadOnlyList<ReferenceLink> links, string targetPath)
+    {
+        return
+        [
+            .. links
+                .Where(link => string.Equals(link.ResolvedPath, targetPath, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(link => link.SourcePath, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(link => link.SourceLine)
+        ];
+    }
+
     internal sealed class RefsResponse
     {
         public required string Path { get; init; }
         public List<string> Outbound { get; init; } = [];
         public List<string> Inbound { get; init; } = [];
+        public List<ReferenceLink> OutboundLinks { get; init; } = [];
+        public List<ReferenceLink> InboundLinks { get; init; } = [];
+    }
+
+    internal sealed class ReferenceLink
+    {
+        public required string SourcePath { get; init; }
+        public required int SourceLine { get; init; }
+        public string LinkText { get; init; } = "";
+        public required string RawTarget { get; init; }
+        public required string ResolvedPath { get; init; }
+        public string? Fragment { get; init; }
+        public string? MdQuerySelector { get; init; }
     }
 }

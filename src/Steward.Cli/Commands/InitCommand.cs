@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Configuration;
 using Steward.Core.Formatting;
@@ -30,11 +31,21 @@ public static class InitCommand
             var stewardDir = Path.Combine(rootPath, ".steward");
             var configPath = Path.Combine(stewardDir, "config.yaml");
             var policyPath = Path.Combine(stewardDir, "policy.yaml");
+            var filesWritten = new List<string>();
 
             if (File.Exists(configPath) || File.Exists(policyPath))
             {
-                formatter.WriteError($"A .steward/ configuration already exists in: {stewardDir}");
-                formatter.WriteError("Edit the existing files or remove .steward/ to re-initialize.");
+                CommandSetup.WriteCommandError(
+                    parseResult,
+                    "init",
+                    ExitCodes.UsageError,
+                    "already-initialized",
+                    $"A .steward/ configuration already exists in: {stewardDir}",
+                    details: new Dictionary<string, object>
+                    {
+                        ["configDirectory"] = Path.GetRelativePath(rootPath, stewardDir)
+                    },
+                    suggestedNextStep: "Edit the existing files or remove .steward/ to re-initialize.");
                 return ExitCodes.UsageError;
             }
 
@@ -47,8 +58,12 @@ public static class InitCommand
             var configYaml = ConfigLoader.SerializeConfig(config)
                 + "  # - \"tests/**\"      # uncomment to exclude test fixture Markdown files from discovery\n";
             File.WriteAllText(configPath, configYaml);
+            filesWritten.Add(Path.GetRelativePath(rootPath, configPath));
             if (policy != null)
+            {
                 File.WriteAllText(policyPath, ConfigLoader.SerializePolicy(policy));
+                filesWritten.Add(Path.GetRelativePath(rootPath, policyPath));
+            }
 
             // Scaffold placeholder files for all declared file artifacts so that
             // 'steward check' does not show STWD-009 warnings immediately after init.
@@ -71,7 +86,20 @@ public static class InitCommand
                     var placeholder = GeneratePlaceholder(artifact.Path, artifact.Role);
                     File.WriteAllText(artifactFullPath, placeholder);
                     scaffolded.Add(artifact.Path);
+                    filesWritten.Add(artifact.Path);
                 }
+            }
+
+            if (output == OutputFormat.Json)
+            {
+                JsonEnvelopeWriter.Write(formatter, "init", true, ExitCodes.Success, new
+                {
+                    profile,
+                    configDirectory = Path.GetRelativePath(rootPath, stewardDir),
+                    filesWritten,
+                    scaffoldedArtifacts = scaffolded
+                });
+                return ExitCodes.Success;
             }
 
             formatter.WriteMessage($"Initialized .steward/ with profile '{profile}'.");

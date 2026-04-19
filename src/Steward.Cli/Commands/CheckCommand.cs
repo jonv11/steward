@@ -45,7 +45,7 @@ public static class CheckCommand
 
         command.SetAction((parseResult) =>
         {
-            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "check"))
                 return ExitCodes.UsageError;
 
             var scopeValue = parseResult.GetValue(scopeOption);

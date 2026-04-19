@@ -68,28 +68,34 @@ public sealed class BrokenInternalLinkRule : IValidationRule
 
     public static List<(string Target, int Line)> ExtractInternalLinks(string content)
     {
-        var results = new List<(string, int)>();
+        return
+        [
+            .. ExtractInternalLinkReferences(content)
+                .Select(reference => (reference.Target, reference.Line))
+        ];
+    }
+
+    public static List<MarkdownLinkReference> ExtractInternalLinkReferences(string content)
+    {
+        var results = new List<MarkdownLinkReference>();
         var document = Markdig.Markdown.Parse(content, Pipeline);
 
         foreach (var link in document.Descendants<LinkInline>())
         {
-            var url = link.Url;
-            if (string.IsNullOrEmpty(url)) continue;
+            var rawTarget = link.Url;
+            if (string.IsNullOrEmpty(rawTarget))
+                continue;
 
-            // Strip fragment
-            var fragmentIdx = url.IndexOf('#');
-            if (fragmentIdx >= 0)
-                url = url[..fragmentIdx];
+            var (target, fragment) = SplitTarget(rawTarget);
+            if (target.Length == 0 || !IsInternalLink(target))
+                continue;
 
-            // Strip query string
-            var queryIdx = url.IndexOf('?');
-            if (queryIdx >= 0)
-                url = url[..queryIdx];
-
-            if (url.Length > 0 && IsInternalLink(url))
-            {
-                results.Add((url, link.Line + 1)); // Markdig lines are 0-based
-            }
+            results.Add(new MarkdownLinkReference(
+                rawTarget,
+                target,
+                fragment,
+                ExtractLinkText(link),
+                link.Line + 1));
         }
 
         return results;
@@ -130,4 +136,59 @@ public sealed class BrokenInternalLinkRule : IValidationRule
 
         return normalized.Count > 0 ? string.Join('/', normalized) : null;
     }
+
+    private static (string Target, string? Fragment) SplitTarget(string rawTarget)
+    {
+        var queryIndex = rawTarget.IndexOf('?');
+        if (queryIndex >= 0)
+            rawTarget = rawTarget[..queryIndex];
+
+        string? fragment = null;
+        var fragmentIndex = rawTarget.IndexOf('#');
+        if (fragmentIndex >= 0)
+        {
+            fragment = rawTarget[(fragmentIndex + 1)..];
+            rawTarget = rawTarget[..fragmentIndex];
+        }
+
+        return (rawTarget, string.IsNullOrWhiteSpace(fragment) ? null : fragment);
+    }
+
+    private static string ExtractLinkText(LinkInline link)
+    {
+        var builder = new System.Text.StringBuilder();
+        AppendInlineText(link.FirstChild, builder);
+        return builder.ToString().Trim();
+    }
+
+    private static void AppendInlineText(Inline? inline, System.Text.StringBuilder builder)
+    {
+        while (inline != null)
+        {
+            switch (inline)
+            {
+                case LiteralInline literal:
+                    builder.Append(literal.Content.ToString());
+                    break;
+                case CodeInline code:
+                    builder.Append(code.Content);
+                    break;
+                case LineBreakInline:
+                    builder.Append(' ');
+                    break;
+                case ContainerInline container:
+                    AppendInlineText(container.FirstChild, builder);
+                    break;
+            }
+
+            inline = inline.NextSibling;
+        }
+    }
 }
+
+public sealed record MarkdownLinkReference(
+    string RawTarget,
+    string Target,
+    string? Fragment,
+    string LinkText,
+    int Line);

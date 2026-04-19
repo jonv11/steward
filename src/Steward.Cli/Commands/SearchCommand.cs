@@ -46,7 +46,7 @@ public static class SearchCommand
 
         command.SetAction((parseResult) =>
         {
-            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "search"))
                 return ExitCodes.UsageError;
 
             var query = parseResult.GetValue(queryArg)!;
@@ -95,7 +95,10 @@ public static class SearchCommand
                         column = m.Column,
                         snippet = m.Snippet,
                         kind = m.Kind.ToString().ToLowerInvariant(),
-                        headingContext = m.HeadingContext
+                        headingContext = m.HeadingContext,
+                        sectionHeading = m.SectionHeading,
+                        sectionRange = m.SectionRange,
+                        mdQuerySelector = m.MdQuerySelector
                     }).ToArray()
                 });
             }

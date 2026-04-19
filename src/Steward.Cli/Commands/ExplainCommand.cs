@@ -109,7 +109,7 @@ public static class ExplainCommand
     {
         try
         {
-            if (!CommandSetup.TryBuild(parseResult, out var ctx) || ctx?.Files == null)
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "explain") || ctx?.Files == null)
                 return null;
 
             // Count files that would be evaluated by this rule
@@ -199,7 +199,7 @@ public static class ExplainCommand
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
 
-            if (!CommandSetup.TryBuild(parseResult, out var ctx) || ctx == null)
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "explain path") || ctx == null)
             {
                 if (output == OutputFormat.Json)
                 {
@@ -221,12 +221,16 @@ public static class ExplainCommand
                 {
                     ["path"] = info.Path,
                     ["exists"] = fileExists,
+                    ["discovered"] = info.Discovered,
                     ["classification"] = info.Classification,
                     ["pathPolicyCategory"] = info.PathPolicyCategory,
                     ["matchedPattern"] = info.MatchedPattern,
                     ["matchedFamily"] = info.MatchedFamily,
                     ["familyDisplayName"] = info.FamilyDisplayName,
                     ["artifact"] = info.Artifact,
+                    ["isExplicitArtifact"] = info.IsExplicitArtifact,
+                    ["isFamilyMatch"] = info.IsFamilyMatch,
+                    ["governanceSources"] = info.GovernanceSources,
                     ["suppressedRules"] = info.SuppressedRules,
                     ["requiredFrontmatterFields"] = info.RequiredFrontmatterFields,
                     ["allowedValues"] = info.AllowedValues,
@@ -305,6 +309,7 @@ public static class ExplainCommand
         // 1. Orientation classification
         var discoveredFile = ctx.Files?.FirstOrDefault(f =>
             string.Equals(PathHelper.NormalizeSeparators(f.RelativePath), relativePath, StringComparison.OrdinalIgnoreCase));
+        var discovered = discoveredFile != null;
         var classification = discoveredFile != null
             ? OrientationEngine.Classify(discoveredFile, ctx.Policy)
             : "unknown";
@@ -315,6 +320,7 @@ public static class ExplainCommand
 
         // 3. Artifact match
         ArtifactSummary? artifactSummary = null;
+        string? explicitArtifactPath = null;
         if (ctx.Policy?.Artifacts != null)
         {
             var matched = ctx.Policy.Artifacts.FirstOrDefault(a =>
@@ -322,6 +328,7 @@ public static class ExplainCommand
                 string.Equals(PathHelper.NormalizeAndTrim(a.Path!), relativePath, StringComparison.OrdinalIgnoreCase));
             if (matched != null)
             {
+                explicitArtifactPath = matched.Path;
                 artifactSummary = new ArtifactSummary
                 {
                     Role = matched.Role,
@@ -355,6 +362,7 @@ public static class ExplainCommand
             requiredFields.AddRange(ctx.Policy.Governance.Frontmatter.RequiredFields);
 
         var allowedValues = new Dictionary<string, List<string>>();
+        var frontmatterRequirementPatterns = new List<string>();
 
         if (ctx.Policy?.Validation?.FrontmatterRequirements != null)
         {
@@ -363,6 +371,7 @@ public static class ExplainCommand
                 if (string.IsNullOrWhiteSpace(req.Pattern)) continue;
                 var glob = Glob.Parse(req.Pattern);
                 if (!glob.IsMatch(relativePath)) continue;
+                frontmatterRequirementPatterns.Add(req.Pattern);
 
                 if (req.RequiredFields != null)
                 {
@@ -380,22 +389,27 @@ public static class ExplainCommand
             }
         }
 
+        var maintenanceArtifactIds = new List<string>();
         if (ctx.Policy?.Maintenance?.Artifacts != null)
         {
             foreach (var artifact in ctx.Policy.Maintenance.Artifacts)
             {
-                if (!string.Equals(artifact.Type, "directory-index", StringComparison.OrdinalIgnoreCase) ||
-                    string.IsNullOrWhiteSpace(artifact.Source))
-                {
-                    continue;
-                }
-
-                var isSourceMatch = MaintenanceSourceMatcher.Matches(artifact.Source, relativePath);
                 var isSelfTarget = !string.IsNullOrWhiteSpace(artifact.Path) &&
                                    string.Equals(
                                         PathHelper.NormalizeSeparators(artifact.Path),
                                        relativePath,
                                        StringComparison.OrdinalIgnoreCase);
+                var isSourceMatch = !string.IsNullOrWhiteSpace(artifact.Source) &&
+                                    MaintenanceSourceMatcher.Matches(artifact.Source, relativePath);
+
+                if ((isSelfTarget || isSourceMatch) && !string.IsNullOrWhiteSpace(artifact.Id))
+                    maintenanceArtifactIds.Add(artifact.Id);
+
+                if (!string.Equals(artifact.Type, "directory-index", StringComparison.OrdinalIgnoreCase) ||
+                    string.IsNullOrWhiteSpace(artifact.Source))
+                {
+                    continue;
+                }
 
                 if (isSourceMatch && !isSelfTarget && !requiredFields.Contains("description", StringComparer.OrdinalIgnoreCase))
                     requiredFields.Add("description");
@@ -472,12 +486,27 @@ public static class ExplainCommand
         return new EffectivePolicyInfo
         {
             Path = relativePath,
+            Discovered = discovered,
             Classification = classification,
             PathPolicyCategory = pathEval.Category,
             MatchedPattern = pathEval.MatchedPattern,
             Artifact = artifactSummary,
+            IsExplicitArtifact = explicitArtifactPath != null,
             MatchedFamily = matchedFamily,
             FamilyDisplayName = familyDisplayName,
+            IsFamilyMatch = matchedFamily != null,
+            GovernanceSources = new GovernanceSourcesSummary
+            {
+                ExplicitArtifactPath = explicitArtifactPath,
+                ArtifactFamily = matchedFamily,
+                PathPolicyPattern = pathEval.MatchedPattern,
+                FrontmatterRequirementPatterns = frontmatterRequirementPatterns
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList(),
+                MaintenanceArtifactIds = maintenanceArtifactIds
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList()
+            },
             SuppressedRules = suppressedRules,
             RequiredFrontmatterFields = requiredFields,
             AllowedValues = allowedValues,
@@ -488,12 +517,16 @@ public static class ExplainCommand
     internal sealed class EffectivePolicyInfo
     {
         public string Path { get; set; } = "";
+        public bool Discovered { get; set; }
         public string Classification { get; set; } = "unknown";
         public string PathPolicyCategory { get; set; } = "unclassified";
         public string? MatchedPattern { get; set; }
         public ArtifactSummary? Artifact { get; set; }
+        public bool IsExplicitArtifact { get; set; }
         public string? MatchedFamily { get; set; }
         public string? FamilyDisplayName { get; set; }
+        public bool IsFamilyMatch { get; set; }
+        public GovernanceSourcesSummary GovernanceSources { get; set; } = new();
         public List<string> SuppressedRules { get; set; } = [];
         public List<string> RequiredFrontmatterFields { get; set; } = [];
         public Dictionary<string, List<string>> AllowedValues { get; set; } = [];
@@ -506,5 +539,14 @@ public static class ExplainCommand
         public string? Description { get; set; }
         public bool Required { get; set; }
         public string? IndexOf { get; set; }
+    }
+
+    internal sealed class GovernanceSourcesSummary
+    {
+        public string? ExplicitArtifactPath { get; set; }
+        public string? ArtifactFamily { get; set; }
+        public string? PathPolicyPattern { get; set; }
+        public List<string> FrontmatterRequirementPatterns { get; set; } = [];
+        public List<string> MaintenanceArtifactIds { get; set; } = [];
     }
 }

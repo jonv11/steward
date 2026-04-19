@@ -1,7 +1,7 @@
 ---
 type: planning
 status: Active
-last_updated: 2026-04-18
+last_updated: 2026-04-19
 source_review_cycle: 2026-04-18
 ---
 
@@ -127,7 +127,7 @@ The review artifacts were not accepted blindly. The following checks were valida
 
 - **Title:** Make JSON mode a reliable contract on success and expected failure
 - **Source review artifact(s):** AI-Agent Contract Review
-- **Problem summary:** `--output json --json-envelope standard` does not yet guarantee standard-envelope output, and common failure paths still return plain text instead of JSON.
+- **Problem summary:** `--output json` does not yet guarantee standard-envelope output, and common failure paths still return plain text instead of JSON.
 - **Why it matters:** Steward explicitly targets AI-agent use. Agents cannot reliably automate it until JSON mode means "parseable JSON on stdout" for both success and expected failure.
 - **Affected audience:** agent-facing, general product usefulness
 - **Category:** CLI contract improvement

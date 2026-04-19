@@ -120,7 +120,7 @@ public static class ConfigCommand
 
         command.SetAction((parseResult) =>
         {
-            if (!CommandSetup.TryBuild(parseResult, out var ctx, discoverFiles: false))
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "config show", discoverFiles: false))
                 return ExitCodes.UsageError;
 
             if (ctx!.ConfigDirectory == null)
@@ -223,7 +223,7 @@ public static class ConfigCommand
 
         command.SetAction(parseResult =>
         {
-            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "config doctor"))
                 return ExitCodes.UsageError;
 
             if (ctx!.ConfigDirectory == null)
@@ -552,7 +552,7 @@ public static class ConfigCommand
 
         command.SetAction(parseResult =>
         {
-            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "config suggest"))
                 return ExitCodes.UsageError;
 
             var suggestion = BootstrapAnalyzer.Analyze(ctx!.Files!, ctx.FileSystem, ctx.RootPath, ctx.Policy);

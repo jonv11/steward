@@ -87,6 +87,18 @@ public class JsonContractTests : IDisposable
         root.GetProperty("schemaVersion").GetString().Should().Be("steward-json/v1");
     }
 
+    [Fact]
+    public void RootParseFailure_WithJsonOutput_ReturnsStructuredError()
+    {
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("not-a-real-command", "--output", "json");
+
+        exitCode.Should().Be(ExitCodes.UsageError);
+        var root = ParseJson(output);
+        root.GetProperty("success").GetBoolean().Should().BeFalse();
+        root.GetProperty("data").GetProperty("error").GetProperty("kind").GetString().Should().Be("usage-error");
+        root.GetProperty("data").GetProperty("error").GetProperty("details").GetProperty("errors").GetArrayLength().Should().BeGreaterThan(0);
+    }
+
     // --- CC-03: Process success vs domain result ---
 
     [Fact]
@@ -232,6 +244,55 @@ public class JsonContractTests : IDisposable
         output.Should().Contain("\"message\"");
     }
 
+    [Fact]
+    public void SetupFailure_WithJsonOutput_ReturnsStructuredError()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "config.yaml"), "profile: definitely-not-valid\n");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("orient", "--output", "json");
+
+        exitCode.Should().Be(ExitCodes.UsageError);
+        var root = ParseJson(output);
+        root.GetProperty("success").GetBoolean().Should().BeFalse();
+        root.GetProperty("data").GetProperty("error").GetProperty("kind").GetString().Should().Be("configuration-error");
+    }
+
+    [Fact]
+    public void Init_Success_JsonOutput_HasStructuredFields()
+    {
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("init", "--profile", "minimal", "--output", "json");
+
+        exitCode.Should().Be(ExitCodes.Success);
+        var root = ParseJson(output);
+        var data = root.GetProperty("data");
+        data.GetProperty("profile").GetString().Should().Be("minimal");
+        data.GetProperty("configDirectory").GetString().Should().Be(".steward");
+        data.GetProperty("filesWritten").GetArrayLength().Should().BeGreaterThan(0);
+        data.GetProperty("scaffoldedArtifacts").ValueKind.Should().Be(JsonValueKind.Array);
+    }
+
+    [Fact]
+    public void Init_AlreadyInitialized_JsonOutput_ReturnsStructuredError()
+    {
+        SetupGovernedRepo();
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("init", "--output", "json");
+
+        exitCode.Should().Be(ExitCodes.UsageError);
+        var root = ParseJson(output);
+        root.GetProperty("data").GetProperty("error").GetProperty("kind").GetString().Should().Be("already-initialized");
+    }
+
+    [Fact]
+    public void MdSplitPlan_MissingFile_JsonOutput_ReturnsStructuredError()
+    {
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("md", "split", "plan", "missing.md", "--output", "json");
+
+        exitCode.Should().Be(ExitCodes.UsageError);
+        var root = ParseJson(output);
+        root.GetProperty("data").GetProperty("error").GetProperty("kind").GetString().Should().Be("file-not-found");
+    }
+
     // --- CC-10: Refactor move preview enrichment ---
 
     [Fact]
@@ -265,5 +326,56 @@ public class JsonContractTests : IDisposable
         exitCode.Should().Be(ExitCodes.UsageError);
         var root = ParseJson(output);
         root.GetProperty("data").GetProperty("error").GetProperty("kind").GetString().Should().Be("missing-mode");
+    }
+
+    [Fact]
+    public void Search_JsonOutput_IncludesHandoffFields()
+    {
+        SetupGovernedRepo();
+        File.WriteAllText(Path.Combine(_tempDir, "notes.md"), "# Intro\n\nSearchable content.\n");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("search", "Searchable", "--output", "json");
+
+        exitCode.Should().Be(ExitCodes.Success);
+        var match = ParseJson(output).GetProperty("data").GetProperty("matches")[0];
+        match.TryGetProperty("sectionHeading", out _).Should().BeTrue();
+        match.TryGetProperty("sectionRange", out _).Should().BeTrue();
+        match.TryGetProperty("mdQuerySelector", out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Refs_JsonOutput_IncludesConcreteLinkInstances()
+    {
+        SetupGovernedRepo();
+        File.WriteAllText(Path.Combine(_tempDir, "source.md"), "# Intro\n\nSee [Guide](README.md#contract-test).\n");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("refs", "source.md", "--output", "json");
+
+        exitCode.Should().Be(ExitCodes.Success);
+        var data = ParseJson(output).GetProperty("data");
+        data.TryGetProperty("outboundLinks", out var outboundLinks).Should().BeTrue();
+        outboundLinks.GetArrayLength().Should().Be(1);
+        outboundLinks[0].TryGetProperty("sourcePath", out _).Should().BeTrue();
+        outboundLinks[0].TryGetProperty("sourceLine", out _).Should().BeTrue();
+        outboundLinks[0].TryGetProperty("rawTarget", out _).Should().BeTrue();
+        outboundLinks[0].TryGetProperty("mdQuerySelector", out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ExplainPath_JsonOutput_IncludesProvenanceFields()
+    {
+        SetupGovernedRepo();
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("explain", "path", "README.md", "--output", "json");
+
+        exitCode.Should().Be(ExitCodes.Success);
+        var data = ParseJson(output).GetProperty("data");
+        data.TryGetProperty("discovered", out _).Should().BeTrue();
+        data.TryGetProperty("isExplicitArtifact", out _).Should().BeTrue();
+        data.TryGetProperty("isFamilyMatch", out _).Should().BeTrue();
+        data.TryGetProperty("governanceSources", out var governanceSources).Should().BeTrue();
+        governanceSources.TryGetProperty("explicitArtifactPath", out _).Should().BeTrue();
+        governanceSources.TryGetProperty("frontmatterRequirementPatterns", out _).Should().BeTrue();
+        governanceSources.TryGetProperty("maintenanceArtifactIds", out _).Should().BeTrue();
     }
 }

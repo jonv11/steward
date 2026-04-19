@@ -39,6 +39,23 @@ public static class Program
     internal static async Task<int> InvokeAsync(string[] args)
     {
         var parseResult = CreateRootCommand().Parse(args);
+
+        if (parseResult.Errors.Count > 0 && CommandSetup.ResolveRequestedOutputFormat(rawArgs: args) == OutputFormat.Json)
+        {
+            CommandSetup.WriteCommandError(
+                args,
+                "steward",
+                ExitCodes.UsageError,
+                "usage-error",
+                "Command-line usage error.",
+                details: new Dictionary<string, object>
+                {
+                    ["errors"] = parseResult.Errors.Select(error => error.Message).ToArray()
+                },
+                suggestedNextStep: "Run 'steward --help' to review valid commands and options.");
+            return ExitCodes.UsageError;
+        }
+
         using var helpScope = ShouldRewriteHelpOutput(args, parseResult)
             ? new HelpOutputRewriteScope("Steward.Cli", "steward")
             : null;

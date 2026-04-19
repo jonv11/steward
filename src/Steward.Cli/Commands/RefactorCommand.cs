@@ -32,7 +32,7 @@ public static class RefactorCommand
 
         moveCmd.SetAction(parseResult =>
         {
-            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "refactor move"))
                 return ExitCodes.UsageError;
 
             var oldPath = parseResult.GetValue(oldArg) ?? "";

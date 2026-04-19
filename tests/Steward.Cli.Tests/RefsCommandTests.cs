@@ -23,13 +23,39 @@ public class RefsCommandTests
             new("docs/other.md", 20, false)
         };
 
-        var graph = RefsCommand.BuildReferenceGraph(files, fs, "/root");
+        var links = RefsCommand.BuildReferenceLinks(files, fs, "/root");
+        var graph = RefsCommand.BuildReferenceGraph(links);
 
         graph.Should().ContainKey("README.md");
         graph["README.md"].Should().Contain("docs/guide.md");
         graph["README.md"].Should().Contain("docs/other.md");
         graph.Should().ContainKey("docs/guide.md");
         graph["docs/guide.md"].Should().Contain("README.md");
+    }
+
+    [Fact]
+    public void BuildReferenceLinks_ProvidesConcreteLinkMetadata()
+    {
+        var fs = new InMemoryFileSystem();
+        fs.AddFile("/root/README.md", "# Start\n\nSee [Guide](docs/guide.md#usage).\n");
+        fs.AddFile("/root/docs/guide.md", "# Usage\n");
+
+        var files = new List<DiscoveredFile>
+        {
+            new("README.md", 50, false),
+            new("docs/guide.md", 30, false)
+        };
+
+        var links = RefsCommand.BuildReferenceLinks(files, fs, "/root");
+
+        links.Should().ContainSingle();
+        links[0].SourcePath.Should().Be("README.md");
+        links[0].SourceLine.Should().Be(3);
+        links[0].LinkText.Should().Be("Guide");
+        links[0].RawTarget.Should().Be("docs/guide.md#usage");
+        links[0].ResolvedPath.Should().Be("docs/guide.md");
+        links[0].Fragment.Should().Be("usage");
+        links[0].MdQuerySelector.Should().Be("#start");
     }
 
     [Fact]

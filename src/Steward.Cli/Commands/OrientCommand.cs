@@ -45,7 +45,7 @@ public static class OrientCommand
 
         command.SetAction((parseResult) =>
         {
-            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "orient"))
                 return ExitCodes.UsageError;
 
             var depth = parseResult.GetValue(depthOption);

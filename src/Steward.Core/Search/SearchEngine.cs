@@ -61,17 +61,19 @@ public sealed class SearchEngine
                 var fullPath = Path.Combine(_repositoryRoot, file.RelativePath);
                 if (!_fileSystem.FileExists(fullPath)) continue;
 
-                var lines = _fileSystem.ReadAllLines(fullPath);
+                var content = _fileSystem.ReadAllText(fullPath);
+                var lines = content.Split('\n');
                 var isMd = file.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase);
+                var document = isMd ? MarkdownParser.Parse(file.RelativePath, content) : null;
 
                 if (mode is SearchMode.All or SearchMode.Content)
                 {
-                    SearchContent(query, file.RelativePath, lines, isMd, matches, ref totalMatches, maxResults, regex);
+                    SearchContent(query, file.RelativePath, lines, document, matches, ref totalMatches, maxResults, regex);
                 }
 
                 if (isMd && mode is SearchMode.All or SearchMode.Headings)
                 {
-                    SearchHeadings(query, file.RelativePath, lines, matches, ref totalMatches, maxResults, regex);
+                    SearchHeadings(query, file.RelativePath, lines, document!, matches, ref totalMatches, maxResults, regex);
                 }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -91,20 +93,12 @@ public sealed class SearchEngine
     }
 
     private static void SearchContent(
-        string query, string path, string[] lines, bool isMd,
+        string query, string path, string[] lines, StructuredDocument? document,
         List<SearchMatch> matches, ref int total, int max, Regex? regex)
     {
-        // Precompute heading context for Markdown files
-        string? currentHeading = null;
-
         for (var i = 0; i < lines.Length; i++)
         {
             var line = lines[i];
-
-            if (isMd && line.StartsWith('#'))
-            {
-                currentHeading = line.TrimStart('#').Trim();
-            }
 
             int col;
             if (regex != null)
@@ -122,14 +116,22 @@ public sealed class SearchEngine
                 total++;
                 if (matches.Count < max)
                 {
+                    var lineNumber = i + 1;
+                    var sectionContext = document != null
+                        ? ResolveSectionContext(document, lineNumber)
+                        : null;
+
                     matches.Add(new SearchMatch
                     {
                         Path = path,
-                        Line = i + 1, // 1-based
+                        Line = lineNumber,
                         Column = col + 1,
                         Snippet = line.Trim(),
                         Kind = SearchMatchKind.Content,
-                        HeadingContext = isMd ? currentHeading : null
+                        HeadingContext = sectionContext?.SectionHeading,
+                        SectionHeading = sectionContext?.SectionHeading,
+                        SectionRange = sectionContext?.SectionRange,
+                        MdQuerySelector = sectionContext?.MdQuerySelector
                     });
                 }
             }
@@ -137,7 +139,7 @@ public sealed class SearchEngine
     }
 
     private static void SearchHeadings(
-        string query, string path, string[] lines,
+        string query, string path, string[] lines, StructuredDocument document,
         List<SearchMatch> matches, ref int total, int max, Regex? regex)
     {
         for (var i = 0; i < lines.Length; i++)
@@ -154,18 +156,40 @@ public sealed class SearchEngine
                 total++;
                 if (matches.Count < max)
                 {
+                    var lineNumber = i + 1;
+                    var sectionContext = ResolveSectionContext(document, lineNumber);
+
                     matches.Add(new SearchMatch
                     {
                         Path = path,
-                        Line = i + 1,
+                        Line = lineNumber,
                         Column = 1,
                         Snippet = line.Trim(),
                         Kind = SearchMatchKind.Heading,
-                        HeadingContext = headingText
+                        HeadingContext = headingText,
+                        SectionHeading = sectionContext?.SectionHeading,
+                        SectionRange = sectionContext?.SectionRange,
+                        MdQuerySelector = sectionContext?.MdQuerySelector
                     });
                 }
             }
         }
+    }
+
+    private static SearchSectionContext? ResolveSectionContext(StructuredDocument document, int lineNumber)
+    {
+        if (!MarkdownHeadings.TryFindSectionAtLine(document.Sections, lineNumber, out var section, out var headingPath) ||
+            section == null)
+        {
+            return null;
+        }
+
+        return new SearchSectionContext
+        {
+            SectionHeading = section.Heading,
+            SectionRange = section.Range,
+            MdQuerySelector = MarkdownHeadings.TryCreateSafeSelector(document, headingPath, section)
+        };
     }
 
     private static IReadOnlyList<DiscoveredFile> FilterByScope(
@@ -185,4 +209,11 @@ public sealed class SearchEngine
 
         return files.Where(f => roleGlobs.Any(g => g.IsMatch(f.RelativePath))).ToList();
     }
+}
+
+internal sealed class SearchSectionContext
+{
+    public required string SectionHeading { get; init; }
+    public required LineRange SectionRange { get; init; }
+    public string? MdQuerySelector { get; init; }
 }

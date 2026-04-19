@@ -38,7 +38,7 @@ public static class MaintainCommand
 
         command.SetAction(parseResult =>
         {
-            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "maintain"))
                 return ExitCodes.UsageError;
 
             var scope = parseResult.GetValue(scopeOption);

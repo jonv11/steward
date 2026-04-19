@@ -169,6 +169,31 @@ public class ExplainCommandTests
                     RequiredFields = ["title"]
                 }
             },
+            Maintenance = new Steward.Core.Configuration.MaintenanceConfig
+            {
+                Artifacts =
+                [
+                    new Steward.Core.Configuration.MaintenanceArtifactDef
+                    {
+                        Id = "docs-index",
+                        Path = "docs/index.md",
+                        Type = "directory-index",
+                        Source = "docs/*.md"
+                    }
+                ]
+            },
+            ArtifactFamilies =
+            [
+                new Steward.Core.Configuration.ArtifactFamilyDefinition
+                {
+                    Family = "planning",
+                    DisplayName = "Planning",
+                    Match = new Steward.Core.Configuration.ArtifactFamilyMatch
+                    {
+                        PathPattern = "docs/*.md"
+                    }
+                }
+            ],
             Validation = new Steward.Core.Configuration.ValidationConfig
             {
                 DisabledRules = ["STWD-004"],
@@ -211,26 +236,59 @@ public class ExplainCommandTests
         var info = ExplainCommand.ResolveEffectivePolicy("docs/index.md", ctx);
 
         info.Path.Should().Be("docs/index.md");
+        info.Discovered.Should().BeTrue();
         info.Classification.Should().NotBeNullOrEmpty();
         info.Artifact.Should().NotBeNull();
+        info.IsExplicitArtifact.Should().BeTrue();
         info.Artifact!.Role.Should().Be("index");
         info.Artifact.IndexOf.Should().Be("docs/decisions");
+        info.IsFamilyMatch.Should().BeTrue();
+        info.MatchedFamily.Should().Be("planning");
         info.SuppressedRules.Should().Contain("STWD-004");
         info.SuppressedRules.Should().Contain("STWD-002");
         info.RequiredFrontmatterFields.Should().Contain("title");
         info.RequiredFrontmatterFields.Should().Contain("status");
         info.AllowedValues.Should().ContainKey("status");
+        info.GovernanceSources.ExplicitArtifactPath.Should().Be("docs/index.md");
+        info.GovernanceSources.ArtifactFamily.Should().Be("planning");
+        info.GovernanceSources.PathPolicyPattern.Should().BeNull();
+        info.GovernanceSources.FrontmatterRequirementPatterns.Should().Contain("docs/**");
+        info.GovernanceSources.MaintenanceArtifactIds.Should().Contain("docs-index");
         // Suppressed rules excluded
         info.ApplicableRules.Should().NotContain("STWD-004");
         info.ApplicableRules.Should().NotContain("STWD-002");
         // Rules applicable to this markdown index artifact
         info.ApplicableRules.Should().Contain("STWD-001");  // required-artifact (is an artifact)
         info.ApplicableRules.Should().Contain("STWD-003");  // required-frontmatter (has fm requirements)
+        info.ApplicableRules.Should().Contain("STWD-007");  // stale-artifact (maintained artifact target)
         info.ApplicableRules.Should().Contain("STWD-008");  // broken-internal-link (is .md)
         info.ApplicableRules.Should().Contain("STWD-011");  // index-completeness (has IndexOf)
         // Rules not applicable to this file
-        info.ApplicableRules.Should().NotContain("STWD-007"); // stale-artifact (not maintained)
         info.ApplicableRules.Should().NotContain("STWD-012"); // freshness (no freshness config)
+    }
+
+    [Fact]
+    public void ExplainPath_ResolveEffectivePolicy_MissingFile_IsNotDiscovered()
+    {
+        var ctx = new CommandContext
+        {
+            RootPath = "/repo",
+            FileSystem = new Steward.TestFixtures.InMemoryFileSystem(),
+            Formatter = new Steward.Cli.Formatting.TextOutputFormatter(TextWriter.Null, false),
+            OutputFormat = Steward.Core.OutputFormat.Text,
+            Verbosity = Steward.Core.Verbosity.Normal,
+            NoColor = true,
+            Policy = new Steward.Core.Configuration.RepositoryPolicy(),
+            PathPolicy = null,
+            Files = []
+        };
+
+        var info = ExplainCommand.ResolveEffectivePolicy("docs/missing.md", ctx);
+
+        info.Discovered.Should().BeFalse();
+        info.IsExplicitArtifact.Should().BeFalse();
+        info.IsFamilyMatch.Should().BeFalse();
+        info.GovernanceSources.ExplicitArtifactPath.Should().BeNull();
     }
 
     [Fact]

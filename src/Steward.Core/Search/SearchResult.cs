@@ -1,3 +1,5 @@
+using Steward.Core.Markdown;
+
 namespace Steward.Core.Search;
 
 public sealed record SearchResult
@@ -18,6 +20,9 @@ public sealed record SearchMatch
     public required string Snippet { get; init; }
     public required SearchMatchKind Kind { get; init; }
     public string? HeadingContext { get; init; }
+    public string? SectionHeading { get; init; }
+    public LineRange? SectionRange { get; init; }
+    public string? MdQuerySelector { get; init; }
 }
 
 public enum SearchMatchKind

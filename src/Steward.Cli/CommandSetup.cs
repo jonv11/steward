@@ -22,6 +22,113 @@ public static class CommandSetup
         };
     }
 
+    public static OutputFormat ResolveRequestedOutputFormat(ParseResult? parseResult = null, IReadOnlyList<string>? rawArgs = null)
+    {
+        if (parseResult != null)
+        {
+            try
+            {
+                var optResult = parseResult.GetResult(GlobalOptionsSetup.OutputOption);
+                if (optResult is { Implicit: false })
+                    return parseResult.GetValue(GlobalOptionsSetup.OutputOption);
+            }
+            catch
+            {
+                // Fall back to raw-argument inspection below.
+            }
+        }
+
+        if (rawArgs != null)
+        {
+            for (var i = 0; i < rawArgs.Count; i++)
+            {
+                var arg = rawArgs[i];
+
+                if (arg.Equals("--output", StringComparison.OrdinalIgnoreCase) ||
+                    arg.Equals("-o", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i + 1 < rawArgs.Count &&
+                        Enum.TryParse<OutputFormat>(rawArgs[i + 1], ignoreCase: true, out var explicitFormat))
+                    {
+                        return explicitFormat;
+                    }
+                }
+                else if (arg.StartsWith("--output=", StringComparison.OrdinalIgnoreCase))
+                {
+                    var value = arg["--output=".Length..];
+                    if (Enum.TryParse<OutputFormat>(value, ignoreCase: true, out var inlineFormat))
+                        return inlineFormat;
+                }
+            }
+        }
+
+        return OutputFormat.Text;
+    }
+
+    public static void WriteCommandError(
+        ParseResult parseResult,
+        string command,
+        int exitCode,
+        string kind,
+        string message,
+        Dictionary<string, object>? details = null,
+        bool retryable = false,
+        string? suggestedNextStep = null)
+    {
+        var output = ResolveRequestedOutputFormat(parseResult);
+        var formatter = CreateFormatter(output, parseResult.GetValue(GlobalOptionsSetup.NoColorOption));
+
+        if (output == OutputFormat.Json)
+        {
+            JsonEnvelopeWriter.WriteError(
+                formatter,
+                command,
+                exitCode,
+                kind,
+                message,
+                details,
+                retryable,
+                suggestedNextStep);
+            return;
+        }
+
+        formatter.WriteError(message);
+        if (!string.IsNullOrWhiteSpace(suggestedNextStep))
+            formatter.WriteError(suggestedNextStep);
+    }
+
+    public static void WriteCommandError(
+        IReadOnlyList<string> rawArgs,
+        string command,
+        int exitCode,
+        string kind,
+        string message,
+        Dictionary<string, object>? details = null,
+        bool retryable = false,
+        string? suggestedNextStep = null)
+    {
+        var output = ResolveRequestedOutputFormat(rawArgs: rawArgs);
+        var formatter = CreateFormatter(output, rawArgs.Contains("--no-color", StringComparer.OrdinalIgnoreCase));
+
+        if (output == OutputFormat.Json)
+        {
+            JsonEnvelopeWriter.WriteError(
+                formatter,
+                command,
+                exitCode,
+                kind,
+                message,
+                details,
+                retryable,
+                suggestedNextStep);
+            return;
+        }
+
+        formatter.WriteError(message);
+        if (!string.IsNullOrWhiteSpace(suggestedNextStep))
+            formatter.WriteError(suggestedNextStep);
+    }
+
     /// <summary>
     /// Builds a CommandContext with config, policy, and discovered files.
     /// Config file settings (output format, no-color, discovery excludes) are applied as defaults;
@@ -89,7 +196,7 @@ public static class CommandSetup
         };
     }
 
-    public static bool TryBuild(ParseResult parseResult, out CommandContext? context, bool discoverFiles = true)
+    public static bool TryBuild(ParseResult parseResult, out CommandContext? context, string commandName, bool discoverFiles = true)
     {
         try
         {
@@ -99,10 +206,17 @@ public static class CommandSetup
         catch (StewardConfigException ex)
         {
             context = null;
-            var formatter = CreateFormatter(parseResult.GetValue(GlobalOptionsSetup.OutputOption),
-                parseResult.GetValue(GlobalOptionsSetup.NoColorOption));
-            formatter.WriteError($"Configuration error: {ex.Message}");
-            formatter.WriteError("Run 'steward config validate' for details.");
+            WriteCommandError(
+                parseResult,
+                commandName,
+                ExitCodes.UsageError,
+                "configuration-error",
+                $"Configuration error: {ex.Message}",
+                details: new Dictionary<string, object>
+                {
+                    ["errors"] = new[] { ex.Message }
+                },
+                suggestedNextStep: "Run 'steward config validate' for details.");
             return false;
         }
     }

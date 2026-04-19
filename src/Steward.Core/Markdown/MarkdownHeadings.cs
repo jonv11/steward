@@ -14,6 +14,44 @@ public static class MarkdownHeadings
         return result;
     }
 
+    public static bool TryFindSectionAtLine(
+        IReadOnlyList<Section> sections,
+        int lineNumber,
+        out Section? section,
+        out IReadOnlyList<string> headingPath)
+    {
+        var path = new List<string>();
+        if (TryFindSectionAtLine(sections, lineNumber, path, out section))
+        {
+            headingPath = path;
+            return true;
+        }
+
+        headingPath = [];
+        return false;
+    }
+
+    public static string? TryCreateSafeSelector(StructuredDocument doc, IReadOnlyList<string> headingPath, Section section)
+    {
+        var anchorSlug = ToAnchorSlug(section.Heading);
+        if (!string.IsNullOrWhiteSpace(anchorSlug))
+        {
+            var anchorSelector = $"#{anchorSlug}";
+            var anchorResult = MdPathSelector.Evaluate(doc, anchorSelector);
+            if (!anchorResult.IsError && anchorResult.Matches.Count == 1)
+                return anchorSelector;
+        }
+
+        if (headingPath.Count == 0 || headingPath.Any(static segment => segment.Contains('/') || segment.Contains(']')))
+            return null;
+
+        var headingSelector = $"heading[{string.Join('/', headingPath)}]";
+        var headingResult = MdPathSelector.Evaluate(doc, headingSelector);
+        return !headingResult.IsError && headingResult.Matches.Count == 1
+            ? headingSelector
+            : null;
+    }
+
     public static string ToAnchorSlug(string heading)
     {
         if (string.IsNullOrWhiteSpace(heading))
@@ -50,5 +88,34 @@ public static class MarkdownHeadings
             result.Add(section);
             Collect(section.Children, result);
         }
+    }
+
+    private static bool TryFindSectionAtLine(
+        IReadOnlyList<Section> sections,
+        int lineNumber,
+        List<string> headingPath,
+        out Section? section)
+    {
+        foreach (var candidate in sections)
+        {
+            headingPath.Add(candidate.Heading);
+
+            if (lineNumber >= candidate.Range.Start && lineNumber <= candidate.Range.End)
+            {
+                if (TryFindSectionAtLine(candidate.Children, lineNumber, headingPath, out section))
+                    return true;
+
+                section = candidate;
+                return true;
+            }
+
+            if (TryFindSectionAtLine(candidate.Children, lineNumber, headingPath, out section))
+                return true;
+
+            headingPath.RemoveAt(headingPath.Count - 1);
+        }
+
+        section = null;
+        return false;
     }
 }

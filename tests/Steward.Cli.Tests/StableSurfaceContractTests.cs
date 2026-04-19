@@ -197,6 +197,34 @@ public class StableSurfaceContractTests : IDisposable
         output.Should().Contain("\"entries\"");
     }
 
+    [Fact]
+    public void SearchJson_ContractShape_HasHandoffFields()
+    {
+        SetupGovernedRepo();
+        File.WriteAllText(Path.Combine(_tempDir, "notes.md"), "# Intro\n\nSearchable content.\n");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("search", "Searchable", "--output", "json");
+
+        exitCode.Should().Be(ExitCodes.Success);
+        output.Should().Contain("\"sectionHeading\"");
+        output.Should().Contain("\"sectionRange\"");
+        output.Should().Contain("\"mdQuerySelector\"");
+    }
+
+    [Fact]
+    public void RefsJson_ContractShape_HasConcreteLinkArrays()
+    {
+        SetupGovernedRepo();
+        File.WriteAllText(Path.Combine(_tempDir, "notes.md"), "# Intro\n\nSee [Readme](README.md#contract-test-repo).\n");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("refs", "notes.md", "--output", "json");
+
+        exitCode.Should().Be(ExitCodes.Success);
+        output.Should().Contain("\"outboundLinks\"");
+        output.Should().Contain("\"sourcePath\"");
+        output.Should().Contain("\"rawTarget\"");
+    }
+
     // --- version contract ---
 
     [Fact]

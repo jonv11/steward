@@ -279,7 +279,7 @@ public static class MdEditCommand
             }
 
             // Load policy context for frontmatter requirements
-            if (!CommandSetup.TryBuild(parseResult, out var ctx))
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, "md edit fm-validate"))
                 return ExitCodes.UsageError;
 
             var policy = ctx!.Policy;
