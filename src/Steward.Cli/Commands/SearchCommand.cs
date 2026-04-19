@@ -70,7 +70,7 @@ public static class SearchCommand
             {
                 if (ctx.OutputFormat == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(ctx.Formatter, ctx.JsonEnvelope, "search", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(ctx.Formatter, "search", ExitCodes.UsageError,
                         "invalid-query", result.Error,
                         details: new Dictionary<string, object> { ["query"] = query });
                     return ExitCodes.UsageError;
@@ -82,7 +82,7 @@ public static class SearchCommand
             // Output
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "search", true, ExitCodes.Success, new
+                JsonEnvelopeWriter.Write(ctx.Formatter, "search", true, ExitCodes.Success, new
                 {
                     query = result.Query,
                     mode = result.Mode.ToString().ToLowerInvariant(),

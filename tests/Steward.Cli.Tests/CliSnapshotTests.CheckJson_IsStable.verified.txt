@@ -1,49 +1,56 @@
 {
-  "summary": {
-    "scope": "full",
-    "filesChecked": 2,
-    "errors": 1,
-    "warnings": 0,
-    "infos": 0,
-    "pass": false
-  },
-  "completion": {
-    "requiredArtifactsMissing": 1,
-    "staleArtifacts": 0,
-    "brokenLinks": 0,
-    "brokenReferences": 0,
-    "rules": [
+  "schemaVersion": "steward-json/v1",
+  "command": "check",
+  "toolVersion": "0.16.0",
+  "success": true,
+  "exitCode": 1,
+  "data": {
+    "summary": {
+      "scope": "full",
+      "filesChecked": 2,
+      "errors": 1,
+      "warnings": 0,
+      "infos": 0,
+      "pass": false
+    },
+    "completion": {
+      "requiredArtifactsMissing": 1,
+      "staleArtifacts": 0,
+      "brokenLinks": 0,
+      "brokenReferences": 0,
+      "rules": [
+        {
+          "ruleId": "STWD-001",
+          "description": "required artifact(s) missing",
+          "count": 1
+        },
+        {
+          "ruleId": "STWD-007",
+          "description": "maintained artifact(s) stale -\u003E run \u0027steward maintain --apply\u0027",
+          "count": 0
+        },
+        {
+          "ruleId": "STWD-008",
+          "description": "broken internal link(s)",
+          "count": 0
+        },
+        {
+          "ruleId": "STWD-009",
+          "description": "broken artifact reference(s) in policy",
+          "count": 0
+        }
+      ]
+    },
+    "diagnostics": [
       {
         "ruleId": "STWD-001",
-        "description": "required artifact(s) missing",
-        "count": 1
-      },
-      {
-        "ruleId": "STWD-007",
-        "description": "maintained artifact(s) stale -\u003E run \u0027steward maintain --apply\u0027",
-        "count": 0
-      },
-      {
-        "ruleId": "STWD-008",
-        "description": "broken internal link(s)",
-        "count": 0
-      },
-      {
-        "ruleId": "STWD-009",
-        "description": "broken artifact reference(s) in policy",
-        "count": 0
+        "severity": "error",
+        "category": "path-policy",
+        "path": "README.md",
+        "message": "Required artifact \u0027README.md\u0027 (role: readme) is missing.",
+        "remediation": "Create the file \u0027README.md\u0027 as specified in the repository policy.",
+        "source": "policy.yaml"
       }
     ]
-  },
-  "diagnostics": [
-    {
-      "ruleId": "STWD-001",
-      "severity": "error",
-      "category": "path-policy",
-      "path": "README.md",
-      "message": "Required artifact \u0027README.md\u0027 (role: readme) is missing.",
-      "remediation": "Create the file \u0027README.md\u0027 as specified in the repository policy.",
-      "source": "policy.yaml"
-    }
-  ]
+  }
 }

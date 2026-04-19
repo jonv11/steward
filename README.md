@@ -344,7 +344,6 @@ A clean check returns exit code `0` and reports no errors. In CI, the same `stew
 | `--verbosity quiet\|normal\|verbose\|debug` | Verbosity level (default: normal) |
 | `--no-color` | Disable colored output (overrides config.yaml) |
 | `--config <path>` | Override config directory path |
-| `--json-envelope legacy\|standard` | JSON envelope shape when `--output json` is active. `legacy` (default) uses the original payload shape; `standard` wraps output in `{ schemaVersion, command, toolVersion, success, exitCode, data }` for machine consumers. |
 
 ### Markdown Examples
 

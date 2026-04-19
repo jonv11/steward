@@ -53,25 +53,6 @@ public class CheckFixTests : IDisposable
     }
 
     [Fact]
-    public void Check_DeprecatedDryRun_StillWorks()
-    {
-        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
-            maintenance:
-              artifacts:
-                - id: structure
-                  path: STRUCTURE.md
-                  type: structure-document
-            """);
-        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
-
-        // Deprecated --dry-run still functions as preview
-        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--dry-run");
-
-        output.Should().Contain("[fix]");
-        File.Exists(Path.Combine(_tempDir, "STRUCTURE.md")).Should().BeFalse();
-    }
-
-    [Fact]
     public void Check_Fix_Apply_AppliesStaleArtifactFix()
     {
         File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """

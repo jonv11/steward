@@ -249,7 +249,6 @@ public static class MdEditCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var formatter = CommandSetup.CreateFormatter(output, noColor);
 
             var file = parseResult.GetValue(fileArg)!;
@@ -258,7 +257,7 @@ public static class MdEditCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit fm-validate", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "md edit fm-validate", ExitCodes.UsageError,
                         "file-not-found", $"File not found: {file}",
                         details: new Dictionary<string, object> { ["path"] = file });
                     return ExitCodes.UsageError;
@@ -271,7 +270,7 @@ public static class MdEditCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit fm-validate", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "md edit fm-validate", ExitCodes.UsageError,
                         "unsupported-file-type", "fm-validate only supports Markdown (.md) files.");
                     return ExitCodes.UsageError;
                 }
@@ -286,9 +285,7 @@ public static class MdEditCommand
             var policy = ctx!.Policy;
 
             // Compute effective requirements
-            var globalRequired = (policy?.Validation?.RequiredFrontmatterFields ?? [])
-                .Union(policy?.Governance?.Frontmatter?.RequiredFields ?? [], StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            var globalRequired = (policy?.Governance?.Frontmatter?.RequiredFields ?? []).ToList();
 
             var scopedRequirements = (policy?.Validation?.FrontmatterRequirements ?? [])
                 .Where(r => !string.IsNullOrWhiteSpace(r.Pattern))
@@ -318,7 +315,7 @@ public static class MdEditCommand
             if (effectiveRequired.Count == 0 && effectiveAllowed.Count == 0)
             {
                 if (output == OutputFormat.Json)
-                    JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md edit fm-validate", true, ExitCodes.Success,
+                    JsonEnvelopeWriter.Write(formatter, "md edit fm-validate", true, ExitCodes.Success,
                         new { valid = true, issues = Array.Empty<object>(), message = "No frontmatter requirements apply to this file." });
                 else
                     formatter.WriteMessage("No frontmatter requirements apply to this file.");
@@ -356,7 +353,7 @@ public static class MdEditCommand
             {
                 var fmValid = issues.Count == 0;
                 var fmExitCode = fmValid ? ExitCodes.Success : ExitCodes.ValidationFailure;
-                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md edit fm-validate", fmValid, fmExitCode, new
+                JsonEnvelopeWriter.Write(formatter, "md edit fm-validate", fmValid, fmExitCode, new
                 {
                     valid = fmValid,
                     issues,
@@ -412,7 +409,6 @@ public static class MdEditCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var file = parseResult.GetValue(fileArg)!;
             var selector = parseResult.GetValue(selectorOpt)!;
             var to = parseResult.GetValue(toOpt)!;
@@ -426,7 +422,7 @@ public static class MdEditCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit extract-section", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "md edit extract-section", ExitCodes.UsageError,
                         "file-not-found", $"File not found: {file}",
                         details: new Dictionary<string, object> { ["path"] = file });
                     return ExitCodes.UsageError;
@@ -440,7 +436,7 @@ public static class MdEditCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit extract-section", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "md edit extract-section", ExitCodes.UsageError,
                         "destination-exists", $"Target file already exists and is non-empty: {to}",
                         details: new Dictionary<string, object> { ["path"] = to });
                     return ExitCodes.UsageError;
@@ -457,7 +453,7 @@ public static class MdEditCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit extract-section", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "md edit extract-section", ExitCodes.UsageError,
                         "extraction-failed", result.ErrorMessage!);
                     return ExitCodes.UsageError;
                 }
@@ -467,7 +463,7 @@ public static class MdEditCommand
 
             if (output == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md edit extract-section", true, ExitCodes.Success, new
+                JsonEnvelopeWriter.Write(formatter, "md edit extract-section", true, ExitCodes.Success, new
                 {
                     sourceFile = file,
                     targetFile = to,
@@ -514,7 +510,6 @@ public static class MdEditCommand
     {
         var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
         var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-        var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
         var formatter = CommandSetup.CreateFormatter(output, noColor);
 
         var fullPath = Path.GetFullPath(file);
@@ -522,7 +517,7 @@ public static class MdEditCommand
         {
             if (output == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit", ExitCodes.UsageError,
+                JsonEnvelopeWriter.WriteError(formatter, "md edit", ExitCodes.UsageError,
                     "file-not-found", $"File not found: {file}",
                     details: new Dictionary<string, object> { ["path"] = file });
                 return ExitCodes.UsageError;
@@ -539,7 +534,7 @@ public static class MdEditCommand
         {
             if (output == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md edit", ExitCodes.UsageError,
+                JsonEnvelopeWriter.WriteError(formatter, "md edit", ExitCodes.UsageError,
                     "edit-failed", result.Message);
                 return ExitCodes.UsageError;
             }
@@ -549,7 +544,7 @@ public static class MdEditCommand
 
         if (output == OutputFormat.Json)
         {
-            JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md edit", true, ExitCodes.Success, new
+            JsonEnvelopeWriter.Write(formatter, "md edit", true, ExitCodes.Success, new
             {
                 hasChanges = result.HasChanges,
                 message = result.Message,

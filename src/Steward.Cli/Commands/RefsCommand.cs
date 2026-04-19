@@ -55,7 +55,7 @@ public static class RefsCommand
                     Outbound = showFrom ? GetOutbound(graph, targetPath) : [],
                     Inbound = showTo ? GetInbound(graph, targetPath) : []
                 };
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "refs", true, ExitCodes.Success, response);
+                JsonEnvelopeWriter.Write(ctx.Formatter, "refs", true, ExitCodes.Success, response);
             }
             else
             {

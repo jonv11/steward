@@ -6,6 +6,10 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ## [Unreleased]
 
+### Removed
+
+- `--json-envelope` global option removed; the standard envelope (`{ schemaVersion, command, toolVersion, success, exitCode, data }`) is now always applied when `--output json` is active.
+
 ## [0.16.0] - 2026-04-18
 
 ### Added In 0.16.0

@@ -35,10 +35,11 @@ public class VersionCommandTests
         output.Should().NotBeNullOrWhiteSpace();
 
         var doc = JsonDocument.Parse(output);
-        doc.RootElement.GetProperty("version").GetString().Should().NotBeNullOrWhiteSpace();
-        doc.RootElement.GetProperty("runtimeVersion").GetString().Should().NotBeNullOrWhiteSpace();
-        doc.RootElement.GetProperty("osPlatform").GetString().Should().NotBeNullOrWhiteSpace();
-        doc.RootElement.GetProperty("architecture").GetString().Should().NotBeNullOrWhiteSpace();
+        var data = doc.RootElement.GetProperty("data");
+        data.GetProperty("version").GetString().Should().NotBeNullOrWhiteSpace();
+        data.GetProperty("runtimeVersion").GetString().Should().NotBeNullOrWhiteSpace();
+        data.GetProperty("osPlatform").GetString().Should().NotBeNullOrWhiteSpace();
+        data.GetProperty("architecture").GetString().Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]

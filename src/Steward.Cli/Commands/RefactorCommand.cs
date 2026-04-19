@@ -44,7 +44,7 @@ public static class RefactorCommand
             {
                 if (ctx!.OutputFormat == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(ctx.Formatter, ctx.JsonEnvelope, "refactor move", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(ctx.Formatter, "refactor move", ExitCodes.UsageError,
                         "missing-mode", "Specify --preview to see changes, or --apply to execute.",
                         suggestedNextStep: "Add --preview or --apply to the command.");
                     return ExitCodes.UsageError;
@@ -68,7 +68,7 @@ public static class RefactorCommand
                 {
                     if (ctx.OutputFormat == OutputFormat.Json)
                     {
-                        JsonEnvelopeWriter.WriteError(ctx.Formatter, ctx.JsonEnvelope, "refactor move", ExitCodes.UsageError,
+                        JsonEnvelopeWriter.WriteError(ctx.Formatter, "refactor move", ExitCodes.UsageError,
                             "file-not-found", $"Source file not found: {oldPath}",
                             details: new Dictionary<string, object> { ["path"] = oldPath });
                         return ExitCodes.UsageError;
@@ -81,7 +81,7 @@ public static class RefactorCommand
                 {
                     if (ctx.OutputFormat == OutputFormat.Json)
                     {
-                        JsonEnvelopeWriter.WriteError(ctx.Formatter, ctx.JsonEnvelope, "refactor move", ExitCodes.UsageError,
+                        JsonEnvelopeWriter.WriteError(ctx.Formatter, "refactor move", ExitCodes.UsageError,
                             "destination-exists", $"Destination file already exists: {newPath}",
                             details: new Dictionary<string, object> { ["path"] = newPath });
                         return ExitCodes.UsageError;
@@ -126,7 +126,7 @@ public static class RefactorCommand
                     };
                 }).ToArray();
 
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "refactor move", true,
+                JsonEnvelopeWriter.Write(ctx.Formatter, "refactor move", true,
                     ExitCodes.Success, new
                     {
                         oldPath = plan.OldPath,

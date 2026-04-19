@@ -58,7 +58,7 @@ public static class OrientCommand
             {
                 if (ctx!.OutputFormat == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(ctx.Formatter, ctx.JsonEnvelope, "orient", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(ctx.Formatter, "orient", ExitCodes.UsageError,
                         "conflicting-options", "Choose either --compact or --full, not both.");
                     return ExitCodes.UsageError;
                 }
@@ -93,7 +93,7 @@ public static class OrientCommand
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "orient", true, ExitCodes.Success, result);
+                JsonEnvelopeWriter.Write(ctx.Formatter, "orient", true, ExitCodes.Success, result);
             }
             else
             {

@@ -259,33 +259,6 @@ public class ConfigCommandTests : IDisposable
     }
 
     [Fact]
-    public void ConfigDoctor_OverlappingGlobalFrontmatterKeys_ReportsIssue()
-    {
-        var policy = new RepositoryPolicy
-        {
-            Governance = new GovernanceConfig
-            {
-                Frontmatter = new FrontmatterConfig
-                {
-                    RequiredFields = ["status"]
-                }
-            },
-            Validation = new ValidationConfig
-            {
-                RequiredFrontmatterFields = ["owner"]
-            }
-        };
-
-        var ctx = CreateDoctorContext(policy, pathPolicy: null,
-            files: [new DiscoveredFile("README.md", 100, false)]);
-
-        var findings = ConfigCommand.RunDoctor(ctx);
-
-        findings.Should().ContainSingle();
-        findings[0].Category.Should().Be("overlapping-frontmatter-globals");
-    }
-
-    [Fact]
     public void ConfigDoctor_UnmatchedPathRule_ReportsIssue()
     {
         var pathPolicy = new PathPolicyDocument
@@ -520,7 +493,6 @@ public class ConfigCommandTests : IDisposable
             FileSystem = new Steward.TestFixtures.InMemoryFileSystem(),
             Formatter = new Steward.Cli.Formatting.TextOutputFormatter(TextWriter.Null, false),
             OutputFormat = Steward.Core.OutputFormat.Text,
-            JsonEnvelope = Steward.Core.JsonEnvelopeMode.Legacy,
             Verbosity = Steward.Core.Verbosity.Normal,
             NoColor = true,
             Policy = policy,

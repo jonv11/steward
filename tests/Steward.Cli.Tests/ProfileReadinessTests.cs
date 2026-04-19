@@ -68,9 +68,10 @@ public class ProfileReadinessTests : IDisposable
             showExitCode.Should().Be(0, showError);
 
             using var showDoc = JsonDocument.Parse(showOutput);
-            showDoc.RootElement.GetProperty("config").GetProperty("profile").GetString().Should().Be(profile);
-            showDoc.RootElement.GetProperty("policy").GetProperty("repository").GetProperty("type").GetString().Should().Be(expectedRepositoryType);
-            GetArtifactPaths(showDoc.RootElement.GetProperty("policy").GetProperty("artifacts"))
+            var showData = showDoc.RootElement.GetProperty("data");
+            showData.GetProperty("config").GetProperty("profile").GetString().Should().Be(profile);
+            showData.GetProperty("policy").GetProperty("repository").GetProperty("type").GetString().Should().Be(expectedRepositoryType);
+            GetArtifactPaths(showData.GetProperty("policy").GetProperty("artifacts"))
                 .Should()
                 .Contain(expectedRequiredArtifacts);
 
@@ -78,23 +79,25 @@ public class ProfileReadinessTests : IDisposable
             statusExitCode.Should().Be(0, statusError);
 
             using var statusDoc = JsonDocument.Parse(statusOutput);
-            statusDoc.RootElement.GetProperty("profile").GetString().Should().Be(profile);
-            GetArtifactPaths(statusDoc.RootElement.GetProperty("requiredArtifacts"))
+            var statusData = statusDoc.RootElement.GetProperty("data");
+            statusData.GetProperty("profile").GetString().Should().Be(profile);
+            GetArtifactPaths(statusData.GetProperty("requiredArtifacts"))
                 .Should()
                 .BeEquivalentTo(expectedRequiredArtifacts);
-            GetStringArray(statusDoc.RootElement.GetProperty("startHere"))
+            GetStringArray(statusData.GetProperty("startHere"))
                 .Should()
                 .BeEquivalentTo(expectedStartHere);
-            statusDoc.RootElement.GetProperty("presentCount").GetInt32().Should().Be(expectedRequiredArtifacts.Length);
-            statusDoc.RootElement.GetProperty("requiredCount").GetInt32().Should().Be(expectedRequiredArtifacts.Length);
+            statusData.GetProperty("presentCount").GetInt32().Should().Be(expectedRequiredArtifacts.Length);
+            statusData.GetProperty("requiredCount").GetInt32().Should().Be(expectedRequiredArtifacts.Length);
 
             var (orientExitCode, orientOutput, orientError) = CliTestHelper.InvokeCapture("orient", "--output", "json");
             orientExitCode.Should().Be(0, orientError);
 
             using var orientDoc = JsonDocument.Parse(orientOutput);
-            orientDoc.RootElement.GetProperty("profile").GetString().Should().Be(profile);
-            orientDoc.RootElement.GetProperty("repositoryType").GetString().Should().Be(expectedRepositoryType);
-            GetStringArray(orientDoc.RootElement.GetProperty("startHere"))
+            var orientData = orientDoc.RootElement.GetProperty("data");
+            orientData.GetProperty("profile").GetString().Should().Be(profile);
+            orientData.GetProperty("repositoryType").GetString().Should().Be(expectedRepositoryType);
+            GetStringArray(orientData.GetProperty("startHere"))
                 .Should()
                 .BeEquivalentTo(expectedStartHere);
 
@@ -102,7 +105,7 @@ public class ProfileReadinessTests : IDisposable
             doctorExitCode.Should().Be(0, doctorError);
 
             using var doctorDoc = JsonDocument.Parse(doctorOutput);
-            doctorDoc.RootElement.GetProperty("findings").GetArrayLength().Should().Be(0);
+            doctorDoc.RootElement.GetProperty("data").GetProperty("findings").GetArrayLength().Should().Be(0);
         });
     }
 
@@ -121,10 +124,11 @@ public class ProfileReadinessTests : IDisposable
             checkExitCode.Should().Be(0, checkError);
 
             using var checkDoc = JsonDocument.Parse(checkOutput);
-            checkDoc.RootElement.GetProperty("summary").GetProperty("pass").GetBoolean().Should().BeTrue();
-            checkDoc.RootElement.GetProperty("summary").GetProperty("errors").GetInt32().Should().Be(0);
-            checkDoc.RootElement.GetProperty("summary").GetProperty("warnings").GetInt32().Should().Be(0);
-            checkDoc.RootElement.GetProperty("diagnostics").GetArrayLength().Should().Be(0);
+            var checkData = checkDoc.RootElement.GetProperty("data");
+            checkData.GetProperty("summary").GetProperty("pass").GetBoolean().Should().BeTrue();
+            checkData.GetProperty("summary").GetProperty("errors").GetInt32().Should().Be(0);
+            checkData.GetProperty("summary").GetProperty("warnings").GetInt32().Should().Be(0);
+            checkData.GetProperty("diagnostics").GetArrayLength().Should().Be(0);
         });
     }
 
@@ -155,9 +159,10 @@ public class ProfileReadinessTests : IDisposable
             checkExitCode.Should().Be(1, checkError);
 
             using var checkDoc = JsonDocument.Parse(checkOutput);
-            checkDoc.RootElement.GetProperty("summary").GetProperty("pass").GetBoolean().Should().BeFalse();
+            var checkData = checkDoc.RootElement.GetProperty("data");
+            checkData.GetProperty("summary").GetProperty("pass").GetBoolean().Should().BeFalse();
 
-            checkDoc.RootElement.GetProperty("diagnostics")
+            checkData.GetProperty("diagnostics")
                 .EnumerateArray()
                 .Should()
                 .Contain(diagnostic =>
@@ -177,6 +182,7 @@ public class ProfileReadinessTests : IDisposable
             var (_, showOutput, _) = CliTestHelper.InvokeCapture("config", "show", "--effective", "--output", "json");
             using var showDoc = JsonDocument.Parse(showOutput);
             var readmeArtifact = showDoc.RootElement
+                .GetProperty("data")
                 .GetProperty("policy")
                 .GetProperty("artifacts")
                 .EnumerateArray()
@@ -187,7 +193,7 @@ public class ProfileReadinessTests : IDisposable
             var (_, statusOutput, _) = CliTestHelper.InvokeCapture("status", "--output", "json");
             using var statusDoc = JsonDocument.Parse(statusOutput);
 
-            GetArtifactPaths(statusDoc.RootElement.GetProperty("requiredArtifacts"))
+            GetArtifactPaths(statusDoc.RootElement.GetProperty("data").GetProperty("requiredArtifacts"))
                 .Should()
                 .ContainSingle()
                 .Which

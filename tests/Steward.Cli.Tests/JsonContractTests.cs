@@ -66,7 +66,7 @@ public class JsonContractTests : IDisposable
     public void StandardEnvelope_HasRequiredFields(string command)
     {
         SetupGovernedRepo();
-        var (_, output, _) = CliTestHelper.InvokeCapture(command, "--output", "json", "--json-envelope", "standard");
+        var (_, output, _) = CliTestHelper.InvokeCapture(command, "--output", "json");
         var root = ParseJson(output);
 
         root.TryGetProperty("schemaVersion", out _).Should().BeTrue($"'{command}' envelope must have schemaVersion");
@@ -81,7 +81,7 @@ public class JsonContractTests : IDisposable
     public void StandardEnvelope_SchemaVersion_IsStewardJsonV1()
     {
         SetupGovernedRepo();
-        var (_, output, _) = CliTestHelper.InvokeCapture("version", "--output", "json", "--json-envelope", "standard");
+        var (_, output, _) = CliTestHelper.InvokeCapture("version", "--output", "json");
         var root = ParseJson(output);
 
         root.GetProperty("schemaVersion").GetString().Should().Be("steward-json/v1");
@@ -100,7 +100,7 @@ public class JsonContractTests : IDisposable
                 required: true
             """);
 
-        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--output", "json", "--json-envelope", "standard");
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--output", "json");
 
         exitCode.Should().Be(ExitCodes.ValidationFailure);
         var root = ParseJson(output);
@@ -116,7 +116,7 @@ public class JsonContractTests : IDisposable
     public void Explain_UnknownRule_JsonError_HasStructuredFields()
     {
         SetupGovernedRepo();
-        var (exitCode, output, _) = CliTestHelper.InvokeCapture("explain", "STWD-999", "--output", "json", "--json-envelope", "standard");
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("explain", "STWD-999", "--output", "json");
 
         exitCode.Should().Be(ExitCodes.UsageError);
         var root = ParseJson(output);
@@ -130,7 +130,7 @@ public class JsonContractTests : IDisposable
     public void Search_InvalidRegex_JsonError_HasStructuredFields()
     {
         SetupGovernedRepo();
-        var (exitCode, output, _) = CliTestHelper.InvokeCapture("search", "[invalid", "--regex", "--output", "json", "--json-envelope", "standard");
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("search", "[invalid", "--regex", "--output", "json");
 
         exitCode.Should().Be(ExitCodes.UsageError);
         var root = ParseJson(output);
@@ -173,7 +173,7 @@ public class JsonContractTests : IDisposable
                 required: true
             """);
 
-        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--output", "json", "--json-envelope", "standard");
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--output", "json");
 
         exitCode.Should().Be(ExitCodes.ValidationFailure);
         // Diagnostics array should exist in the data
@@ -197,9 +197,10 @@ public class JsonContractTests : IDisposable
         output.Should().Contain("\"results\"");
         output.Should().Contain("\"matchCount\"");
         var root = ParseJson(output);
-        root.GetProperty("results").GetArrayLength().Should().Be(1);
-        root.GetProperty("results")[0].GetProperty("file").GetString().Should().Be("test.md");
-        root.GetProperty("results")[0].GetProperty("matchCount").GetInt32().Should().BeGreaterThan(0);
+        var data = root.GetProperty("data");
+        data.GetProperty("results").GetArrayLength().Should().Be(1);
+        data.GetProperty("results")[0].GetProperty("file").GetString().Should().Be("test.md");
+        data.GetProperty("results")[0].GetProperty("matchCount").GetInt32().Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -241,7 +242,7 @@ public class JsonContractTests : IDisposable
         File.WriteAllText(Path.Combine(_tempDir, "linking.md"), "# Links\n\nSee [source](source.md).");
 
         var (exitCode, output, _) = CliTestHelper.InvokeCapture("refactor", "move", "source.md", "dest.md",
-            "--preview", "--output", "json", "--json-envelope", "standard");
+            "--preview", "--output", "json");
 
         exitCode.Should().Be(ExitCodes.Success);
         var root = ParseJson(output);
@@ -259,7 +260,7 @@ public class JsonContractTests : IDisposable
         File.WriteAllText(Path.Combine(_tempDir, "source.md"), "# Source");
 
         var (exitCode, output, _) = CliTestHelper.InvokeCapture("refactor", "move", "source.md", "dest.md",
-            "--output", "json", "--json-envelope", "standard");
+            "--output", "json");
 
         exitCode.Should().Be(ExitCodes.UsageError);
         var root = ParseJson(output);

@@ -38,7 +38,6 @@ public static class MdCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var file = parseResult.GetValue(fileArg);
             var selector = parseResult.GetValue(selectorArg);
             var pattern = parseResult.GetValue(patternOpt);
@@ -66,7 +65,7 @@ public static class MdCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md query", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "md query", ExitCodes.UsageError,
                         "missing-selector", "A selector expression is required.",
                         suggestedNextStep: "Provide a selector like 'heading[Title]' or '#anchor-slug'.");
                     return ExitCodes.UsageError;
@@ -78,14 +77,14 @@ public static class MdCommand
             // Batch mode: --pattern glob
             if (pattern != null)
             {
-                return ExecuteBatchQuery(formatter, fileSystem, output, jsonEnvelope, selector, pattern);
+                return ExecuteBatchQuery(formatter, fileSystem, output, selector, pattern);
             }
 
             if (file == null)
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md query", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "md query", ExitCodes.UsageError,
                         "missing-file", "Provide a file argument or --pattern for batch query.");
                     return ExitCodes.UsageError;
                 }
@@ -98,7 +97,7 @@ public static class MdCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md query", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "md query", ExitCodes.UsageError,
                         "file-not-found", $"File not found: {file}",
                         details: new Dictionary<string, object> { ["path"] = file });
                     return ExitCodes.UsageError;
@@ -115,7 +114,7 @@ public static class MdCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md query", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "md query", ExitCodes.UsageError,
                         "selector-syntax-error", result.ErrorMessage!,
                         details: new Dictionary<string, object> { ["selector"] = selector });
                     return ExitCodes.UsageError;
@@ -127,7 +126,7 @@ public static class MdCommand
             if (output == OutputFormat.Json)
             {
                 // CC-07: Normalized shape — single-file uses same results[] wrapper as batch
-                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md query", true, ExitCodes.Success, new
+                JsonEnvelopeWriter.Write(formatter, "md query", true, ExitCodes.Success, new
                 {
                     selector = result.Selector,
                     results = new[]
@@ -169,7 +168,7 @@ public static class MdCommand
     }
 
     private static int ExecuteBatchQuery(IOutputFormatter formatter, IFileSystem fileSystem,
-        OutputFormat output, JsonEnvelopeMode jsonEnvelope, string selector, string pattern)
+        OutputFormat output, string selector, string pattern)
     {
         var root = Directory.GetCurrentDirectory();
         var glob = DotNet.Globbing.Glob.Parse(pattern);
@@ -183,7 +182,7 @@ public static class MdCommand
         {
             if (output == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md query", ExitCodes.UsageError,
+                JsonEnvelopeWriter.WriteError(formatter, "md query", ExitCodes.UsageError,
                     "no-files-matched", $"No files matched pattern '{pattern}'.",
                     details: new Dictionary<string, object> { ["pattern"] = pattern });
                 return ExitCodes.UsageError;
@@ -232,7 +231,7 @@ public static class MdCommand
 
         if (output == OutputFormat.Json)
         {
-            JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md query", true, ExitCodes.Success,
+            JsonEnvelopeWriter.Write(formatter, "md query", true, ExitCodes.Success,
                 new { pattern, selector, results = allResults });
         }
 
@@ -260,7 +259,6 @@ public static class MdCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var file = parseResult.GetValue(fileArg)!;
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
@@ -271,7 +269,7 @@ public static class MdCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "md outline", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "md outline", ExitCodes.UsageError,
                         "file-not-found", $"File not found: {file}",
                         details: new Dictionary<string, object> { ["path"] = file });
                     return ExitCodes.UsageError;
@@ -285,7 +283,7 @@ public static class MdCommand
 
             if (output == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md outline", true, ExitCodes.Success, new
+                JsonEnvelopeWriter.Write(formatter, "md outline", true, ExitCodes.Success, new
                 {
                     file = file,
                     totalLines = doc.TotalLines,

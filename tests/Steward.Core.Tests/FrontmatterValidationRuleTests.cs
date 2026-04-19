@@ -18,9 +18,9 @@ public class FrontmatterValidationRuleTests
 
         var policy = new RepositoryPolicy
         {
-            Validation = new ValidationConfig
+            Governance = new GovernanceConfig
             {
-                RequiredFrontmatterFields = ["title"]
+                Frontmatter = new FrontmatterConfig { RequiredFields = ["title"] }
             }
         };
 
@@ -49,9 +49,9 @@ public class FrontmatterValidationRuleTests
 
         var policy = new RepositoryPolicy
         {
-            Validation = new ValidationConfig
+            Governance = new GovernanceConfig
             {
-                RequiredFrontmatterFields = ["title"]
+                Frontmatter = new FrontmatterConfig { RequiredFields = ["title"] }
             }
         };
 
@@ -79,9 +79,9 @@ public class FrontmatterValidationRuleTests
 
         var policy = new RepositoryPolicy
         {
-            Validation = new ValidationConfig
+            Governance = new GovernanceConfig
             {
-                RequiredFrontmatterFields = ["title"]
+                Frontmatter = new FrontmatterConfig { RequiredFields = ["title"] }
             }
         };
 
@@ -126,9 +126,9 @@ public class FrontmatterValidationRuleTests
 
         var policy = new RepositoryPolicy
         {
-            Validation = new ValidationConfig
+            Governance = new GovernanceConfig
             {
-                RequiredFrontmatterFields = ["title"]
+                Frontmatter = new FrontmatterConfig { RequiredFields = ["title"] }
             }
         };
 
@@ -198,9 +198,12 @@ public class FrontmatterValidationRuleTests
 
         var policy = new RepositoryPolicy
         {
+            Governance = new GovernanceConfig
+            {
+                Frontmatter = new FrontmatterConfig { RequiredFields = ["title"] }
+            },
             Validation = new ValidationConfig
             {
-                RequiredFrontmatterFields = ["title"],
                 FrontmatterRequirements =
                 [
                     new FrontmatterRequirement

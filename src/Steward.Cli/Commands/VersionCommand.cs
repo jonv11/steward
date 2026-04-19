@@ -15,7 +15,6 @@ public static class VersionCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
 
@@ -29,7 +28,7 @@ public static class VersionCommand
 
             if (output == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "version", true, ExitCodes.Success, info);
+                JsonEnvelopeWriter.Write(formatter, "version", true, ExitCodes.Success, info);
             }
             else
             {

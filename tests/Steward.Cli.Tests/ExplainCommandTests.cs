@@ -171,7 +171,6 @@ public class ExplainCommandTests
             },
             Validation = new Steward.Core.Configuration.ValidationConfig
             {
-                RequiredFrontmatterFields = ["owner"],
                 DisabledRules = ["STWD-004"],
                 PathOverrides =
                 [
@@ -202,7 +201,6 @@ public class ExplainCommandTests
             FileSystem = new Steward.TestFixtures.InMemoryFileSystem(),
             Formatter = new Steward.Cli.Formatting.TextOutputFormatter(TextWriter.Null, false),
             OutputFormat = Steward.Core.OutputFormat.Text,
-            JsonEnvelope = Steward.Core.JsonEnvelopeMode.Legacy,
             Verbosity = Steward.Core.Verbosity.Normal,
             NoColor = true,
             Policy = policy,
@@ -219,7 +217,6 @@ public class ExplainCommandTests
         info.Artifact.IndexOf.Should().Be("docs/decisions");
         info.SuppressedRules.Should().Contain("STWD-004");
         info.SuppressedRules.Should().Contain("STWD-002");
-        info.RequiredFrontmatterFields.Should().Contain("owner");
         info.RequiredFrontmatterFields.Should().Contain("title");
         info.RequiredFrontmatterFields.Should().Contain("status");
         info.AllowedValues.Should().ContainKey("status");
@@ -245,7 +242,6 @@ public class ExplainCommandTests
             FileSystem = new Steward.TestFixtures.InMemoryFileSystem(),
             Formatter = new Steward.Cli.Formatting.TextOutputFormatter(TextWriter.Null, false),
             OutputFormat = Steward.Core.OutputFormat.Text,
-            JsonEnvelope = Steward.Core.JsonEnvelopeMode.Legacy,
             Verbosity = Steward.Core.Verbosity.Normal,
             NoColor = true,
             Policy = new Steward.Core.Configuration.RepositoryPolicy(),

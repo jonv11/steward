@@ -35,7 +35,7 @@ public static class StatusCommand
             {
                 if (ctx.OutputFormat == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(ctx.Formatter, ctx.JsonEnvelope, "status", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(ctx.Formatter, "status", ExitCodes.UsageError,
                         "config-not-found", "No .steward configuration directory found. Run 'steward init' first.");
                     return ExitCodes.UsageError;
                 }
@@ -60,7 +60,7 @@ public static class StatusCommand
                     };
                 }
 
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "status", true, ExitCodes.Success, status);
+                JsonEnvelopeWriter.Write(ctx.Formatter, "status", true, ExitCodes.Success, status);
             }
             else
             {

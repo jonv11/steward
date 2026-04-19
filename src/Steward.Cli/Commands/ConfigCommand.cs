@@ -31,7 +31,6 @@ public static class ConfigCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var configPath = parseResult.GetValue(GlobalOptionsSetup.ConfigOption);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
@@ -43,7 +42,7 @@ public static class ConfigCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "config validate", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "config validate", ExitCodes.UsageError,
                         "config-not-found", "No .steward/ directory found. Run 'steward init' first.");
                     return ExitCodes.UsageError;
                 }
@@ -80,7 +79,7 @@ public static class ConfigCommand
                 if (output == OutputFormat.Json)
                 {
                     // CC-08: Structured errors with file + message instead of plain strings
-                    JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "config validate", false, ExitCodes.UsageError,
+                    JsonEnvelopeWriter.Write(formatter, "config validate", false, ExitCodes.UsageError,
                         new { valid = false, errors });
                 }
                 else
@@ -95,7 +94,7 @@ public static class ConfigCommand
 
             if (output == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "config validate", true, ExitCodes.Success,
+                JsonEnvelopeWriter.Write(formatter, "config validate", true, ExitCodes.Success,
                     new { valid = true });
             }
             else
@@ -138,7 +137,7 @@ public static class ConfigCommand
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "config show", true, ExitCodes.Success, new
+                JsonEnvelopeWriter.Write(ctx.Formatter, "config show", true, ExitCodes.Success, new
                 {
                     configDirectory = ctx.ConfigDirectory,
                     config = ctx.Config,
@@ -240,7 +239,7 @@ public static class ConfigCommand
                 var doctorExitCode = findings.Count > 0 ? ExitCodes.ValidationFailure : ExitCodes.Success;
                 // CC-03: success=true means process executed correctly.
                 // findings.Count > 0 is a domain result, not a process failure.
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "config doctor", true, doctorExitCode, new
+                JsonEnvelopeWriter.Write(ctx.Formatter, "config doctor", true, doctorExitCode, new
                 {
                     findings = findings.Select(f => new
                     {
@@ -296,18 +295,7 @@ public static class ConfigCommand
             }
         }
 
-        // 2. Overlapping global frontmatter requirement sources
-        var legacyRequiredFrontmatter = ctx.Policy?.Validation?.RequiredFrontmatterFields;
-        var governanceRequiredFrontmatter = ctx.Policy?.Governance?.Frontmatter?.RequiredFields;
-        if (legacyRequiredFrontmatter is { Count: > 0 } && governanceRequiredFrontmatter is { Count: > 0 })
-        {
-            findings.Add(new DoctorFinding(
-                "overlapping-frontmatter-globals",
-                "Both validation.required_frontmatter_fields and governance.frontmatter.required_fields are configured. Steward currently treats them as additive global requirements.",
-                "Prefer governance.frontmatter.required_fields as the canonical location, or leave only one global required-fields declaration to avoid confusion."));
-        }
-
-        // 3. Artifact declarations matching no existing file
+        // 2. Artifact declarations matching no existing file
         if (ctx.Policy?.Artifacts != null)
         {
             foreach (var artifact in ctx.Policy.Artifacts)
@@ -571,7 +559,7 @@ public static class ConfigCommand
 
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "config suggest", true, ExitCodes.Success, suggestion);
+                JsonEnvelopeWriter.Write(ctx.Formatter, "config suggest", true, ExitCodes.Success, suggestion);
             }
             else
             {

@@ -65,7 +65,6 @@ public static class OutlineCommand
 
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var formatter = CommandSetup.CreateFormatter(output, noColor);
             var fileSystem = new PhysicalFileSystem();
 
@@ -80,13 +79,13 @@ public static class OutlineCommand
             {
                 if (rootPath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
                 {
-                    return ShowMarkdownOutline(rootPath, fileSystem, formatter, output, jsonEnvelope);
+                    return ShowMarkdownOutline(rootPath, fileSystem, formatter, output);
                 }
                 else
                 {
                     if (output == OutputFormat.Json)
                     {
-                        JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "outline", ExitCodes.UsageError,
+                        JsonEnvelopeWriter.WriteError(formatter, "outline", ExitCodes.UsageError,
                             "unsupported-file-type", $"Cannot outline a non-Markdown file: {path}",
                             suggestedNextStep: "Use 'steward outline <directory>' for directory trees, or 'steward md outline <file>' for Markdown files.");
                         return ExitCodes.UsageError;
@@ -101,7 +100,7 @@ public static class OutlineCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "outline", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "outline", ExitCodes.UsageError,
                         "path-not-found", $"Path does not exist: {path}");
                     return ExitCodes.UsageError;
                 }
@@ -118,7 +117,7 @@ public static class OutlineCommand
 
             if (output == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "outline", true, ExitCodes.Success, result);
+                JsonEnvelopeWriter.Write(formatter, "outline", true, ExitCodes.Success, result);
             }
             else
             {
@@ -132,14 +131,14 @@ public static class OutlineCommand
     }
 
     private static int ShowMarkdownOutline(string fullPath, IFileSystem fileSystem,
-        IOutputFormatter formatter, OutputFormat output, JsonEnvelopeMode jsonEnvelope = JsonEnvelopeMode.Legacy)
+        IOutputFormatter formatter, OutputFormat output)
     {
         var content = fileSystem.ReadAllText(fullPath);
         var doc = MarkdownParser.Parse(fullPath, content);
 
         if (output == OutputFormat.Json)
         {
-            JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "outline", true, ExitCodes.Success, new
+            JsonEnvelopeWriter.Write(formatter, "outline", true, ExitCodes.Success, new
             {
                 file = Path.GetFileName(fullPath),
                 totalLines = doc.TotalLines,

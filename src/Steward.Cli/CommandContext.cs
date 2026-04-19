@@ -16,7 +16,6 @@ public sealed class CommandContext
     public required IFileSystem FileSystem { get; init; }
     public required IOutputFormatter Formatter { get; init; }
     public required OutputFormat OutputFormat { get; init; }
-    public required JsonEnvelopeMode JsonEnvelope { get; init; }
     public required Verbosity Verbosity { get; init; }
     public required bool NoColor { get; init; }
     public string? ConfigDirectory { get; init; }

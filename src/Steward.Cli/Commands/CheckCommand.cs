@@ -32,11 +32,6 @@ public static class CheckCommand
         {
             Description = "Apply fixes (requires --fix)"
         };
-        var dryRunOption = new Option<bool>("--dry-run")
-        {
-            Description = "[Deprecated] Equivalent to --fix without --apply",
-            Hidden = true
-        };
         var quietOption = new Option<bool>("--quiet")
         {
             Description = "Suppress output and return only the exit code"
@@ -46,7 +41,6 @@ public static class CheckCommand
         command.Add(pathsOption);
         command.Add(fixOption);
         command.Add(applyOption);
-        command.Add(dryRunOption);
         command.Add(quietOption);
 
         command.SetAction((parseResult) =>
@@ -56,7 +50,7 @@ public static class CheckCommand
 
             var scopeValue = parseResult.GetValue(scopeOption);
             var pathsValue = parseResult.GetValue(pathsOption);
-            var fixRequested = parseResult.GetValue(fixOption) || parseResult.GetValue(dryRunOption);
+            var fixRequested = parseResult.GetValue(fixOption);
             var applyFixes = parseResult.GetValue(applyOption);
             var quiet = parseResult.GetValue(quietOption);
 
@@ -157,7 +151,7 @@ public static class CheckCommand
                 var checkExitCode = result.Summary.Pass ? ExitCodes.Success : ExitCodes.ValidationFailure;
                 // CC-03: success=true means process executed correctly.
                 // Domain outcome (pass/fail) is in data.summary.pass.
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "check", true, checkExitCode, new CheckResponse
+                JsonEnvelopeWriter.Write(ctx.Formatter, "check", true, checkExitCode, new CheckResponse
                 {
                     Summary = new CheckSummaryResponse
                     {

@@ -39,7 +39,6 @@ public static class MdSplitCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var file = parseResult.GetValue(fileArg)!;
             var maxLines = parseResult.GetValue(maxLinesOpt);
             var minSectionLines = parseResult.GetValue(minSectionLinesOpt);
@@ -60,7 +59,7 @@ public static class MdSplitCommand
 
             if (output == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "md split plan", true, ExitCodes.Success, new
+                JsonEnvelopeWriter.Write(formatter, "md split plan", true, ExitCodes.Success, new
                 {
                     sourceFile = file,
                     totalLines = plan.TotalLines,

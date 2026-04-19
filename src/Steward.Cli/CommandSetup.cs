@@ -57,7 +57,6 @@ public static class CommandSetup
 
         // Resolve effective output settings: CLI flag > config file > built-in default.
         var output = ResolveOutputFormat(parseResult, config);
-        var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
         var verbosity = ResolveVerbosity(parseResult, config);
         var noColor = ResolveNoColor(parseResult, config);
         var effectiveExcludes = config?.Discovery?.Exclude ?? [];
@@ -79,7 +78,6 @@ public static class CommandSetup
             FileSystem = fileSystem,
             Formatter = formatter,
             OutputFormat = output,
-            JsonEnvelope = jsonEnvelope,
             Verbosity = verbosity,
             NoColor = noColor,
             ConfigDirectory = configDir,

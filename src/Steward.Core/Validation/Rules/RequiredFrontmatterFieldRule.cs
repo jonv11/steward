@@ -22,13 +22,7 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
     {
         var diagnostics = new List<Diagnostic>();
 
-        var requiredFromPolicy = context.Policy?.Validation?.RequiredFrontmatterFields ?? [];
-
-        // Also check governance.frontmatter.required_fields (RFC-002 canonical location)
-        var requiredFromGovernance = context.Policy?.Governance?.Frontmatter?.RequiredFields ?? [];
-
-        // Merge both sources, removing duplicates
-        var globalRequired = requiredFromPolicy.Union(requiredFromGovernance, StringComparer.OrdinalIgnoreCase).ToList();
+        var globalRequired = context.Policy?.Governance?.Frontmatter?.RequiredFields ?? [];
 
         // Compile path-scoped frontmatter requirements
         var scopedRequirements = CompileScopedRequirements(

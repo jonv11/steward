@@ -32,25 +32,16 @@ public static class GlobalOptionsSetup
         HelpName = "path"
     };
 
-    public static readonly Option<JsonEnvelopeMode> JsonEnvelopeOption = new(
-        "--json-envelope")
-    {
-        Description = "JSON envelope mode when --output json is active: legacy (default) or standard",
-        DefaultValueFactory = _ => JsonEnvelopeMode.Legacy
-    };
-
     public static void AddGlobalOptions(RootCommand rootCommand)
     {
         OutputOption.Recursive = true;
         VerbosityOption.Recursive = true;
         NoColorOption.Recursive = true;
         ConfigOption.Recursive = true;
-        JsonEnvelopeOption.Recursive = true;
 
         rootCommand.Add(OutputOption);
         rootCommand.Add(VerbosityOption);
         rootCommand.Add(NoColorOption);
         rootCommand.Add(ConfigOption);
-        rootCommand.Add(JsonEnvelopeOption);
     }
 }

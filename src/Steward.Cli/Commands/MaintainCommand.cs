@@ -49,7 +49,7 @@ public static class MaintainCommand
             {
                 if (ctx.OutputFormat == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(ctx.Formatter, ctx.JsonEnvelope, "maintain", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(ctx.Formatter, "maintain", ExitCodes.UsageError,
                         "config-not-found", "No .steward configuration directory found. Run 'steward init' first.");
                     return ExitCodes.UsageError;
                 }
@@ -110,7 +110,7 @@ public static class MaintainCommand
             // Output — single pass for both text and JSON
             if (ctx.OutputFormat == OutputFormat.Json)
             {
-                JsonEnvelopeWriter.Write(ctx.Formatter, ctx.JsonEnvelope, "maintain", true, ExitCodes.Success, new
+                JsonEnvelopeWriter.Write(ctx.Formatter, "maintain", true, ExitCodes.Success, new
                 {
                     hasChanges = plan.HasChanges,
                     applied = apply,

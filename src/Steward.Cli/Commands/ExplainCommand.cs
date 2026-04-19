@@ -31,7 +31,6 @@ public static class ExplainCommand
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
             var verbosity = parseResult.GetValue(GlobalOptionsSetup.VerbosityOption);
-            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var ruleId = parseResult.GetValue(ruleArg);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
@@ -39,7 +38,7 @@ public static class ExplainCommand
             if (string.IsNullOrWhiteSpace(ruleId))
             {
                 // List all rules
-                return ListAllRules(formatter, output, jsonEnvelope);
+                return ListAllRules(formatter, output);
             }
 
             var rule = AllRules.FirstOrDefault(r =>
@@ -49,7 +48,7 @@ public static class ExplainCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "explain", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "explain", ExitCodes.UsageError,
                         "unknown-rule", $"Unknown rule ID: '{ruleId}'.",
                         details: new Dictionary<string, object> { ["ruleId"] = ruleId },
                         suggestedNextStep: "Use 'steward explain' to list all rules.");
@@ -79,7 +78,7 @@ public static class ExplainCommand
                 if (filesEvaluated.HasValue)
                     jsonObj["filesEvaluated"] = filesEvaluated.Value;
 
-                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "explain", true, ExitCodes.Success, jsonObj);
+                JsonEnvelopeWriter.Write(formatter, "explain", true, ExitCodes.Success, jsonObj);
             }
             else
             {
@@ -131,11 +130,11 @@ public static class ExplainCommand
         }
     }
 
-    private static int ListAllRules(IOutputFormatter formatter, OutputFormat output, JsonEnvelopeMode jsonEnvelope)
+    private static int ListAllRules(IOutputFormatter formatter, OutputFormat output)
     {
         if (output == OutputFormat.Json)
         {
-            JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "explain", true, ExitCodes.Success,
+            JsonEnvelopeWriter.Write(formatter, "explain", true, ExitCodes.Success,
                 AllRules.Select(r => new
                 {
                     ruleId = r.RuleId,
@@ -196,7 +195,6 @@ public static class ExplainCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var jsonEnvelope = parseResult.GetValue(GlobalOptionsSetup.JsonEnvelopeOption);
             var filePath = PathHelper.NormalizeSeparators(parseResult.GetValue(pathArg)!);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
@@ -205,7 +203,7 @@ public static class ExplainCommand
             {
                 if (output == OutputFormat.Json)
                 {
-                    JsonEnvelopeWriter.WriteError(formatter, jsonEnvelope, "explain path", ExitCodes.UsageError,
+                    JsonEnvelopeWriter.WriteError(formatter, "explain path", ExitCodes.UsageError,
                         "config-not-found", "Could not load steward configuration. Run from a steward-managed repository.",
                         suggestedNextStep: "Run 'steward init' to create a .steward/ directory.");
                     return ExitCodes.UsageError;
@@ -234,7 +232,7 @@ public static class ExplainCommand
                     ["allowedValues"] = info.AllowedValues,
                     ["applicableRules"] = info.ApplicableRules
                 };
-                JsonEnvelopeWriter.Write(formatter, jsonEnvelope, "explain path", true, ExitCodes.Success, jsonObj);
+                JsonEnvelopeWriter.Write(formatter, "explain path", true, ExitCodes.Success, jsonObj);
             }
             else
             {
@@ -353,19 +351,8 @@ public static class ExplainCommand
 
         // 5. Effective frontmatter requirements
         var requiredFields = new List<string>();
-        if (ctx.Policy?.Validation?.RequiredFrontmatterFields != null)
-        {
-            requiredFields.AddRange(ctx.Policy.Validation.RequiredFrontmatterFields);
-        }
-
         if (ctx.Policy?.Governance?.Frontmatter?.RequiredFields != null)
-        {
-            foreach (var field in ctx.Policy.Governance.Frontmatter.RequiredFields)
-            {
-                if (!requiredFields.Contains(field, StringComparer.OrdinalIgnoreCase))
-                    requiredFields.Add(field);
-            }
-        }
+            requiredFields.AddRange(ctx.Policy.Governance.Frontmatter.RequiredFields);
 
         var allowedValues = new Dictionary<string, List<string>>();
 
