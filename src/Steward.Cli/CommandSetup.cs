@@ -18,6 +18,8 @@ public static class CommandSetup
         return format switch
         {
             OutputFormat.Json => new JsonOutputFormatter(Console.Out),
+            // SARIF writes its own buffered JSON to stdout; route all other messages to stderr.
+            OutputFormat.Sarif => new TextOutputFormatter(Console.Error, false),
             _ => new TextOutputFormatter(Console.Out, !noColor && !Console.IsOutputRedirected)
         };
     }

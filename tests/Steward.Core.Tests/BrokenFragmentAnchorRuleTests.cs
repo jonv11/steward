@@ -283,4 +283,127 @@ public class BrokenFragmentAnchorRuleTests
         rule.Category.Should().Be("broken-link");
         rule.DefaultSeverity.Should().Be(DiagnosticSeverity.Warning);
     }
+
+    [Fact]
+    public async Task ComputeFixes_RenamedHeading_SuggestsBestMatchAnchor()
+    {
+        // guide.md heading was renamed from "Getting Started" to "Get Started"
+        var targetContent = "# Guide\n\n## Get Started\n\nContent.";
+        var sourceContent = "# Overview\n\nSee [Getting Started](guide.md#getting-started).";
+
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/readme.md", sourceContent)
+            .AddFile("/repo/guide.md", targetContent);
+
+        var context = new ValidationContext
+        {
+            Policy = null,
+            PathPolicy = null,
+            TargetFiles = [
+                new DiscoveredFile("readme.md", 100, false),
+                new DiscoveredFile("guide.md", 200, false)
+            ],
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new BrokenFragmentAnchorRule();
+        var fixes = await rule.ComputeFixesAsync(context);
+
+        fixes.Should().ContainSingle();
+        fixes[0].RuleId.Should().Be("STWD-018");
+        fixes[0].FilePath.Should().Be("readme.md");
+        fixes[0].NewContent.Should().Contain("#get-started");
+        fixes[0].NewContent.Should().NotContain("#getting-started");
+    }
+
+    [Fact]
+    public async Task ComputeFixes_CompletelyUnrelatedAnchor_ProducesNoFix()
+    {
+        // No heading in guide.md is close to the broken anchor
+        var targetContent = "# Guide\n\n## Installation\n\nContent.";
+        var sourceContent = "# Overview\n\nSee [something](guide.md#xyz-123-completely-unrelated).";
+
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/readme.md", sourceContent)
+            .AddFile("/repo/guide.md", targetContent);
+
+        var context = new ValidationContext
+        {
+            Policy = null,
+            PathPolicy = null,
+            TargetFiles = [
+                new DiscoveredFile("readme.md", 100, false),
+                new DiscoveredFile("guide.md", 200, false)
+            ],
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new BrokenFragmentAnchorRule();
+        var fixes = await rule.ComputeFixesAsync(context);
+
+        fixes.Should().BeEmpty(because: "no close heading match exists within the edit distance threshold");
+    }
+
+    [Fact]
+    public async Task ComputeFixes_MultipleLinksInSameFile_BatchedIntoSingleFix()
+    {
+        // Two broken links in the same source file → one fix with both replacements applied
+        var targetContent = "# Guide\n\n## Install\n\n## Configure\n\nContent.";
+        var sourceContent = "# Overview\n\nSee [install](guide.md#instll) and [configure](guide.md#configur).";
+
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/readme.md", sourceContent)
+            .AddFile("/repo/guide.md", targetContent);
+
+        var context = new ValidationContext
+        {
+            Policy = null,
+            PathPolicy = null,
+            TargetFiles = [
+                new DiscoveredFile("readme.md", 100, false),
+                new DiscoveredFile("guide.md", 200, false)
+            ],
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new BrokenFragmentAnchorRule();
+        var fixes = await rule.ComputeFixesAsync(context);
+
+        // Both broken anchors should be fixed in a single Fix record
+        fixes.Should().ContainSingle(because: "all fixes for the same source file are batched");
+        fixes[0].FilePath.Should().Be("readme.md");
+        fixes[0].NewContent.Should().Contain("#install");
+        fixes[0].NewContent.Should().Contain("#configure");
+    }
+
+    [Fact]
+    public async Task ComputeFixes_ValidAnchors_ProducesNoFixes()
+    {
+        var targetContent = "# Guide\n\n## Usage\n\nContent.";
+        var sourceContent = "# Overview\n\nSee [usage](guide.md#usage).";
+
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/readme.md", sourceContent)
+            .AddFile("/repo/guide.md", targetContent);
+
+        var context = new ValidationContext
+        {
+            Policy = null,
+            PathPolicy = null,
+            TargetFiles = [
+                new DiscoveredFile("readme.md", 100, false),
+                new DiscoveredFile("guide.md", 200, false)
+            ],
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new BrokenFragmentAnchorRule();
+        var fixes = await rule.ComputeFixesAsync(context);
+
+        fixes.Should().BeEmpty();
+    }
 }

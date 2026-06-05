@@ -132,6 +132,7 @@
     │   ├── ChangeImpactTests.cs
     │   ├── CheckCommandTests.cs
     │   ├── CheckFixTests.cs
+    │   ├── CheckSinceTests.cs
     │   ├── CliIdentityTests.cs
     │   ├── CliSnapshotTests.CheckJson_IsStable.verified.txt
     │   ├── CliSnapshotTests.cs
@@ -155,6 +156,7 @@
     │   ├── ProfileReadinessTests.cs
     │   ├── ProgramErrorHandlingTests.cs
     │   ├── RefsCommandTests.cs
+    │   ├── SarifOutputTests.cs
     │   ├── SearchCommandTests.cs
     │   ├── StableSurfaceContractTests.cs
     │   ├── StagedCompletenessTests.cs
@@ -205,6 +207,7 @@
     │   ├── SearchEngineTests.cs
     │   ├── SecretFilterTests.cs
     │   ├── SectionSizeRuleTests.cs
+    │   ├── SinceScopeResolverTests.cs
     │   ├── Steward.Core.Tests.csproj
     │   ├── StructuralEditorTests.cs
     │   ├── UniqueHeadingTextRuleTests.cs

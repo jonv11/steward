@@ -3,7 +3,8 @@ namespace Steward.Core;
 public enum OutputFormat
 {
     Text,
-    Json
+    Json,
+    Sarif
 }
 
 public enum Verbosity

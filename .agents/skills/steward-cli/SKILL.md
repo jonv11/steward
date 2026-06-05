@@ -135,14 +135,28 @@ dotnet run --project src/Steward.Cli -- explain path docs/planning/implementatio
 dotnet run --project src/Steward.Cli -- explain path docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md
 ```
 
-### `check` and `check --scope changed`
+### `check`, `check --scope changed`, `check --since <ref>`, and `check --output sarif`
 
 Use `check` as the final governance verification after any change. Use `--scope changed` during iteration to narrow feedback, then run a full `check` before finishing.
+
+`--since <ref>` validates only files changed since the merge-base of `<ref>` and HEAD (three-dot comparison). Use this in CI to enforce policy on exactly the PR diff:
+
+```bash
+dotnet run --project src/Steward.Cli -- check --since origin/main
+```
+
+`--output sarif` emits SARIF 2.1.0, the format consumed by GitHub Advanced Security for inline PR annotations:
+
+```bash
+dotnet run --project src/Steward.Cli -- check --output sarif > results.sarif
+```
 
 ```bash
 dotnet run --project src/Steward.Cli -- check
 dotnet run --project src/Steward.Cli -- check --scope changed
 dotnet run --project src/Steward.Cli -- check --output json
+dotnet run --project src/Steward.Cli -- check --since origin/main
+dotnet run --project src/Steward.Cli -- check --since origin/main --output sarif
 ```
 
 ### `config show --effective`, `config validate`, `config doctor`

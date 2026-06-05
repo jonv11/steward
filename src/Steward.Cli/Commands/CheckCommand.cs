@@ -20,6 +20,10 @@ public static class CheckCommand
             Description = "Validation scope: full (all files), changed (git-modified), or staged (git-staged). Default: full"
         };
         scopeOption.AcceptOnlyFromAmong("full", "changed", "staged");
+        var sinceOption = new Option<string?>("--since")
+        {
+            Description = "Validate only files changed since <ref> (commit, tag, or branch). Uses three-dot merge-base comparison against HEAD."
+        };
         var pathsOption = new Option<string[]?>("--paths")
         {
             Description = "Validate only the specified paths"
@@ -38,6 +42,7 @@ public static class CheckCommand
         };
 
         command.Add(scopeOption);
+        command.Add(sinceOption);
         command.Add(pathsOption);
         command.Add(fixOption);
         command.Add(applyOption);
@@ -49,15 +54,17 @@ public static class CheckCommand
                 return ExitCodes.UsageError;
 
             var scopeValue = parseResult.GetValue(scopeOption);
+            var sinceValue = parseResult.GetValue(sinceOption);
             var pathsValue = parseResult.GetValue(pathsOption);
             var fixRequested = parseResult.GetValue(fixOption);
             var applyFixes = parseResult.GetValue(applyOption);
             var quiet = parseResult.GetValue(quietOption);
 
             // Resolve scope
-            IScopeResolver scopeResolver = ResolveScope(scopeValue, pathsValue);
+            IScopeResolver scopeResolver = ResolveScope(scopeValue, pathsValue, sinceValue);
             var targetFiles = scopeResolver.Resolve(ctx!.Files!, ctx.RootPath);
-            var scopeLabel = scopeValue ?? (pathsValue is { Length: > 0 } ? "paths" : "full");
+            var scopeLabel = sinceValue != null ? $"since:{sinceValue}"
+                : scopeValue ?? (pathsValue is { Length: > 0 } ? "paths" : "full");
 
             // Create validation context
             var docCache = new DocumentCache(ctx.FileSystem, ctx.RootPath);
@@ -195,6 +202,14 @@ public static class CheckCommand
                         : null
                 });
             }
+            else if (ctx.OutputFormat == OutputFormat.Sarif)
+            {
+                SarifWriter.Write(
+                    Console.Out,
+                    orderedDiagnostics,
+                    rules,
+                    null);
+            }
             else
             {
                 if (orderedDiagnostics.Count == 0 && !fixRequested)
@@ -266,8 +281,11 @@ public static class CheckCommand
         return command;
     }
 
-    internal static IScopeResolver ResolveScope(string? scopeValue, string[]? pathsValue)
+    internal static IScopeResolver ResolveScope(string? scopeValue, string[]? pathsValue, string? sinceRef = null)
     {
+        if (sinceRef != null)
+            return new SinceScopeResolver(sinceRef);
+
         if (pathsValue is { Length: > 0 })
             return new PathsScopeResolver(pathsValue);
 

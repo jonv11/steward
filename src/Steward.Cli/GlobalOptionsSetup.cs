@@ -8,7 +8,7 @@ public static class GlobalOptionsSetup
     public static readonly Option<OutputFormat> OutputOption = new(
         "--output", "-o")
     {
-        Description = "Output format: text or json",
+        Description = "Output format: text, json, or sarif",
         DefaultValueFactory = _ => OutputFormat.Text
     };
 

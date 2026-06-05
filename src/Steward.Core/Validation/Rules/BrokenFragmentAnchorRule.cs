@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
@@ -10,7 +11,7 @@ namespace Steward.Core.Validation.Rules;
 /// should reference a heading that actually exists in the target file.
 /// Heading slugs are normalized using the same algorithm as GitHub Markdown.
 /// </summary>
-public sealed class BrokenFragmentAnchorRule : IValidationRule
+public sealed class BrokenFragmentAnchorRule : IValidationRule, IFixableRule
 {
     public string RuleId => "STWD-018";
     public string Category => "broken-link";
@@ -43,7 +44,7 @@ public sealed class BrokenFragmentAnchorRule : IValidationRule
             var content = context.FileSystem.ReadAllText(fullPath);
             var fragmentLinks = ExtractFragmentLinks(content);
 
-            foreach (var (rawTarget, fragment, line) in fragmentLinks)
+            foreach (var (rawTarget, fragment, rawFragment, line) in fragmentLinks)
             {
                 // Resolve the file path part
                 string resolvedFilePath;
@@ -88,6 +89,7 @@ public sealed class BrokenFragmentAnchorRule : IValidationRule
                         new Dictionary<string, object>
                         {
                             ["fragment"] = fragment,
+                            ["rawFragment"] = rawFragment,
                             ["targetFile"] = resolvedFilePath
                         }));
                 }
@@ -125,12 +127,13 @@ public sealed class BrokenFragmentAnchorRule : IValidationRule
 
     /// <summary>
     /// Extracts internal links that contain fragment anchors.
-    /// Returns tuples of (fileTarget, fragmentSlug, lineNumber).
+    /// Returns tuples of (fileTarget, fragmentSlug, rawFragment, lineNumber).
     /// fileTarget is the path part (empty string for fragment-only links like #heading).
+    /// rawFragment is the un-normalized URL fragment text (used for fix replacement).
     /// </summary>
-    internal static List<(string FileTarget, string Fragment, int Line)> ExtractFragmentLinks(string content)
+    internal static List<(string FileTarget, string Fragment, string RawFragment, int Line)> ExtractFragmentLinks(string content)
     {
-        var results = new List<(string, string, int)>();
+        var results = new List<(string, string, string, int)>();
         var document = Markdig.Markdown.Parse(content, Pipeline);
 
         foreach (var link in document.Descendants<LinkInline>())
@@ -161,9 +164,80 @@ public sealed class BrokenFragmentAnchorRule : IValidationRule
             var slug = MarkdownHeadings.ToAnchorSlug(rawFragment);
             if (string.IsNullOrEmpty(slug)) continue;
 
-            results.Add((filePart, slug, link.Line + 1));
+            results.Add((filePart, slug, rawFragment, link.Line + 1));
         }
 
         return results;
+    }
+
+    public async Task<IReadOnlyList<Fix>> ComputeFixesAsync(ValidationContext context)
+    {
+        var diagnostics = await EvaluateAsync(context);
+        if (diagnostics.Count == 0)
+            return [];
+
+        // Group diagnostics by source file so we apply all fixes in one pass per file.
+        var byFile = diagnostics
+            .Where(d => d.Path != null && d.Details != null)
+            .GroupBy(d => d.Path!);
+
+        var fixes = new List<Fix>();
+
+        foreach (var group in byFile)
+        {
+            var sourceRelPath = group.Key;
+            var sourcePath = Path.Combine(context.RepositoryRoot, sourceRelPath);
+            if (!context.FileSystem.FileExists(sourcePath))
+                continue;
+
+            var content = context.FileSystem.ReadAllText(sourcePath);
+            var modified = content;
+            var appliedAny = false;
+            var descriptions = new List<string>();
+
+            foreach (var diag in group)
+            {
+                if (!diag.Details!.TryGetValue("fragment", out var fragmentObj) ||
+                    !diag.Details.TryGetValue("rawFragment", out var rawFragmentObj) ||
+                    !diag.Details.TryGetValue("targetFile", out var targetFileObj))
+                    continue;
+
+                var fragment = fragmentObj.ToString()!;
+                var rawFragment = rawFragmentObj.ToString()!;
+                var targetFile = targetFileObj.ToString()!;
+
+                var slugs = GetHeadingSlugs(targetFile, context);
+                if (slugs == null || slugs.Count == 0)
+                    continue;
+
+                var bestMatch = StringSimilarity.BestMatch(fragment, slugs);
+                if (bestMatch == null)
+                    continue;
+
+                // Replace #rawFragment → #bestMatch inside Markdown link URLs.
+                // Pattern: matches the fragment inside [...](path#rawFragment) or (#rawFragment)
+                var escapedRaw = Regex.Escape(rawFragment);
+                var pattern = $@"(\[[^\]]*\]\([^)]*?)#{escapedRaw}([\)#?])";
+                var replacement = $"$1#{bestMatch}$2";
+                var next = Regex.Replace(modified, pattern, replacement, RegexOptions.IgnoreCase);
+                if (next == modified)
+                    continue;
+
+                modified = next;
+                appliedAny = true;
+                descriptions.Add($"'#{fragment}' → '#{bestMatch}'");
+            }
+
+            if (!appliedAny)
+                continue;
+
+            fixes.Add(new Fix(
+                RuleId,
+                sourceRelPath,
+                $"Update broken fragment anchor(s) in {sourceRelPath}: {string.Join(", ", descriptions)}",
+                modified));
+        }
+
+        return fixes;
     }
 }

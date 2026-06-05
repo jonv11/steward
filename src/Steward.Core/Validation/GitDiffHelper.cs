@@ -21,6 +21,15 @@ internal static class GitDiffHelper
         return RunGitDiff(repositoryRoot, "diff --cached --name-only");
     }
 
+    /// <summary>
+    /// Returns files changed since the merge-base of <paramref name="sinceRef"/> and HEAD,
+    /// or null if git is unavailable. Uses three-dot comparison (correct for PR diffs).
+    /// </summary>
+    public static IReadOnlyList<string>? GetChangedFilesSince(string repositoryRoot, string sinceRef)
+    {
+        return RunGitDiff(repositoryRoot, $"diff --name-only {sinceRef}...HEAD");
+    }
+
     private static IReadOnlyList<string>? RunGitDiff(string workingDirectory, string arguments)
     {
         try
