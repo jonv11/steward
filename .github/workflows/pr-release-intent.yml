@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Validate release intent label
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const releaseLabels = ["release:none", "release:patch", "release:minor"];
