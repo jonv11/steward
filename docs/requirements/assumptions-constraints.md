@@ -3,7 +3,7 @@ type: requirements
 document_id: ACD-0001
 version: 0.10.0
 status: Accepted
-last_updated: 2026-04-15
+last_updated: 2026-06-05
 ---
 
 # Assumptions, Constraints, Dependencies, and Risks
@@ -15,7 +15,7 @@ last_updated: 2026-04-15
 | ID | Assumption | Rationale |
 |----|-----------|-----------|
 | A-01 | .NET 10 is GA and stable (released Nov 2025). | Standard .NET release cadence; LTS release. |
-| A-02 | The current pre-1.0 line may continue to use prerelease dependencies temporarily, but dependency stabilization is required before the first stable shipment. | The repo currently uses beta/preview packages and has not yet authorized `1.0.0`. |
+| A-02 | The current pre-1.0 line may continue to adjust dependencies before the first stable shipment, but direct dependency changes must remain pinned and intentionally verified. | The repo has not yet authorized `1.0.0`, and dependency updates can still affect public CLI behavior. |
 | A-03 | Target repositories are git-managed. | .gitignore support, change-set detection, and staged-file scoping all depend on git. Non-git repos may use the CLI with reduced functionality. |
 | A-04 | Markdown documents use CommonMark with optional YAML frontmatter. | Markdig supports CommonMark and extensions. YAML frontmatter is the dominant convention. |
 | A-05 | Most target repositories have fewer than 50,000 files. | Performance design targets reasonable repository sizes; very large monorepos may require explicit scoping. |
@@ -50,7 +50,7 @@ last_updated: 2026-04-15
 
 | ID | Risk | Likelihood | Impact | Mitigation |
 |----|------|-----------|--------|------------|
-| R-01 | System.CommandLine and DI package instability while the repo remains on preview/beta dependencies | Medium | Medium | Keep the pre-1.0 line explicit, pin exact versions, and stabilize dependencies before `1.0.0`. |
+| R-01 | CLI-framework dependency changes can alter parsing, help rendering, and exit behavior | Medium | Medium | Keep exact versions pinned, run CLI contract tests, and review help/output snapshots before merging dependency changes. |
 | R-02 | Scope creep from 130+ requirements | Medium | High | Strict milestone scoping; each milestone has clear boundaries and deferred items. |
 | R-03 | Markdown structural editing edge cases | Medium | Medium | Extensive snapshot testing; conservative edit strategy; fail-safe on ambiguity. |
 | R-04 | .gitignore semantic parity with git | Low | Medium | Use established .gitignore parsing approaches; test against known edge cases. |

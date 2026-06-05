@@ -108,7 +108,7 @@ public static class Program
             ? new HelpOutputRewriteScope("Steward.Cli", "steward")
             : null;
 
-        var exitCode = await parseResult.InvokeAsync(CancellationToken.None);
+        var exitCode = await parseResult.InvokeAsync(parseResult.InvocationConfiguration, CancellationToken.None);
 
         if (parseResult.Errors.Count > 0 && exitCode != ExitCodes.Success)
             return ExitCodes.UsageError;

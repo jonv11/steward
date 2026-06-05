@@ -2,7 +2,7 @@
 type: planning
 status: Active
 version: 0.10.0
-last_updated: 2026-04-18
+last_updated: 2026-06-05
 ---
 
 # Curation Notes
@@ -64,6 +64,6 @@ No competing artifacts existed. The repository was empty except for the master r
 | Split/extract workflows (REQ-MD-012) | Higher-risk Markdown mutation work than the current stable-readiness set |
 | Canonical addresses in search (REQ-SEARCH-012) | Depends on the resource-address model |
 | Git hosting integrations (REQ-DIST-002) | Optional integration point, not part of the current offline-first core |
-| Native AOT compilation | Current dependency stack still includes preview/beta components and has not been hardened for AOT |
+| Native AOT compilation | The current dependency stack has not been hardened for AOT |
 | Plugin/extensibility system | Internal rules remain sufficient on the current roadmap |
 | Protocol integration (MCP, LSP) | Future enhancement, but still part of the broader pre-1.0 exploration line rather than a shipped stable promise |

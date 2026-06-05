@@ -5,12 +5,12 @@ Usage:
   steward [command] [options]
 
 Options:
-  -?, -h, --help                                Show help and usage information
-  --version                                     Show version information
   -o, --output <Json|Text>                      Output format: text or json [default: Text]
   -v, --verbosity <Debug|Normal|Quiet|Verbose>  Verbosity level: quiet, normal, verbose, or debug [default: Normal]
   --no-color                                    Disable colored output
   -c, --config <path>                           Path to .steward configuration directory
+  -?, -h, --help                                Show help and usage information
+  --version                                     Show version information
 
 Commands:
   version            Print version and runtime information
@@ -23,6 +23,6 @@ Commands:
   search <query>     Search repository content and headings
   maintain           Deterministic maintenance of governed artifacts
   status             Show current repository state at a glance
-  explain <rule-id>  Explain a validation rule, or use 'explain path <file>' to show effective governance for a file. Run without arguments to list all rules. []
+  explain <rule-id>  Explain a validation rule, or use 'explain path <file>' to show effective governance for a file. Run without arguments to list all rules.
   refs <path>        Show inbound and outbound references for a file
   refactor           Refactoring operations for governed files
