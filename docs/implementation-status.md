@@ -157,7 +157,7 @@ A comprehensive maintainer review pass also addressed several cross-cutting conc
 - **Deeper handoff/provenance fields:** `explain path`, `refs`, and `search` now emit richer provenance, concrete link-instance, and section-context data to improve agent and tooling handoff.
 - **Governed skill metadata:** `.agents/skills/**/SKILL.md` files are now covered by a `skill` artifact family that enforces the shared `name` and `description` frontmatter floor.
 - **Runtime resilience hardening:** Discovery now skips inaccessible directories and unreadable nested `.gitignore` files, and top-level CLI failures now return stable access-denied/internal-error output instead of raw stack traces.
-- **Still deferred to `v0.18.0`:** hosted CI/release evidence, the remaining universal JSON expected-failure cleanup, the first narrow RFC-009 typed-address slice, and the adoption-oriented config-model follow-on decision.
+- **Still deferred to `v0.18.0`:** the remaining universal JSON expected-failure cleanup, the first narrow RFC-009 typed-address slice, and the adoption-oriented config-model follow-on decision.
 
 ## Remaining Before First Stable Shipment
 
@@ -165,8 +165,8 @@ The detailed categorized list lives in [Pre-1.0 Readiness Plan](planning/pre-1-0
 
 ### Required
 
-- Hosted green cross-platform CI evidence
-- Hosted GitHub Release / nuget.org publication evidence
+- ~~Hosted green cross-platform CI evidence~~ — confirmed: v0.17.0 CI matrix ran green on Windows, Linux, and macOS (2026-04-19)
+- ~~Hosted GitHub Release / nuget.org publication evidence~~ — confirmed: tag-driven release workflow ran green through v0.17.0; NuGet package published
 - Explicit stable-release authorization for `v1.0.0` per ADR-013
 
 ### Strongly Recommended
