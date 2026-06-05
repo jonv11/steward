@@ -223,8 +223,8 @@ public static class CommandSetup
 
     /// <summary>
     /// Resolves the effective output format: explicit CLI flag overrides config file default.
-    /// In System.CommandLine beta5, GetResult returns a non-null result even for options that
-    /// were not explicitly provided (Implicit = true). We check Implicit to distinguish.
+    /// System.CommandLine returns a non-null result even for options that were not explicitly
+    /// provided (Implicit = true). We check Implicit to distinguish.
     /// </summary>
     private static OutputFormat ResolveOutputFormat(ParseResult parseResult, StewardConfig? config)
     {

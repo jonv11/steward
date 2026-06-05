@@ -2,7 +2,7 @@
 type: planning
 source_baseline: v0.17.0
 status: Active
-last_updated: 2026-04-19
+last_updated: 2026-06-05
 ---
 
 # Pre-1.0 Readiness Plan
@@ -19,7 +19,7 @@ This document is the authoritative list of remaining work that is still useful b
 |------|-----------|-------------------|---------------------|-----------|------|
 | Cross-platform build/test/pack automation | A stable release needs reproducible validation on Windows, macOS, and Linux; local-only verification is not enough. | `.github/workflows/ci.yml` now runs build/test/pack on Windows, macOS, and Linux, but the first hosted green run is still pending; multi-platform support is a stated constraint in [ACD-0001](../requirements/assumptions-constraints.md). | Yes — workflow authored and local verification works | Workflow, tests, release | Milestone `v0.18.0` |
 | Hosted GitHub Release evidence | A credible public pre-1.0 release path needs at least one green hosted execution of the tag-driven release workflow before maintainers rely on it. | `.github/workflows/release.yml` now publishes changelog-backed GitHub Releases, pushes the `Steward` package to nuget.org, and attaches the `.nupkg`, self-contained bundles, and checksums, but no hosted run exists yet. | Yes — workflow authored and locally verifiable via scripts | Workflow, release | Milestone `v0.18.0` |
-| ~~Dependency stabilization for stable release~~ | ~~Stable release posture should not depend on beta/preview packages where avoidable.~~ | `Directory.Packages.props` now has only `System.CommandLine` beta (documented, intentional). DI Abstractions upgraded to GA 10.0.6. | **Completed in v0.11.0** | Dependency | Milestone `v0.11.0` |
+| ~~Dependency stabilization for stable release~~ | ~~Stable release posture should not depend on beta/preview packages where avoidable.~~ | `Directory.Packages.props` now uses stable `System.CommandLine` 2.0.0 and GA `Microsoft.Extensions.DependencyInjection` packages. | **Completed in v0.11.0; strengthened after v0.17.0** | Dependency | Milestone `v0.11.0` |
 | ~~Distribution/publication hardening~~ | ~~Packaging now works, but stable-release publication steps and verification should be explicit and repeatable.~~ | [Release process](release-process.md), [release publication checklist](release-publication-checklist.md), `CHANGELOG.md`, `.github/workflows/release.yml`, and release helper scripts now define explicit pre-1.0 release preparation, GitHub Release asset publication, and automated NuGet publication. | **Completed in v0.15.0** | Docs, release | Milestone `v0.15.0` |
 | ~~Fix scoped validation false positives (B6)~~ | ~~`check --scope changed\|staged` produces false diagnostics on clean trees.~~ | `AllDiscoveredFiles` added to `ValidationContext`; `STWD-001`, `STWD-007`, `STWD-009` updated; 4 regression tests + 1 contract test. | **Completed in v0.11.0** | Code, tests | [Pre-release blocker B6](pre-release-blockers.md) |
 | ~~Include coverage in status JSON output (B7)~~ | ~~`status --coverage --output json` omits governance-coverage data.~~ | `RepositoryStatusWithCoverage` and `CoverageResponse` classes; 2 contract tests. | **Completed in v0.11.0** | Code, tests | [Pre-release blocker B7](pre-release-blockers.md) |

@@ -1,7 +1,7 @@
 ---
 type: planning
 status: Active
-last_updated: 2026-04-17
+last_updated: 2026-06-05
 ---
 
 # Pre-Release Blockers
@@ -57,14 +57,14 @@ These are not nice-to-haves. Each item, if left unresolved, would materially wea
 - **Acceptance criteria:** A green CI run on all three platforms before the public `0.x` release tag is created.
 - **Effort estimate:** Medium (CI authoring + any cross-platform bug fixes discovered)
 
-### B4: Document or mitigate System.CommandLine beta dependency risk
+### B4: Document or mitigate System.CommandLine dependency risk
 
-- **Status:** Completed for option (a) on 2026-04-16; DI Abstractions upgraded from preview to GA 10.0.6
+- **Status:** Completed for option (a) on 2026-04-16; strengthened on 2026-06-05 by upgrading `System.CommandLine` to stable 2.0.0
 - **Category:** Dependency / Release
 - **Promise affected:** Product reliability
-- **Resolution evidence:** `README.md`, `Directory.Packages.props`
+- **Resolution evidence:** `Directory.Packages.props`, `docs/implementation-status.md`
 - **What must change:**
-  - Either (a) pin the specific System.CommandLine version in `Directory.Packages.props` and add a note in README acknowledging the beta dependency, or (b) evaluate migration to a GA alternative if timing permits
+  - Either (a) pin the specific `System.CommandLine` version in `Directory.Packages.props` and document the dependency posture, or (b) evaluate migration to a GA alternative if timing permits
   - The dependency posture must be a conscious, documented decision rather than an implicit acceptance
 - **Acceptance criteria:** A maintainer or adopter asking "is this dependency safe?" can find a clear answer in the repo.
 - **Effort estimate:** Small for option (a), large for option (b)

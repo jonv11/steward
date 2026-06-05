@@ -1,6 +1,6 @@
 # Implementation Status
 
-Last updated: 2026-04-19
+Last updated: 2026-06-05
 
 ## Current Baseline
 
@@ -51,7 +51,7 @@ Steward is currently on **`v0.17.0`**. The repository is **still pre-1.0**: inte
 - `status` now surfaces required artifacts, recommended artifacts, and state-document coverage instead of only hard-required entries.
 - `config show --effective` now surfaces the merged effective policy in text mode as well as JSON.
 - The repo now includes a GitHub Actions matrix for build/test/pack on Windows, macOS, and Linux; the first hosted green run remains part of the stable-release evidence trail.
-- Public-facing docs now describe explainability, profile readiness, and prerelease dependency posture more conservatively and explicitly.
+- Public-facing docs now describe explainability, profile readiness, and dependency posture more conservatively and explicitly.
 - Accepted RFC command/config artifacts now align more closely with the current CLI and policy model, reducing decision drift for contributors and coding agents.
 - Non-software profile behavior now has fixture-backed CLI coverage across `init`, `config validate`, `config show --effective`, `status`, `orient`, `check`, and `config doctor`; the remaining B5 work is an explicit keep/narrow release decision, not missing execution evidence.
 - The accepted RFC-007 governance-enhancement work is materially present in the codebase and should be treated as part of the delivered pre-1.0 baseline, not as a hypothetical post-`1.0.0` future.
@@ -63,7 +63,7 @@ Steward is currently on **`v0.17.0`**. The repository is **still pre-1.0**: inte
 - **B5 resolved (ADR-014):** Non-software profile scope decision recorded. `init --profile` now offers `software`, `docs`, `minimal`. `mixed` and `knowledge` deferred until contracts are enriched.
 - **Exit-code regression tests:** 7 tests covering all 4 exit codes (Success, ValidationFailure, UsageError, InternalError).
 - **Stable-surface contract tests:** 10 tests covering check/status/orient JSON shapes, text output contracts, version output, and scoped-check regression.
-- **Dependency stabilization:** `Microsoft.Extensions.DependencyInjection.Abstractions` upgraded from preview to GA 10.0.6. Only `System.CommandLine` beta remains (documented and intentional).
+- **Dependency stabilization:** `Microsoft.Extensions.DependencyInjection.Abstractions` upgraded from preview to GA 10.0.6, and `System.CommandLine` is now on stable `2.0.0`.
 - **Publication checklist:** [Release publication checklist](planning/release-publication-checklist.md) with local verification, tagging, NuGet publication, and self-contained binary steps.
 
 ## Known Defects In `v0.10.0`

@@ -6,6 +6,10 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ## [Unreleased]
 
+### Changed In Unreleased
+
+- Stabilized the CLI parser dependency on `System.CommandLine` 2.0.0 and aligned the root help snapshot with the stable renderer output.
+
 ## [0.17.0] - 2026-04-19
 
 ### Added In 0.17.0
