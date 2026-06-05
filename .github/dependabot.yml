@@ -6,6 +6,10 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    labels:
+      - dependencies
+      - .NET
+      - release:none
     ignore:
       # Update manually: CLI parser changes affect public help and parsing behavior.
       - dependency-name: System.CommandLine
@@ -16,3 +20,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    labels:
+      - dependencies
+      - github_actions
+      - release:none

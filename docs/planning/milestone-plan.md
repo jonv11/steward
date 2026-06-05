@@ -3,7 +3,7 @@ type: planning
 document_id: PLAN-0002
 version: 0.17.0
 status: Active
-last_updated: 2026-04-19
+last_updated: 2026-06-05
 ---
 
 # Milestone Plan — Pre-1.0 Mainline
@@ -40,7 +40,7 @@ Steward is still on a pre-stable SemVer line. The active roadmap continues on `0
 
 | Version   | Theme                                                          | Primary outcome                                                                                              |
 |-----------|----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| `v0.18.0` | Deferred release evidence and remaining contract follow-ons | Hosted CI/release evidence, the remaining universal JSON cleanup, typed-address/config-model follow-ons, and the next deferred pre-stable trust items |
+| `v0.18.0` | Remaining contract follow-ons and pre-stable trust items | Universal JSON expected-failure coverage, the first narrow RFC-009 typed-address slice, adoption-oriented config-model follow-on decisions, and the next deferred pre-stable trust items |
 
 ## First Stable Release
 
@@ -83,7 +83,7 @@ All locally finishable items planned for `v0.16.0` are now implemented and verif
 | 8 | Resolve explicit-artifact / family-schema inheritance | Assessment finding 4, RFC-008 | Done — explicit artifacts now inherit family frontmatter/section/naming/min-count governance while scoped path rules can still provide local allowed-value exceptions |
 | 9 | Improve Markdown subsystem help and examples | Assessment finding, RFC-004 | Done — `md`/`md edit` help and README examples now show practical selector and edit flows instead of assuming prior MdPath knowledge |
 
-Hosted CI and tag-driven release evidence remain open in the active readiness plan because they can only close once the pushed `v0.16.0` tag runs remotely.
+Hosted CI and tag-driven release evidence closed in `v0.17.0`: the CI matrix ran green on Windows, Linux, and macOS, and the tag-driven release workflow confirmed green through v0.17.0.
 
 ## v0.17.0 Delivered Scope
 
@@ -97,22 +97,21 @@ The `v0.17.0` line ships the work that actually landed after `v0.16.0`: document
 | 4 | Remove pre-`1.0.0` legacy compatibility shims | RFC-010 follow-on, release-trust hardening | Done — standard-envelope JSON is now the only supported mode, `check --dry-run` is removed, and the deprecated frontmatter-compatibility path is gone |
 | 5 | Enforce skill frontmatter through a shared artifact family | Repo-self-stewardship follow-on | Done — `.agents/skills/**/SKILL.md` now matches a `skill` family requiring `name` and `description` |
 | 6 | Harden inaccessible-path discovery and top-level exception handling | V1 product readiness review, repo-quality hardening follow-on | Done — unreadable directories are skipped and unexpected CLI failures now return stable structured errors |
-| 7 | Capture the first hosted green CI and tag-driven release runs | Readiness tracker, release process | Deferred to `v0.18.0` — no hosted evidence exists yet in this repository state |
+| 7 | Capture the first hosted green CI and tag-driven release runs | Readiness tracker, release process | **Done** — v0.17.0 CI matrix ran green on Windows, Linux, and macOS (2026-04-19); tag-driven release workflow confirmed green through v0.17.0 |
 | 8 | Finish universal JSON expected-failure coverage | AI-agent contract review, synthesis `SYN-03` | Deferred to `v0.18.0` — standard-envelope JSON is now the only mode, but a few expected-failure paths still need routing through `JsonEnvelopeWriter` |
 | 9 | Scope and implement the first narrow RFC-009 slice | RFC-009, AI-agent contract review | Deferred to `v0.18.0` |
 | 10 | Decide whether to open an adoption-oriented config-model RFC | Config expressiveness stress test, synthesis `SYN-08` | Deferred to `v0.18.0` |
 
 ## v0.18.0 Planned Scope
 
-Primary outcome: finish the deferred pre-stable trust-floor work that `v0.17.0` intentionally does not overclaim.
+Primary outcome: finish the deferred pre-stable trust-floor work that `v0.17.0` intentionally does not overclaim. Hosted CI and release evidence are now confirmed; the remaining scope is contract coverage, typed-address design, and config-model decisions.
 
 | # | Item | Source | Notes |
 |---|------|--------|--------|
-| 1 | Capture the first hosted green CI and tag-driven release runs | Readiness tracker, release process | Close the remaining operational evidence gap with a real hosted matrix pass, GitHub Release, and NuGet publication record |
-| 2 | Finish routing the remaining expected-failure JSON paths through the standard envelope | AI-agent contract review, synthesis `SYN-03` | `--output json` should become a universal expected-failure contract, not just the mainline success/error behavior |
-| 3 | Scope and implement the first narrow RFC-009 slice | RFC-009, AI-agent contract review | Focus on reusable address handoff across `search`, `refs`, `check`, and `explain path` rather than a broad address model all at once |
-| 4 | Decide and, if justified, start the adoption-oriented config-model follow-on | Config expressiveness stress test, synthesis `SYN-08` | Constrain scope to unsupported-content transparency, intentionally ungoverned zones, and grandfathering/new-files-only behavior |
-| 5 | Revisit workflow/session modeling, heading-selector fuzzy matching, and deferred profile enrichment | RFC-008 Phase 3, CLI assessment, ADR-014 | These remain valid later pre-1.0 items once the trust-floor work above lands cleanly |
+| 1 | Finish routing the remaining expected-failure JSON paths through the standard envelope | AI-agent contract review, synthesis `SYN-03` | `--output json` should become a universal expected-failure contract, not just the mainline success/error behavior |
+| 2 | Scope and implement the first narrow RFC-009 slice | RFC-009, AI-agent contract review | Focus on reusable address handoff across `search`, `refs`, `check`, and `explain path` rather than a broad address model all at once |
+| 3 | Decide and, if justified, start the adoption-oriented config-model follow-on | Config expressiveness stress test, synthesis `SYN-08` | Constrain scope to unsupported-content transparency, intentionally ungoverned zones, and grandfathering/new-files-only behavior |
+| 4 | Revisit workflow/session modeling, heading-selector fuzzy matching, and deferred profile enrichment | RFC-008 Phase 3, CLI assessment, ADR-014 | These remain valid later pre-1.0 items once the trust-floor work above lands cleanly |
 
 ---
 
