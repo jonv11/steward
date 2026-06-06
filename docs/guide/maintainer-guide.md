@@ -49,13 +49,13 @@ export PATH="$PWD/.tools/steward:$PATH"
 $env:PATH = "$PWD\.tools\steward;$env:PATH"
 ```
 
-### Install from NuGet (when available)
+### Install from NuGet
 
 ```bash
 dotnet tool install --global Steward
 ```
 
-If this fails with "package not found," the latest version has not yet been published. Use the source build above or download from the [GitHub Releases page](https://github.com/jonv11/steward/releases).
+This installs the latest published release. To test unreleased work, use the source build above. Published packages and self-contained bundles are also available from the [GitHub Releases page](https://github.com/jonv11/steward/releases).
 
 ### Important: the global.json trap
 
@@ -125,10 +125,25 @@ artifact_families:
       path_pattern: "docs/adr/ADR-*.md"
     frontmatter_schema:
       required: [type, status]
+      allowed_fields: [type, status, description, last_updated]
       allowed_values:
         status: [Draft, Proposed, Accepted, Superseded]
+      deprecated_fields:
+        date: last_updated
     required_sections: [Context, Decision, Consequences]
     naming_pattern: "^ADR-[0-9]{3}-[a-z0-9-]+\\.md$"
+    title_pattern: "^ADR-[0-9]{3}: .+"
+    section_pattern: "^[A-Z][A-Za-z ]+$"
+    section_schema:
+      heading_match: exact
+      enforce_order: true
+      allow_extra: true
+      sections:
+        - heading: Context
+        - heading: Decision
+        - heading: Consequences
+        - heading: Alternatives
+          required: false
     directory_expectations:
       min_count: 1
 ```

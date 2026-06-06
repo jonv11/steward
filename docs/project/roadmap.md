@@ -1,27 +1,30 @@
 ---
 type: project
 status: Active
-summary: Current v0.18.0 working-line scope and the decision boundary for the following milestone
+summary: Pending v0.18.0 publication and the decision boundary for the following milestone
 last_updated: 2026-06-06
 review_after: 2026-07-06
 ---
 
 # Roadmap
 
-## Current Milestone: `v0.18.0`
+## Current Milestone: Publish `v0.18.0`
 
-The working line is focused on stronger policy schemas, CI handoff, and validation reliability.
+The `v0.18.0` release candidate is prepared with stronger policy schemas, CI handoff, and validation reliability.
 
 ### Landed
 
-See [docs/project/status.md](status.md) for the authoritative list of implemented capabilities on the unreleased working line.
+See [docs/project/status.md](status.md) for the authoritative release-candidate capability list.
 
 ### Before Release
 
-- keep README, guides, changelog, and project status aligned with the 21-rule baseline
-- maintain a warning-free self-governance baseline
-- decide whether remaining JSON expected-failure cleanup belongs in `v0.18.0` or the next milestone
+- run the full local publication checklist and obtain green hosted CI for the release commit
 - run the release process only when explicitly authorized
+- verify the GitHub Release assets and NuGet package, then commit the post-release state update
+
+### Explicit Deferral
+
+The remaining universal JSON expected-failure cleanup is deferred from `v0.18.0`. The standard envelope is already the only supported JSON mode and the remaining paths do not block the policy-schema, SARIF, scoped-validation, and reliability scope of this release. The follow-on is tracked in the [backlog](backlog.md).
 
 ## Next Milestone
 

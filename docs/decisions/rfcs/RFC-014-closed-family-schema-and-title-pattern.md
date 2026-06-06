@@ -361,7 +361,7 @@ identifier-prefix convention:
    adoption without breaking check pipelines.
 
 2. **Make `deprecated_fields` advisory only (no auto-fix).** Rejected. Deprecated
-   field renames are mechanically safe and deterministic. Auto-fix with dry-run is the
+   field renames are mechanically safe and deterministic. Preview-first auto-fix is the
    highest-leverage use of the fix machinery and eliminates the manual grep-and-edit
    cycle entirely.
 

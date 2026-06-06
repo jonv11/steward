@@ -104,6 +104,22 @@ public static class Program
             return ExitCodes.UsageError;
         }
 
+        var requestedOutput = CommandSetup.ResolveRequestedOutputFormat(parseResult, args);
+        var commandName = ResolveCommandName(args);
+        if (parseResult.Errors.Count == 0 &&
+            requestedOutput == OutputFormat.Sarif &&
+            !string.Equals(commandName, "check", StringComparison.OrdinalIgnoreCase))
+        {
+            CommandSetup.WriteCommandError(
+                args,
+                commandName,
+                ExitCodes.UsageError,
+                "usage-error",
+                "SARIF output is supported only by 'steward check'.",
+                suggestedNextStep: "Use '--output text' or '--output json' for this command.");
+            return ExitCodes.UsageError;
+        }
+
         using var helpScope = ShouldRewriteHelpOutput(args, parseResult)
             ? new HelpOutputRewriteScope("Steward.Cli", "steward")
             : null;

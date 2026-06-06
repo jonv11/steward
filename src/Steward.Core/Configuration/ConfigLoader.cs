@@ -115,7 +115,8 @@ public sealed class ConfigLoader
         }
 
         if (!string.IsNullOrWhiteSpace(config.Output?.Format) &&
-            !Enum.TryParse<OutputFormat>(config.Output.Format, ignoreCase: true, out _))
+            !string.Equals(config.Output.Format, "text", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(config.Output.Format, "json", StringComparison.OrdinalIgnoreCase))
         {
             throw new StewardConfigException(
                 $"Invalid output.format '{config.Output.Format}' in '{path}'. Valid values: text, json.",

@@ -2,7 +2,7 @@
 
 A configurable repository stewardship CLI for humans and AI agents. Steward validates documentation structure, enforces governance policies, and keeps repository artifacts in sync — all driven by declarative YAML configuration.
 
-Current version: **`v0.17.0`** (pre-`1.0.0`). See [Current Status](#current-status).
+Release candidate: **`v0.18.0`** (pending publication, pre-`1.0.0`). Latest published release: **`v0.17.0`**. See [Current Status](#current-status).
 
 ## Quick Start
 
@@ -41,7 +41,7 @@ steward check                        # validate against policy
 - **Deterministic maintenance** — auto-generate structure documents, indexes, and managed sections
 - **Broken link detection** — find internal Markdown links that don't resolve
 - **Rule explainability** — every validation rule is explainable with remediation guidance
-- **Multi-format output** — text and JSON output for human and agent consumption
+- **Multi-format output** — text and JSON across the command surface, plus SARIF 2.1.0 from `steward check`
 - **Auto-fix** — 4 rules (STWD-003, STWD-007, STWD-012, STWD-018) support deterministic auto-fix via `steward check --fix --apply`
 
 ## Installation
@@ -68,13 +68,13 @@ export PATH="$PWD/.tools/steward:$PATH"
 $env:PATH = "$PWD\.tools\steward;$env:PATH"
 ```
 
-### Install from NuGet (when published)
+### Install from NuGet
 
 ```bash
 dotnet tool install --global Steward
 ```
 
-If this fails with "package not found," the latest version has not yet been published to NuGet. Use the source build above or download from [GitHub Releases](https://github.com/jonv11/steward/releases).
+This installs the latest published release. To test unreleased work, use the source build above. Published packages and self-contained bundles are also available from [GitHub Releases](https://github.com/jonv11/steward/releases).
 
 ### GitHub Releases
 
@@ -178,13 +178,13 @@ For complete field documentation, valid values, defaults, and configuration exam
 
 ## Current Status
 
-Steward is at `v0.17.0` on a pre-`1.0.0` release line. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Steward is prepared as a `v0.18.0` release candidate on a pre-`1.0.0` release line. The latest published release remains `v0.17.0` until the tag-driven release and NuGet publication are verified. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
 **What works today:** All 21 validation rules, all commands listed above, three built-in profiles (`software`, `docs`, `minimal`), artifact family classification, deterministic maintenance, Markdown structural editing, JSON and SARIF output, and scoped validation.
 
 **Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 4 of 21 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
 
-**Current working line:** Unreleased `v0.18.0` work is present while release metadata remains at `v0.17.0`. Stable `v1.0.0` still requires explicit authorization. See [project status](docs/project/status.md) and the [roadmap](docs/project/roadmap.md).
+**Current release state:** `v0.18.0` metadata and release notes are prepared, but publication is still pending. Stable `v1.0.0` remains unauthorized. See [project status](docs/project/status.md) and the [roadmap](docs/project/roadmap.md).
 
 ## Documentation
 

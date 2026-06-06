@@ -159,4 +159,16 @@ public class SarifOutputTests : IDisposable
         var results = doc.RootElement.GetProperty("runs")[0].GetProperty("results");
         results.GetArrayLength().Should().Be(0);
     }
+
+    [Fact]
+    public void NonCheckCommand_SarifOutput_ReturnsUsageError()
+    {
+        var (exitCode, output, error) = CliTestHelper.InvokeCapture("orient", "--output", "sarif");
+
+        exitCode.Should().Be(2);
+        output.Should().BeEmpty();
+        error.Should().Contain("SARIF output is supported only by 'steward check'.");
+        error.Should().Contain("--output text");
+        error.Should().Contain("--output json");
+    }
 }

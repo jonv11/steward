@@ -42,6 +42,21 @@ public class ConfigCommandTests : IDisposable
     }
 
     [Fact]
+    public void ConfigValidate_SarifDefault_ReturnsUsageError()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "config.yaml"), """
+            output:
+              format: sarif
+            """);
+
+        var (exitCode, _, error) = CliTestHelper.InvokeCapture("config", "validate");
+
+        exitCode.Should().Be(2);
+        error.Should().Contain("Invalid output.format 'sarif'");
+        error.Should().Contain("Valid values: text, json");
+    }
+
+    [Fact]
     public void ConfigValidate_UnknownField_ReturnsUsageError()
     {
         File.WriteAllText(Path.Combine(_tempDir, ".steward", "config.yaml"), "profile: software\nextra: nope\n");

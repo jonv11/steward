@@ -87,7 +87,9 @@ Each GitHub Release currently publishes:
 
 - Update `Directory.Build.props` to the target version.
 - Update `CHANGELOG.md` by moving the intended release notes out of `Unreleased` into a new dated version section.
-- Update current-state and planning docs if the new version or release posture changes what they claim.
+- Update `README.md`, `AGENTS.md`, `docs/project/status.md`, and `docs/project/roadmap.md` to identify the target version as pending release.
+- Review `docs/README.md`, user/contributor guides, and requirements traceability; update them only when their behavior, navigation, milestone targets, or status summaries changed.
+- Do not claim that the target is published until the GitHub Release and NuGet package have been verified.
 
 ### 3. Verify locally
 
@@ -135,6 +137,7 @@ git push origin v<VERSION>
 - Download at least one bundle and verify the checksum.
 - Confirm the package appears on nuget.org.
 - Install the `.nupkg` locally or from the release asset and smoke-test `steward version`, `steward orient`, and `steward check`.
+- Commit a post-release state update that marks the target as shipped in `README.md`, `AGENTS.md`, `docs/project/status.md`, and `docs/project/roadmap.md`, and closes the milestone.
 
 ## What Is Still Intentionally Manual
 

@@ -87,14 +87,15 @@ Release readiness gates the right to publish or advertise a version, not just th
 Every intentional version change must update, at minimum:
 
 - `Directory.Build.props`
-- package/project metadata that surfaces the version
 - `CHANGELOG.md`
-- install and release wording in `README.md`
+- version and release wording in `README.md`
+- version wording in `AGENTS.md`
 - `docs/project/status.md`
-- `docs/README.md`
 - `docs/project/roadmap.md`
-- the active readiness plan
-- `docs/requirements/requirements-traceability.md` when milestone targets or status summaries change
+
+The release-preparation commit must describe the target as pending and must not claim that publication has completed. After the tag-driven workflow and NuGet publication are verified, a post-release state commit updates public and project wording from pending to shipped and closes the milestone.
+
+The operator must also review `docs/README.md`, user and contributor guides, and `docs/requirements/requirements-traceability.md`, updating them only when the version change alters their navigation, behavior, milestone targets, or status summaries. Release readiness evidence is owned by `docs/project/status.md`, `docs/project/roadmap.md`, and `docs/project/release-publication-checklist.md`; no separate active readiness plan is required.
 
 ## Consequences
 

@@ -61,6 +61,8 @@ These serve different purposes:
 - **`discovery.exclude`** makes files completely invisible to Steward. Use it for build output, dependencies, tool installations, and anything that should never appear in any Steward command.
 - **`coverage.exclude`** excludes files from the governance coverage percentage reported by `steward status --coverage`, but those files are still discovered, validated, and shown in other commands. Use it for test fixtures, generated files, or vendor content you govern but don't want counting against your coverage metric.
 
+SARIF is not a valid repository-wide `output.format` default. Use `steward check --output sarif` explicitly when a CI system needs SARIF 2.1.0; other commands support text and JSON.
+
 ## policy.yaml
 
 The core configuration file. Declares what the repository contains, what rules apply, and what artifacts are maintained.
@@ -164,11 +166,26 @@ artifact_families:
     importance: recommended
     frontmatter_schema:
       required: [type, status]
+      allowed_fields: [type, status, description, last_updated]
       allowed_values:
         type: [adr]
         status: [Draft, Proposed, Accepted, Superseded, Deprecated]
+      deprecated_fields:
+        date: last_updated
     required_sections: [Context, Decision, Consequences]
     naming_pattern: "^ADR-[0-9]{3}-[a-z0-9-]+\\.md$"
+    title_pattern: "^ADR-[0-9]{3}: .+"
+    section_pattern: "^[A-Z][A-Za-z ]+$"
+    section_schema:
+      heading_match: exact
+      enforce_order: true
+      allow_extra: true
+      sections:
+        - heading: Context
+        - heading: Decision
+        - heading: Consequences
+        - heading: Alternatives
+          required: false
     directory_expectations:
       min_count: 1
 ```
@@ -185,10 +202,28 @@ artifact_families:
 | `importance` | string | `optional` | `required`, `recommended`, or `optional` |
 | `frontmatter_schema.required` | list | `[]` | Frontmatter field names that must be present (STWD-003) |
 | `frontmatter_schema.allowed_values` | map | `{}` | Field→allowed values for validation (case-insensitive) |
+| `frontmatter_schema.allowed_fields` | list | _(none)_ | Complete allowed field set for a closed schema. Unexpected fields produce STWD-003 warnings; global auto-fields are implicitly allowed |
+| `frontmatter_schema.deprecated_fields` | map | `{}` | Deprecated field→replacement mapping, or `null` for removal. STWD-003 reports and can auto-fix migrations |
 | `required_sections` | list | `[]` | Heading text that must appear in matched files (STWD-014) |
 | `naming_pattern` | string | _(none)_ | Regex that matched filenames must satisfy (STWD-016) |
+| `title_pattern` | string | _(none)_ | Case-sensitive regex that the H1 heading must satisfy (STWD-019) |
+| `section_pattern` | string | _(none)_ | Case-sensitive regex that every H2 heading must satisfy (STWD-020) |
+| `section_schema` | object | _(none)_ | H2 document schema for required/optional sections, ordering, and extra-section policy (STWD-021) |
 | `directory_expectations.min_count` | int | _(none)_ | Minimum number of files matching this family (STWD-015) |
 | `directory_expectations.description` | string | _(none)_ | Description shown in min-count violation messages |
+
+#### Section schema fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `section_schema.sections` | list | `[]` | Ordered H2 schema entries |
+| `section_schema.sections[].heading` | string | _(required)_ | Heading text matched against document H2 headings |
+| `section_schema.sections[].required` | bool | `true` | Whether the section must exist |
+| `section_schema.heading_match` | string | `contains` | `contains` for case-insensitive substring matching or `exact` for case-insensitive equality |
+| `section_schema.enforce_order` | bool | `false` | Require present sections to follow schema order |
+| `section_schema.allow_extra` | bool | `true` | Allow H2 headings not declared in the schema |
+
+`config validate` rejects invalid title/section regexes, blank closed-schema fields, required fields omitted from `allowed_fields`, deprecated replacements omitted from `allowed_fields`, and unsupported `heading_match` values.
 
 ### governance section
 

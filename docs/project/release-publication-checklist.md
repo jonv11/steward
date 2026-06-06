@@ -20,6 +20,7 @@ last_updated: 2026-06-06
 - [ ] Version string in `Directory.Build.props` (`Version`, `AssemblyVersion`, `FileVersion`) is updated to the target release version.
 - [ ] `CHANGELOG.md` contains a dated section for the target release version and `Unreleased` is adjusted accordingly.
 - [ ] `steward version` output matches the target release version.
+- [ ] `README.md`, `AGENTS.md`, `status.md`, and `roadmap.md` describe the target as pending release without claiming publication.
 - [ ] CI is green on all three platforms (Windows, Linux, macOS) from `.github/workflows/ci.yml`.
 - [ ] If this is the first use of the tag-driven GitHub Release workflow, the workflow definition has been reviewed and the label set in `.github/release-labels.json` has been synchronized into GitHub.
 
@@ -90,6 +91,6 @@ steward version
 - [ ] Confirm the GitHub Release page contains the `.nupkg`, all expected zipped bundles, and `SHA256SUMS.txt`.
 - [ ] Confirm the GitHub Release notes match the target `CHANGELOG.md` entry.
 - [ ] Download at least one asset and verify its checksum.
-- [ ] Update [status.md](status.md) to reflect the shipped version.
-- [ ] Update [roadmap.md](roadmap.md) to close the milestone and identify the next decision boundary.
+- [ ] Update `README.md`, `AGENTS.md`, [status.md](status.md), and [roadmap.md](roadmap.md) from pending-release wording to shipped state.
+- [ ] Commit the post-release state update and identify the next roadmap decision boundary.
 - [ ] If this was a stable release (`1.0.0+`), record the authorization and post-release state in [status.md](status.md) and [roadmap.md](roadmap.md).

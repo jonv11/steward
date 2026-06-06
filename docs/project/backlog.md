@@ -26,6 +26,7 @@ Items here are intentionally unscheduled. Moving an item into committed scope re
 | Policy evaluation trace | Add precedence and hypothetical-policy detail to `explain path` rather than creating a broad new command family |
 | Indexed mode for large repositories | Revisit only if live-scan performance becomes an evidenced problem |
 | Consolidated impact surface | Aggregate `check`, `refs`, `explain path`, and maintenance signals for agent workflows |
+| Universal JSON expected-failure cleanup | Route the remaining expected-failure paths through the standard envelope before claiming universal JSON coverage |
 | Heading selector fuzzy matching | Add a conservative non-exact selector mode |
 | Workflow/session modeling | Revisit RFC-008 phase 3 after higher-priority trust work |
 | Additional init profiles | Re-enable `mixed` or `knowledge` only when they have distinct, tested contracts |

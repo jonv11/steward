@@ -3,6 +3,7 @@ type: adr
 status: Accepted
 category: Architecture
 description: Defines the validation engine, rule registry, diagnostics model, and fixable-rule contract
+last_updated: 2026-06-06
 ---
 
 # ADR-005: Validation Engine Design
@@ -117,7 +118,7 @@ public sealed class FileEdit
 }
 ```
 
-`--fix` applies all computed fixes. `--dry-run` reports what `--fix` would change.
+`--fix` previews all computed fixes. `--fix --apply` writes the previewed deterministic edits.
 
 ### Secret filtering
 

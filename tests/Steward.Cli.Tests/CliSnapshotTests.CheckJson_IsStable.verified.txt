@@ -1,7 +1,7 @@
 {
   "schemaVersion": "steward-json/v1",
   "command": "check",
-  "toolVersion": "0.17.0",
+  "toolVersion": "0.18.0",
   "success": true,
   "exitCode": 1,
   "data": {

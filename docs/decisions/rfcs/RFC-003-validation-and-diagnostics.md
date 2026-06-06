@@ -3,7 +3,8 @@ type: rfc
 status: Accepted
 description: Defines repository validation behavior, diagnostic structure, severities, remediation, and scoping
 resolves: >-
-  Check behavior, diagnostic schema, severity model, exit codes, remediation, scoping, dry-run
+  Check behavior, diagnostic schema, severity model, exit codes, remediation, scoping, preview and apply
+last_updated: 2026-06-06
 ---
 
 # RFC-003: Validation and Diagnostics
@@ -12,7 +13,7 @@ resolves: >-
 
 ## Context
 
-Validation is the core contract-enforcement surface. The requirements demand deterministic, scoped validation with machine-readable and human-readable output, stable exit codes, remediation guidance, and dry-run support.
+Validation is the core contract-enforcement surface. The requirements demand deterministic, scoped validation with machine-readable and human-readable output, stable exit codes, remediation guidance, and preview-first fix support.
 
 ## Decision
 
@@ -23,9 +24,10 @@ Validation is the core contract-enforcement surface. The requirements demand det
 | `full` | `--scope full` or default invocation | Evaluates all repository files against policy |
 | `changed` | `--scope changed` | Evaluates files changed relative to `HEAD`; falls back to full scope if git metadata is unavailable |
 | `staged` | `--scope staged` | Evaluates files in the git staging area |
+| `since` | `--since <ref>` | Evaluates the three-dot merge-base diff between a branch, tag, or commit and `HEAD` |
 | `paths` | `--paths file1 file2 dir/` | Evaluates exactly the specified files/directories |
 
-The change set is determined via git integration when available. If git is not available for `changed` or `staged`, full scope is used as a conservative fallback.
+The change set is determined via git integration when available. If git is not available for `changed`, `staged`, or `since`, full scope is used as a conservative fallback. An invalid `--since` ref is a usage error rather than a fallback.
 
 ### Diagnostic model
 
@@ -95,27 +97,37 @@ WARN   frontmatter  docs/PRD.md:1
 
 ```json
 {
-  "summary": {
-    "scope": "full",
-    "filesChecked": 42,
-    "errors": 1,
-    "warnings": 1,
-    "infos": 0,
-    "pass": false
-  },
-  "diagnostics": [
-    { "ruleId": "...", "severity": "error", ... },
-    { "ruleId": "...", "severity": "warn", ... }
-  ]
+  "schemaVersion": "steward-json/v1",
+  "command": "check",
+  "toolVersion": "<version>",
+  "success": true,
+  "exitCode": 1,
+  "data": {
+    "summary": {
+      "scope": "full",
+      "filesChecked": 42,
+      "errors": 1,
+      "warnings": 1,
+      "infos": 0,
+      "pass": false
+    },
+    "diagnostics": [
+      { "ruleId": "...", "severity": "error" },
+      { "ruleId": "...", "severity": "warn" }
+    ]
+  }
 }
 ```
 
-### Dry-run and fix
+**Static-analysis interchange (SARIF):**
 
-- `steward check --dry-run`: Reports what `--fix` would change without modifying files.
-- `steward check --fix`: Applies deterministic auto-fixes (e.g., missing frontmatter fields, stale indexes).
-- `--fix` only applies fixes for rules that have deterministic remediations. Non-deterministic issues are reported with guidance.
-- `--fix --dry-run` shows planned fixes without applying.
+`steward check --output sarif` emits SARIF 2.1.0 for CI systems and code-scanning integrations. SARIF is intentionally check-only and cannot be configured as the repository-wide default output format.
+
+### Preview and fix
+
+- `steward check --fix`: Previews deterministic auto-fixes without modifying files.
+- `steward check --fix --apply`: Applies the previewed deterministic fixes.
+- Fixes are available only for rules with deterministic remediations. Non-deterministic issues are reported with guidance.
 
 ### Completion policy
 
@@ -140,7 +152,7 @@ This is a best-effort safety net, not a substitute for proper secret management.
 
 ## Alternatives considered
 
-1. **SARIF format for diagnostics:** Considered but rejected for v1.0.0—SARIF is complex and primarily designed for static analysis tools. Our JSON schema is simpler and sufficient. SARIF export could be added later.
+1. **SARIF as the universal machine-readable format:** Rejected. JSON remains the general command contract; SARIF was later adopted as a check-only CI interchange format.
 2. **Treating warnings as errors by default:** Rejected—warnings should be advisory. A `--strict` flag may be added later to promote warnings to errors.
 3. **Validation only on explicit request:** Rejected—`steward check` with a sensible default scope provides immediate value.
 
