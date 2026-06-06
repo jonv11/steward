@@ -101,7 +101,6 @@ artifacts:
     role: changelog
     description: Canonical release-notes source for intentional versioned releases
     required: true
-    importance: recommended
 
   # Generated orientation surfaces.
   - path: STRUCTURE.md
@@ -270,6 +269,11 @@ governance:
     - docs/planning/workflow-guide.md
     - docs/requirements/PRD.md
     - steward.sln
+  # completion_policy controls the "Completion:" summary printed at the end of `steward check`
+  # output. It is purely reporting metadata — it does NOT affect the pass/fail exit code.
+  # Pass/fail is determined solely by error count (errors == 0 → pass).
+  # Use validation.severity_overrides to promote a rule to error severity if you want it to
+  # gate CI.
   completion_policy:
     rules:
       - id: STWD-001

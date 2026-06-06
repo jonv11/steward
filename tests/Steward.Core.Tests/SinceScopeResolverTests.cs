@@ -17,10 +17,47 @@ public class SinceScopeResolverTests
     [Fact]
     public void Resolve_WhenGitUnavailable_FallsBackToAllFiles()
     {
-        // Pass an invalid path so git fails → should return allFiles unchanged
+        // Pass a non-existent path so Process.Start() throws, simulating git unavailable.
+        // Should fall back to all files rather than throwing.
         var resolver = new SinceScopeResolver("origin/main");
         var result = resolver.Resolve(AllFiles, "Z:\\nonexistent-path");
         result.Should().BeEquivalentTo(AllFiles);
+    }
+
+    [Fact]
+    public void Resolve_InvalidRef_ThrowsInvalidOperationException()
+    {
+        // Use a real git repo so git can start, then pass an invalid ref.
+        // git will run but return exit code != 0, and the resolver must throw.
+        if (!IsGitAvailable())
+            return; // Skip if git not installed
+
+        var tempDir = Path.Combine(Path.GetTempPath(), "steward-since-invalid-" + Guid.NewGuid().ToString("N")[..8]);
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            RunGit(tempDir, "init");
+            RunGit(tempDir, "config user.email test@test.com");
+            RunGit(tempDir, "config user.name Test");
+            File.WriteAllText(Path.Combine(tempDir, "README.md"), "# Hello");
+            RunGit(tempDir, "add README.md");
+            RunGit(tempDir, "commit -m initial");
+
+            var resolver = new SinceScopeResolver("this-ref-does-not-exist-xyz");
+            var act = () => resolver.Resolve(AllFiles, tempDir);
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("*this-ref-does-not-exist-xyz*");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                foreach (var file in Directory.EnumerateFiles(tempDir, "*", SearchOption.AllDirectories))
+                    File.SetAttributes(file, FileAttributes.Normal);
+                Directory.Delete(tempDir, true);
+            }
+        }
     }
 
     [Fact]
@@ -71,6 +108,23 @@ public class SinceScopeResolverTests
                 Directory.Delete(tempDir, true);
             }
         }
+    }
+
+    private static bool IsGitAvailable()
+    {
+        try
+        {
+            var psi = new System.Diagnostics.ProcessStartInfo("git", "--version")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            using var p = System.Diagnostics.Process.Start(psi)!;
+            return p.WaitForExit(5_000) && p.ExitCode == 0;
+        }
+        catch { return false; }
     }
 
     private static void RunGit(string workingDir, string args)

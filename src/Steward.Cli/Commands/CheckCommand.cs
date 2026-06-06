@@ -60,9 +60,43 @@ public static class CheckCommand
             var applyFixes = parseResult.GetValue(applyOption);
             var quiet = parseResult.GetValue(quietOption);
 
-            // Resolve scope
+            // Enforce mutual exclusivity of scope-selection options.
+            var scopeExplicit = scopeValue != null &&
+                !string.Equals(scopeValue, "full", StringComparison.OrdinalIgnoreCase);
+            var provided = new List<string>();
+            if (scopeExplicit) provided.Add("--scope");
+            if (sinceValue != null) provided.Add("--since");
+            if (pathsValue is { Length: > 0 }) provided.Add("--paths");
+            if (provided.Count > 1)
+            {
+                CommandSetup.WriteCommandError(
+                    parseResult,
+                    "check",
+                    ExitCodes.UsageError,
+                    "usage-error",
+                    $"Options {string.Join(", ", provided)} are mutually exclusive. Use only one.",
+                    suggestedNextStep: "Run 'steward check --help' for usage.");
+                return ExitCodes.UsageError;
+            }
+
+            // Resolve scope (SinceScopeResolver throws InvalidOperationException for invalid refs)
             IScopeResolver scopeResolver = ResolveScope(scopeValue, pathsValue, sinceValue);
-            var targetFiles = scopeResolver.Resolve(ctx!.Files!, ctx.RootPath);
+            IReadOnlyList<Core.Discovery.DiscoveredFile> targetFiles;
+            try
+            {
+                targetFiles = scopeResolver.Resolve(ctx!.Files!, ctx.RootPath);
+            }
+            catch (InvalidOperationException ex)
+            {
+                CommandSetup.WriteCommandError(
+                    parseResult,
+                    "check",
+                    ExitCodes.UsageError,
+                    "usage-error",
+                    ex.Message,
+                    suggestedNextStep: "Provide a valid git commit SHA, branch name, or tag.");
+                return ExitCodes.UsageError;
+            }
             var scopeLabel = sinceValue != null ? $"since:{sinceValue}"
                 : scopeValue ?? (pathsValue is { Length: > 0 } ? "paths" : "full");
 

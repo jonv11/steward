@@ -13,11 +13,15 @@ public sealed class SinceScopeResolver : IScopeResolver
 
     public IReadOnlyList<DiscoveredFile> Resolve(IReadOnlyList<DiscoveredFile> allFiles, string repositoryRoot)
     {
-        var changedPaths = GitDiffHelper.GetChangedFilesSince(repositoryRoot, _sinceRef);
-        if (changedPaths == null)
-            return allFiles; // Fallback to full if git is unavailable.
+        var result = GitDiffHelper.GetChangedFilesSince(repositoryRoot, _sinceRef);
 
-        var changedSet = new HashSet<string>(changedPaths, StringComparer.OrdinalIgnoreCase);
+        if (result.GitError != null)
+            throw new InvalidOperationException($"Invalid --since ref '{_sinceRef}': {result.GitError}");
+
+        if (result.Paths == null)
+            return allFiles; // git unavailable — fall back to full scope.
+
+        var changedSet = new HashSet<string>(result.Paths, StringComparer.OrdinalIgnoreCase);
         return allFiles.Where(f => changedSet.Contains(f.RelativePath)).ToList();
     }
 }

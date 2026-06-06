@@ -59,10 +59,10 @@ docs/                             # Planning, requirements, decisions
 
 | Project | Type | Responsibility |
 |---------|------|---------------|
-| `Steward.Cli` | Console app | CLI entry point, command definitions, DI setup, output formatting. No domain logic. |
+| `Steward.Cli` | Console app | CLI entry point, command definitions, output formatting. No domain logic. Commands are instantiated directly (no DI container). |
 | `Steward.Core` | Class library | All domain logic: config, discovery, validation, markdown, search, orientation, maintenance. Testable in isolation. |
 | `Steward.Core.Tests` | Test project | Unit tests for core logic. Fast, no file system or process dependencies (uses abstractions). |
-| `Steward.Cli.Tests` | Test project | Integration tests. Invokes the CLI as a process, checks stdout/stderr/exit codes. |
+| `Steward.Cli.Tests` | Test project | Integration tests. Invokes the CLI in-process via `Program.InvokeAsync`; captures stdout/stderr/exit codes via redirected console streams. |
 | `Steward.TestFixtures` | Class library | Shared test helpers, sample repo fixtures, builder utilities. |
 
 ### Assembly naming
@@ -77,7 +77,7 @@ docs/                             # Planning, requirements, decisions
 - **File names match type names.**
 - **`internal` by default.** Only types needed across project boundaries are `public`.
 - **Interfaces for infrastructure:** `IFileSystem`, `IGitProvider`, `IConsoleOutput` — enables testing.
-- **No static singletons for services.** Use DI throughout.
+- **No static singletons for services.** Services are instantiated directly per-command invocation; no shared mutable state.
 
 ## Alternatives considered
 

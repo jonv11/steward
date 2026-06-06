@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Steward.Cli.Tests.Helpers;
+using Steward.Core;
 using Xunit;
 
 namespace Steward.Cli.Tests;
@@ -35,23 +36,44 @@ public class CheckSinceTests : IDisposable
     }
 
     [Fact]
-    public void Check_Since_FallsBackToFullScope_WhenGitUnavailable()
+    public void Check_Since_InvalidRef_ReturnsUsageError()
     {
-        // Fake .git dir only — git commands fail, SinceScopeResolver falls back to full scope.
-        Directory.CreateDirectory(Path.Combine(_tempDir, ".git"));
+        // A real git repo with an initial commit, but the ref does not exist.
+        // SinceScopeResolver must reject the invalid ref with a usage error, not silently
+        // fall back to full scope.
+        if (!IsGitAvailable())
+            return; // Skip if git not installed
+
+        RunGit("init");
+        RunGit("config user.email test@test.com");
+        RunGit("config user.name Test");
         File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), """
             artifacts:
               - path: README.md
-                role: readme
+                role: authoritative
                 required: true
             """);
         File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Hello");
+        RunGit("add .");
+        RunGit("commit -m initial");
 
-        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--since", "origin/main");
+        var (exitCode, _, error) = CliTestHelper.InvokeCapture("check", "--since", "this-ref-does-not-exist-xyz");
 
-        // Falls back to full scope; README.md is present → should pass
-        exitCode.Should().Be(0);
-        output.Should().Contain("since:origin/main");
+        exitCode.Should().Be(ExitCodes.UsageError);
+        error.Should().Contain("this-ref-does-not-exist-xyz");
+    }
+
+    [Fact]
+    public void Check_Since_AndPaths_AreMutuallyExclusive()
+    {
+        // Provide a valid .git and policy so TryBuild succeeds and reaches the exclusivity check.
+        Directory.CreateDirectory(Path.Combine(_tempDir, ".git"));
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), "artifacts: []");
+
+        var (exitCode, _, error) = CliTestHelper.InvokeCapture("check", "--since", "main", "--paths", "README.md");
+
+        exitCode.Should().Be(ExitCodes.UsageError);
+        error.Should().Contain("mutually exclusive");
     }
 
     [Fact]

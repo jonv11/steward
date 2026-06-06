@@ -42,7 +42,7 @@ steward check                        # validate against policy
 - **Broken link detection** — find internal Markdown links that don't resolve
 - **Rule explainability** — every validation rule is explainable with remediation guidance
 - **Multi-format output** — text and JSON output for human and agent consumption
-- **Auto-fix** — 3 rules (STWD-003, STWD-007, STWD-012) support deterministic auto-fix via `steward check --fix --apply`
+- **Auto-fix** — 4 rules (STWD-003, STWD-007, STWD-012, STWD-018) support deterministic auto-fix via `steward check --fix --apply`
 
 ## Installation
 
@@ -179,7 +179,7 @@ Steward is at `v0.17.0` on a pre-`1.0.0` release line. `1.0.0` requires explicit
 
 **What works today:** All 18 validation rules, all commands listed above, three built-in profiles (`software`, `docs`, `minimal`), artifact family classification, deterministic maintenance, Markdown structural editing, JSON output, and scoped validation.
 
-**Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 3 of 18 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
+**Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 4 of 18 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
 
 **Remaining before stable release:** Hosted CI and hosted release evidence. See [implementation status](docs/implementation-status.md).
 

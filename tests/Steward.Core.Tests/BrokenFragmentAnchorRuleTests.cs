@@ -406,4 +406,46 @@ public class BrokenFragmentAnchorRuleTests
 
         fixes.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task ComputeFixes_SameRawFragmentDifferentTargets_OnlyFixesBrokenLink()
+    {
+        // Source has two links sharing the same raw fragment "usage" but pointing to different
+        // files. guide.md has no "usage" heading but has "guide" (close enough for BestMatch);
+        // other.md has "usage" exactly (no broken link). The fix must rewrite only the
+        // guide.md link and leave the other.md link unchanged.
+        var guideContent = "# Guide\n\nContent.";    // slugs: ["guide"] — no "usage"
+        var otherContent = "# Other\n\n## Usage\n"; // slugs: ["other", "usage"] — "usage" exists
+        var sourceContent = "# Overview\n\nSee [A](guide.md#usage) and [B](other.md#usage).";
+
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/readme.md", sourceContent)
+            .AddFile("/repo/guide.md", guideContent)
+            .AddFile("/repo/other.md", otherContent);
+
+        var context = new ValidationContext
+        {
+            Policy = null,
+            PathPolicy = null,
+            TargetFiles = [
+                new DiscoveredFile("readme.md", 100, false),
+                new DiscoveredFile("guide.md", 200, false),
+                new DiscoveredFile("other.md", 300, false)
+            ],
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new BrokenFragmentAnchorRule();
+        var fixes = await rule.ComputeFixesAsync(context);
+
+        // Only one fix for readme.md — the guide.md link is broken, other.md link is valid.
+        fixes.Should().HaveCount(1);
+        var fix = fixes[0];
+        fix.FilePath.Should().Be("readme.md");
+        // guide.md link should be fixed to the nearest slug ("guide", distance 5)
+        fix.NewContent.Should().Contain("guide.md#guide");
+        // other.md link must remain unchanged (#usage is valid there)
+        fix.NewContent.Should().Contain("other.md#usage");
+    }
 }

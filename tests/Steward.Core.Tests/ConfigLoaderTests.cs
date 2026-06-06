@@ -128,4 +128,63 @@ public class ConfigLoaderTests
 
         dir.Should().Be("custom-config");
     }
+
+    [Fact]
+    public void LoadPolicy_RequiredTrueWithImportanceRecommended_Throws()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddDirectory("root/.steward")
+            .AddFile("root/.steward/policy.yaml", """
+                artifacts:
+                  - path: CHANGELOG.md
+                    role: changelog
+                    required: true
+                    importance: recommended
+                """);
+
+        var loader = new ConfigLoader(fs);
+        var action = () => loader.LoadPolicy("root/.steward");
+
+        action.Should().Throw<StewardConfigException>()
+            .WithMessage("*Contradictory fields*");
+    }
+
+    [Fact]
+    public void LoadPolicy_RequiredTrueWithImportanceOptional_Throws()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddDirectory("root/.steward")
+            .AddFile("root/.steward/policy.yaml", """
+                artifacts:
+                  - path: README.md
+                    role: authoritative
+                    required: true
+                    importance: optional
+                """);
+
+        var loader = new ConfigLoader(fs);
+        var action = () => loader.LoadPolicy("root/.steward");
+
+        action.Should().Throw<StewardConfigException>()
+            .WithMessage("*Contradictory fields*");
+    }
+
+    [Fact]
+    public void LoadPolicy_RequiredTrueWithImportanceRequired_IsAllowed()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddDirectory("root/.steward")
+            .AddFile("root/.steward/policy.yaml", """
+                artifacts:
+                  - path: README.md
+                    role: authoritative
+                    required: true
+                    importance: required
+                """);
+
+        var loader = new ConfigLoader(fs);
+        var action = () => loader.LoadPolicy("root/.steward");
+
+        action.Should().NotThrow();
+    }
 }

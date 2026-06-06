@@ -145,6 +145,12 @@ public static class CommandSetup
         var configLoader = new ConfigLoader(fileSystem);
         var configDir = configLoader.FindConfigDirectory(rootPath, configPath);
 
+        // Derive the effective repository root from where .steward lives, not CWD.
+        // This ensures subdirectory invocations discover files from the actual repo root.
+        var effectiveRoot = configDir != null
+            ? (Path.GetDirectoryName(configDir) ?? rootPath)
+            : rootPath;
+
         StewardConfig? config = null;
         RepositoryPolicy? policy = null;
         PathPolicyDocument? pathPolicy = null;
@@ -176,14 +182,14 @@ public static class CommandSetup
         if (discoverFiles)
         {
             // Apply discovery excludes from config in addition to .gitignore rules.
-            var ignoreFilter = GitIgnoreFilter.Load(rootPath, fileSystem, effectiveExcludes);
+            var ignoreFilter = GitIgnoreFilter.Load(effectiveRoot, fileSystem, effectiveExcludes);
             var discoveryService = new FileDiscoveryService(fileSystem, ignoreFilter);
-            files = discoveryService.Discover(rootPath);
+            files = discoveryService.Discover(effectiveRoot);
         }
 
         return new CommandContext
         {
-            RootPath = rootPath,
+            RootPath = effectiveRoot,
             FileSystem = fileSystem,
             Formatter = formatter,
             OutputFormat = output,

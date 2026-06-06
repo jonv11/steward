@@ -68,10 +68,11 @@ public class InitCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         File.Exists(Path.Combine(_tempDir, "README.md")).Should().BeTrue();
-        File.Exists(Path.Combine(_tempDir, "LICENSE")).Should().BeTrue();
+        // LICENSE is intentionally not scaffolded — users must supply their own license text.
+        // STWD-001 will report it missing, which is correct behavior.
+        File.Exists(Path.Combine(_tempDir, "LICENSE")).Should().BeFalse();
         output.Should().Contain("Scaffolded artifacts");
         output.Should().Contain("README.md");
-        output.Should().Contain("LICENSE");
     }
 
     [Fact]

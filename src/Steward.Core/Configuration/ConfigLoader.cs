@@ -167,6 +167,17 @@ public sealed class ConfigLoader
                     path);
             }
 
+            if (artifact.Required &&
+                !string.IsNullOrWhiteSpace(artifact.Importance) &&
+                !string.Equals(artifact.Importance, "required", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new StewardConfigException(
+                    $"Contradictory fields for artifact '{artifact.Path}' in '{path}': " +
+                    $"'required: true' conflicts with 'importance: {artifact.Importance}'. " +
+                    $"Remove 'required: true' or change 'importance' to 'required'.",
+                    path);
+            }
+
             if (artifact.Freshness is { MaxAgeDays: <= 0 })
             {
                 throw new StewardConfigException(

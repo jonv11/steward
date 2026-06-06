@@ -90,6 +90,7 @@ public sealed class BrokenFragmentAnchorRule : IValidationRule, IFixableRule
                         {
                             ["fragment"] = fragment,
                             ["rawFragment"] = rawFragment,
+                            ["rawTarget"] = rawTarget,
                             ["targetFile"] = resolvedFilePath
                         }));
                 }
@@ -199,11 +200,13 @@ public sealed class BrokenFragmentAnchorRule : IValidationRule, IFixableRule
             {
                 if (!diag.Details!.TryGetValue("fragment", out var fragmentObj) ||
                     !diag.Details.TryGetValue("rawFragment", out var rawFragmentObj) ||
+                    !diag.Details.TryGetValue("rawTarget", out var rawTargetObj) ||
                     !diag.Details.TryGetValue("targetFile", out var targetFileObj))
                     continue;
 
                 var fragment = fragmentObj.ToString()!;
                 var rawFragment = rawFragmentObj.ToString()!;
+                var rawTarget = rawTargetObj.ToString()!;
                 var targetFile = targetFileObj.ToString()!;
 
                 var slugs = GetHeadingSlugs(targetFile, context);
@@ -214,10 +217,23 @@ public sealed class BrokenFragmentAnchorRule : IValidationRule, IFixableRule
                 if (bestMatch == null)
                     continue;
 
-                // Replace #rawFragment → #bestMatch inside Markdown link URLs.
-                // Pattern: matches the fragment inside [...](path#rawFragment) or (#rawFragment)
+                // Replace #rawFragment → #bestMatch, scoped to the specific target link.
+                // Include rawTarget in the pattern so links to different files sharing the
+                // same fragment name are not incorrectly rewritten.
                 var escapedRaw = Regex.Escape(rawFragment);
-                var pattern = $@"(\[[^\]]*\]\([^)]*?)#{escapedRaw}([\)#?])";
+                string pattern;
+                if (string.IsNullOrEmpty(rawTarget))
+                {
+                    // Fragment-only link (#section) — no file ambiguity possible.
+                    pattern = $@"(\[[^\]]*\]\([^)#]*)#{escapedRaw}([\)#?])";
+                }
+                else
+                {
+                    // Anchor the pattern to the exact link URL path to avoid touching
+                    // sibling links that share the same fragment but point elsewhere.
+                    var escapedTarget = Regex.Escape(rawTarget.Replace('\\', '/'));
+                    pattern = $@"(\[[^\]]*\]\([^)]*{escapedTarget})#{escapedRaw}([\)#?])";
+                }
                 var replacement = $"$1#{bestMatch}$2";
                 var next = Regex.Replace(modified, pattern, replacement, RegexOptions.IgnoreCase);
                 if (next == modified)

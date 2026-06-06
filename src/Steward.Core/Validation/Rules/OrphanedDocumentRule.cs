@@ -39,12 +39,15 @@ public sealed class OrphanedDocumentRule : IValidationRule
             }
         }
 
-        // 3. Internal links from all Markdown files
-        var mdFiles = context.TargetFiles
+        // 3. Internal links from ALL discovered Markdown files (not just target scope).
+        // Using only TargetFiles here would miss inbound links from out-of-scope files,
+        // causing false-positive orphan diagnostics in scoped runs (--paths, --scope).
+        var allDiscovered = context.AllDiscoveredFiles ?? context.TargetFiles;
+        var allMdFiles = allDiscovered
             .Where(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        foreach (var file in mdFiles)
+        foreach (var file in allMdFiles)
         {
             var fullPath = Path.Combine(context.RepositoryRoot, file.RelativePath);
             if (!context.FileSystem.FileExists(fullPath))
@@ -61,7 +64,11 @@ public sealed class OrphanedDocumentRule : IValidationRule
             }
         }
 
-        // 4. Check each Markdown file for orphan status
+        // 4. Check only scoped (target) Markdown files for orphan status.
+        var mdFiles = context.TargetFiles
+            .Where(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
         foreach (var file in mdFiles)
         {
             var relPath = PathHelper.NormalizeSeparators(file.RelativePath);

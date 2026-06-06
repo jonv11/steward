@@ -227,7 +227,7 @@ governance:
 | `frontmatter.auto_fields` | map | `{}` | Field name → `true` to auto-update date fields on locally changed files |
 | `managed_regions.marker` | string | `steward` | Default marker string for managed section delimiters |
 | `managed_regions.enforce_ownership` | bool | — | Whether managed regions are enforced |
-| `completion_policy.rules` | list | `[]` | Rule IDs and descriptions for tracking which rules are considered completion-critical |
+| `completion_policy.rules` | list | `[]` | Rule IDs and descriptions shown in the "Completion:" output summary. Reporting-only — does not affect pass/fail exit code. Use `validation.severity_overrides` to make a rule gate CI. |
 
 #### Auto-fields behavior
 
@@ -407,11 +407,12 @@ At runtime, profile defaults merge in shallowly: your `policy.yaml` scalar/objec
 |---------|----------------|-------------------|-------------------|------------|
 | `software` | `software` | README.md (required), LICENSE (required), CHANGELOG.md, CONTRIBUTING.md | 500 lines | `[README.md]` |
 | `docs` | `documentation` | README.md (required), docs/ (required) | 300 lines | `[README.md]` |
-| `minimal` | `general` | README.md (not required) | 500 lines | _(none)_ |
+| `minimal` | `general` | README.md (`importance: optional`) | 500 lines | _(none)_ |
 | `mixed` | `mixed` | README.md (required), docs/ | 500 lines | `[README.md]` |
 | `knowledge` | `knowledge` | README.md (required) | 1000 lines | `[README.md]` |
 
 > **Note:** `mixed` and `knowledge` profiles are defined internally but not yet offered via `steward init`. Only `software`, `docs`, and `minimal` are available for scaffolding.
+> **Importance resolution:** The `minimal` profile sets `importance: optional` explicitly on README.md. Without this explicit override, the `authoritative` role default would make the artifact required. If your repo `policy.yaml` declares the same artifact without an explicit `importance:` field, role defaults apply. See [importance precedence](#artifact-fields) for the full resolution chain.
 
 ## Configuration precedence
 
