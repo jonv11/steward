@@ -52,6 +52,7 @@
 │       ├── master-requirements-source.md
 │       ├── PRD.md
 │       └── requirements-traceability.md
+├── LICENSE
 ├── package-lock.json
 ├── package.json
 ├── README.md
