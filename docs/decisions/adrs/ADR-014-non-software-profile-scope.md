@@ -3,7 +3,8 @@ type: adr
 status: Accepted
 category: Product / Configuration
 description: Narrows the first public profile set and defers mixed and knowledge profiles until contracts are richer
-date: 2026-04-16
+decision_date: 2026-04-16
+last_updated: 2026-06-06
 ---
 
 # ADR-014: Non-Software Profile Scope for First Public Release
@@ -14,7 +15,7 @@ date: 2026-04-16
 
 Steward ships five built-in profiles via `init --profile`: `software`, `docs`, `mixed`, `knowledge`, and `minimal`. Pre-release blocker B5 requires an explicit release decision on which non-software profiles to keep publicly offered.
 
-The [Profile Readiness Review — 2026-04-16](../../audits/profile-readiness-review-2026-04-16.md) evaluated each profile against a command-level release checklist (`init`, `config validate`, `config show --effective`, `status`, `orient`, `check`, `config doctor`) using fixture-backed CLI coverage. The key observations were:
+The [Profile Readiness Review — 2026-04-16](../../history/audits/profile-readiness-review-2026-04-16.md) evaluated each profile against a command-level release checklist (`init`, `config validate`, `config show --effective`, `status`, `orient`, `check`, `config doctor`) using fixture-backed CLI coverage. The key observations were:
 
 | Profile | Effective contract | Archetype distinctiveness |
 |---------|--------------------|---------------------------|

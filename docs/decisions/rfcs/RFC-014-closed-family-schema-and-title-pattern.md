@@ -107,7 +107,7 @@ artifact_families:
   - family: planning
     display_name: Planning Document
     match:
-      path_pattern: "docs/planning/*.md"
+      path_pattern: "docs/project/*.md"
     frontmatter_schema:
       required: [type, status, description]
       allowed_values:

@@ -31,7 +31,7 @@ Maintenance covers deterministic, policy-driven regeneration or update of govern
 | Type | Example | How maintained |
 |------|---------|---------------|
 | **Repository structure document** | docs/STRUCTURE.md | Regenerated from file tree + policy |
-| **Index / registry** | docs/index.md, docs/decision-index.md | Regenerated from governed file inventory |
+| **Index / registry** | docs/index.md, docs/decisions/README.md | Regenerated from governed file inventory |
 | **Managed section** | A `<!-- steward:managed:begin -->` block inside a human-authored doc | Content between markers updated, rest preserved |
 | **Frontmatter fields** | `last_updated`, `updated_at`, `generated_by` fields | Fields updated from policy rules using literal values, file metadata, or local-change date refresh |
 | **Catalog / glossary** | docs/glossary.md | Updated from declared sources |
@@ -53,7 +53,7 @@ maintenance:
         exclude: ["**/test-fixtures/**"]
 
     - id: decision-index
-      path: docs/decisions/decision-index.md
+      path: docs/decisions/README.md
       type: index
       source: docs/decisions/**/*.md
       managed_section: "steward:decision-list"
@@ -100,7 +100,7 @@ Preview shows a per-artifact plan:
 MAINTAIN  structure-doc  docs/STRUCTURE.md
   Would update 3 lines (tree entries added for new files)
 
-MAINTAIN  decision-index  docs/decisions/decision-index.md
+MAINTAIN  decision-index  docs/decisions/README.md
   Section "steward:decision-list" would update: 2 new entries, 0 removed
 
 No changes applied. Run with --apply to commit changes.
@@ -125,10 +125,10 @@ artifacts:
   - path: docs/VISION.md
     role: vision
     required: false
-  - path: docs/planning/milestone-plan.md
+  - path: docs/project/roadmap.md
     role: milestones
     required: false
-  - path: docs/implementation-status.md
+  - path: docs/project/status.md
     role: current-state
     required: false
 ```

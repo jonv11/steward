@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-04-19
+last_updated: 2026-06-06
 ---
 
 # Using Steward with AI Agents
@@ -144,7 +144,7 @@ steward md edit fm-set docs/my-doc.md --field status --value Active --apply
 ## Limitations agents should know
 
 - **`search --role` only matches explicit artifact declarations**, not family-classified files. To find all files in a family, use glob patterns or `steward orient --full --output json`.
-- **3 of 18 rules support auto-fix.** Most violations require the agent to make manual edits.
+- **4 of 21 rules support auto-fix.** Most violations require the agent to make manual edits.
 - **Text-mode output** includes remediation guidance but not structured next-step hints. Use `--output json` for richer machine-readable diagnostics.
 - **No network calls.** Steward cannot fetch remote content or interact with hosting platforms.
 

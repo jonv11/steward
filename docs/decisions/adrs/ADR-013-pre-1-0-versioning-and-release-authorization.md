@@ -3,7 +3,8 @@ type: adr
 status: Accepted
 category: Release Governance
 description: Keeps Steward on the 0.x line until an explicit stable-release decision authorizes 1.0.0
-date: 2026-04-15
+decision_date: 2026-04-15
+last_updated: 2026-06-06
 ---
 
 # ADR-013: Pre-1.0 Versioning and Release Authorization
@@ -89,9 +90,9 @@ Every intentional version change must update, at minimum:
 - package/project metadata that surfaces the version
 - `CHANGELOG.md`
 - install and release wording in `README.md`
-- `docs/implementation-status.md`
-- `docs/planning-index.md`
-- `docs/planning/milestone-plan.md`
+- `docs/project/status.md`
+- `docs/README.md`
+- `docs/project/roadmap.md`
 - the active readiness plan
 - `docs/requirements/requirements-traceability.md` when milestone targets or status summaries change
 

@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-04-19
+last_updated: 2026-06-06
 ---
 
 # Configuration Reference
@@ -312,7 +312,7 @@ maintenance:
       sort: filename
 
     - id: decision-adr-index
-      path: docs/decisions/decision-index.md
+      path: docs/decisions/README.md
       type: index
       source: "docs/decisions/adrs/*.md"
       managed_section: "ADRs"
@@ -455,10 +455,14 @@ Run `config validate` after every policy change. Run `config doctor` periodicall
 | STWD-015 | warning | family-completeness | Artifact families with min_count must meet the declared minimum | No |
 | STWD-016 | warning | naming | Files matched by an artifact family must satisfy the family's naming_pattern | No |
 | STWD-017 | warning | structure | Heading text must be unique within a Markdown file after anchor-style normalization | No |
-| STWD-018 | warning | broken-fragment-anchor | Markdown fragment links should reference headings that actually exist in the target file | No |
+| STWD-018 | warning | broken-fragment-anchor | Markdown fragment links should reference headings that actually exist in the target file | Yes |
+| STWD-019 | warning | family-title-pattern | Artifact-family H1 titles should match the declared title pattern | No |
+| STWD-020 | warning | family-section-pattern | Artifact-family H2 headings should match the declared section pattern | No |
+| STWD-021 | warning | family-section-schema | Artifact-family H2 sections should satisfy the declared document schema | No |
 
-Three rules support auto-fix via `steward check --fix --apply`:
+Four rules support auto-fix via `steward check --fix --apply`:
 
 - **STWD-003** — adds missing frontmatter fields with placeholder values
 - **STWD-007** — regenerates stale maintained artifacts
 - **STWD-012** — updates the `last_updated` frontmatter date
+- **STWD-018** — repairs fragment links when a single unambiguous heading match exists

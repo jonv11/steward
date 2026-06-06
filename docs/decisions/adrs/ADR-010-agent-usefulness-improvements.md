@@ -11,7 +11,7 @@ description: Records the first bundle of agent-focused CLI improvements for navi
 
 ## Context
 
-An evidence-based assessment of Steward's usefulness for coding agents (see `docs/audits/assessment-coding-agent-usefulness.md`) identified six improvements not covered by existing RFCs that would materially improve agent ergonomics. These are net-new capabilities that align with the product's dual-audience design (human + machine) but were not anticipated in the original requirement set.
+An evidence-based assessment of Steward's usefulness for coding agents (see `docs/history/audits/assessment-coding-agent-usefulness.md`) identified six improvements not covered by existing RFCs that would materially improve agent ergonomics. These are net-new capabilities that align with the product's dual-audience design (human + machine) but were not anticipated in the original requirement set.
 
 ## Decision
 

@@ -109,7 +109,7 @@ Examples:
 
 ```bash
 steward explain path docs/decisions/adrs/ADR-007-test-strategy.md
-steward policy match docs/planning-index.md --output json
+steward policy match docs/project/status.md --output json
 ```
 
 The output should show, at minimum:
@@ -260,7 +260,7 @@ Steward should support relational inspection of repository references.
 Examples:
 
 ```bash
-steward refs docs/planning-index.md
+steward refs docs/project/status.md
 steward refs --to docs/decisions/adrs/ADR-007-test-strategy.md
 steward refs --from docs/requirements/PRD.md --output json
 ```
@@ -326,7 +326,7 @@ artifacts:
 maintenance:
   artifacts:
     - id: planning-index
-      path: docs/planning-index.md
+      path: docs/README.md
       type: index
       depends_on:
         - docs/decisions/rfcs/

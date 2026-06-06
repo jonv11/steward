@@ -35,7 +35,7 @@ steward check                        # validate against policy
 ## Features
 
 - **Repository orientation** — auto-classify and outline repository structure
-- **Policy-driven validation** — enforce required artifacts, frontmatter fields, section sizes, naming conventions, and path policies via 18 rules
+- **Policy-driven validation** — enforce required artifacts, frontmatter fields, section sizes, naming conventions, and path policies via 21 rules
 - **Artifact families** — group recurring document types (ADRs, RFCs, etc.) with convention-based discovery and type-aware validation
 - **Markdown structural editing** — query, edit, and manage Markdown documents with section and frontmatter operations
 - **Deterministic maintenance** — auto-generate structure documents, indexes, and managed sections
@@ -102,7 +102,7 @@ If you run Steward via `dotnet run --project` from inside another repository, th
 | `steward orient` | Show a curated repository-start orientation (`--signals`, `--full`, `--compact`, `--tree`, `--depth`) |
 | `steward outline [path]` | Show a tree view of a directory or, for `.md`, a heading outline (`--counts`, `--sizes`, `--lines`) |
 | `steward status [--coverage]` | Show current repository state at a glance |
-| `steward check` | Validate repository against policy (`--scope full\|changed\|staged`, `--paths`, `--fix`, `--apply`, `--quiet`) |
+| `steward check` | Validate repository against policy (`--scope full\|changed\|staged`, `--since`, `--paths`, `--fix`, `--apply`, `--quiet`, SARIF output) |
 | `steward maintain` | Preview or apply deterministic artifact maintenance (`--artifact <id>`, `--apply`, `--diff`) |
 | `steward search <query>` | Search repository content and headings (`--role`, `--mode all\|content\|headings`, `--regex`, `--max`) |
 | `steward explain [rule-id]` | Explain a validation rule, or list all rules |
@@ -121,7 +121,7 @@ If you run Steward via `dotnet run --project` from inside another repository, th
 
 | Option | Description |
 | ------ | ----------- |
-| `--output text\|json` | Output format (default: text, overrides config.yaml) |
+| `--output text\|json\|sarif` | Output format (default: text, overrides config.yaml; SARIF is supported by `check`) |
 | `--verbosity quiet\|normal\|verbose\|debug` | Verbosity level (default: normal) |
 | `--no-color` | Disable colored output (overrides config.yaml) |
 | `--config <path>` | Override config directory path |
@@ -148,6 +148,9 @@ If you run Steward via `dotnet run --project` from inside another repository, th
 | STWD-016 | warning | Family files must satisfy the family's naming pattern |
 | STWD-017 | warning | Heading text must be unique within a file |
 | STWD-018 | warning | Fragment links should reference headings that exist |
+| STWD-019 | warning | Artifact-family H1 titles should match the declared title pattern |
+| STWD-020 | warning | Artifact-family H2 headings should match the declared section pattern |
+| STWD-021 | warning | Artifact-family H2 sections should satisfy the declared document schema |
 
 Use `steward explain <rule-id>` for detailed guidance on any rule. Severities can be overridden via `validation.severity_overrides` in policy.yaml. Rules can be suppressed globally or per-path.
 
@@ -177,11 +180,11 @@ For complete field documentation, valid values, defaults, and configuration exam
 
 Steward is at `v0.17.0` on a pre-`1.0.0` release line. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
-**What works today:** All 18 validation rules, all commands listed above, three built-in profiles (`software`, `docs`, `minimal`), artifact family classification, deterministic maintenance, Markdown structural editing, JSON output, and scoped validation.
+**What works today:** All 21 validation rules, all commands listed above, three built-in profiles (`software`, `docs`, `minimal`), artifact family classification, deterministic maintenance, Markdown structural editing, JSON and SARIF output, and scoped validation.
 
-**Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 4 of 18 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
+**Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 4 of 21 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
 
-**Remaining before stable release:** Hosted CI and hosted release evidence. See [implementation status](docs/implementation-status.md).
+**Current working line:** Unreleased `v0.18.0` work is present while release metadata remains at `v0.17.0`. Stable `v1.0.0` still requires explicit authorization. See [project status](docs/project/status.md) and the [roadmap](docs/project/roadmap.md).
 
 ## Documentation
 

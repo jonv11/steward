@@ -48,9 +48,9 @@ dotnet run --project src/Steward.Cli -- <command>
 | `discovery.exclude` removes `node_modules/**` | Installing repo-local npm dependencies for Markdown linting does not pollute steward discovery or coverage |
 | `governance.start_here` defines the session-start spine | `orient --signals` surfaces exactly these docs plus core decision roots |
 | `coverage.exclude` removes `tests/Steward.TestFixtures/Repos/**` | `status --coverage` numbers reflect the main repo, not embedded fixture repos |
-| The only configured maintenance artifact is `STRUCTURE.md` (plus decision indexes in `decision-index.md`) | `maintain` is primarily about keeping those generated files in sync |
-| Freshness windows: `implementation-status.md` (30 days), `pre-1-0-readiness-plan.md` (45 days) | STWD-012 fires when these are stale — update them when repo truth changes |
-| `docs/planning/**` and `docs/requirements/**` have scoped frontmatter rules | Planning docs require `type` and `status`; requirements docs require `type` and `status` with constrained allowed values |
+| Maintained artifacts are `STRUCTURE.md` plus the RFC/ADR sections in `docs/decisions/README.md` | Run `maintain --apply` after structural or decision-record changes |
+| Freshness windows: `docs/project/status.md` (30 days), `docs/project/roadmap.md` (45 days) | STWD-012 fires when current truth becomes stale |
+| `docs/project/**`, `docs/requirements/**`, decisions, and `docs/history/**` have lifecycle schemas | Active authorities and historical evidence are distinguishable by policy |
 
 ## Recommended Workflow
 
@@ -73,10 +73,10 @@ Shows required and recommended artifacts, freshness state, artifact family count
 ### 3. Inspect before editing a governed file
 
 ```bash
-dotnet run --project src/Steward.Cli -- explain path docs/planning/implementation-instructions.md
+dotnet run --project src/Steward.Cli -- explain path docs/project/status.md
 ```
 
-Shows classification, matched path-policy pattern, required frontmatter, and applicable rules. Do this before editing any file under `docs/planning/`, `docs/requirements/`, `docs/decisions/`, or `docs/audits/`.
+Shows classification, matched path-policy pattern, required frontmatter, and applicable rules. Do this before editing files under `docs/project/`, `docs/requirements/`, `docs/decisions/`, or `docs/history/`.
 
 ### 4. Make changes with normal tools
 
@@ -96,7 +96,7 @@ If you added or moved ADRs or RFCs, also run:
 dotnet run --project src/Steward.Cli -- maintain --apply
 ```
 
-`STRUCTURE.md` and `docs/decisions/decision-index.md` are generated — never hand-edit them.
+`STRUCTURE.md` and the managed sections in `docs/decisions/README.md` are generated — never hand-edit them.
 
 ### 6. Validate before finishing
 
@@ -131,7 +131,7 @@ dotnet run --project src/Steward.Cli -- status --coverage --output json
 Use before editing any governed doc or config path. Shows classification, matched rules, required frontmatter, and any applicable family schema. Explicit artifact declarations take precedence over family classification — some files show artifact info rather than `family:<name>`.
 
 ```bash
-dotnet run --project src/Steward.Cli -- explain path docs/planning/implementation-instructions.md
+dotnet run --project src/Steward.Cli -- explain path docs/project/roadmap.md
 dotnet run --project src/Steward.Cli -- explain path docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md
 ```
 
@@ -177,8 +177,8 @@ Use for structured extraction from Markdown when you need exact sections or fron
 
 ```bash
 dotnet run --project src/Steward.Cli -- md query README.md "heading[Commands]"
-dotnet run --project src/Steward.Cli -- md query --pattern "docs/planning/*.md" frontmatter.status
-dotnet run --project src/Steward.Cli -- md query docs/implementation-status.md "#current-baseline"
+dotnet run --project src/Steward.Cli -- md query --pattern "docs/project/*.md" frontmatter.status
+dotnet run --project src/Steward.Cli -- md query docs/project/status.md "#current-baseline"
 ```
 
 ### `refs <path>`
@@ -186,7 +186,7 @@ dotnet run --project src/Steward.Cli -- md query docs/implementation-status.md "
 Use before moving or rewriting a navigation document to see Markdown link impact.
 
 ```bash
-dotnet run --project src/Steward.Cli -- refs docs/planning-index.md --to
+dotnet run --project src/Steward.Cli -- refs docs/project/status.md --to
 dotnet run --project src/Steward.Cli -- refs README.md --from
 ```
 
@@ -201,9 +201,9 @@ dotnet run --project src/Steward.Cli -- maintain --apply   # all maintained arti
 
 ## Guardrails
 
-- Treat `README.md`, `docs/planning-index.md`, `docs/implementation-status.md`, `docs/planning/implementation-instructions.md`, `docs/requirements/PRD.md`, `docs/decisions/decision-index.md`, and `.steward/policy.yaml` as active repo truth. Treat audit docs as evidence unless a live document explicitly points to them.
+- Treat `README.md`, `docs/README.md`, `docs/project/status.md`, `docs/project/roadmap.md`, `docs/project/backlog.md`, `docs/requirements/PRD.md`, decision records, and `.steward/policy.yaml` as active truth. Treat `docs/history/**` as evidence only.
 - Do not assume older audits describe current behavior. Verify claims against current code, `--help` output, the live config, or passing tests.
-- Do not hand-edit `STRUCTURE.md` or `docs/decisions/decision-index.md`.
+- Do not hand-edit `STRUCTURE.md` or managed sections in `docs/decisions/README.md`.
 - Preview before applying mutations. `maintain` previews by default; `check --fix` requires `--apply` to commit fixes.
 - Do not force every task through steward. Normal file edits, builds, tests, and code search still belong to standard tools.
 - `--json-envelope standard` is not yet applied consistently across all commands. If you get unexpected output on a mutation command, check stderr and exit code, not just the JSON body. This is a known contract gap being addressed in later pre-1.0 milestones.
@@ -221,7 +221,7 @@ dotnet run --project src/Steward.Cli -- check
 
 After Markdown or structural changes:
 
-1. Link new files from a governed navigation surface (`docs/planning-index.md` or `docs/decisions/decision-index.md`)
+1. Link active files from `docs/README.md` or `docs/project/README.md`; mark archived evidence `standalone: true`
 2. Run `maintain --artifact structure --apply` (and `maintain --apply` for decision indexes)
 3. Run `npm run lint:md`
 4. Run `check`
@@ -244,14 +244,14 @@ dotnet run --project src/Steward.Cli -- status --coverage
 
 Then read the start-here docs that orient surfaced.
 
-### Add a new planning document
+### Add or update an active project document
 
 ```bash
 # 1. Check naming expectations
-dotnet run --project src/Steward.Cli -- explain path docs/planning/my-new-doc.md
+dotnet run --project src/Steward.Cli -- explain path docs/project/my-new-doc.md
 
-# 2. Create the file with required frontmatter (type: planning, status: Draft)
-# 3. Link it from docs/planning-index.md
+# 2. Prefer updating status, roadmap, or backlog before creating another authority
+# 3. If a new file is justified, use type: project and link it from docs/project/README.md
 # 4. Refresh structure
 dotnet run --project src/Steward.Cli -- maintain --artifact structure --apply
 
@@ -286,13 +286,13 @@ dotnet run --project src/Steward.Cli -- config doctor
 
 ```bash
 # See what links to it before moving
-dotnet run --project src/Steward.Cli -- refs docs/planning/old-name.md --to
+dotnet run --project src/Steward.Cli -- refs docs/project/old-name.md --to
 
 # Preview the move
-dotnet run --project src/Steward.Cli -- refactor move docs/planning/old-name.md docs/planning/new-name.md --preview
+dotnet run --project src/Steward.Cli -- refactor move docs/project/old-name.md docs/project/new-name.md --preview
 
 # Apply
-dotnet run --project src/Steward.Cli -- refactor move docs/planning/old-name.md docs/planning/new-name.md --apply
+dotnet run --project src/Steward.Cli -- refactor move docs/project/old-name.md docs/project/new-name.md --apply
 dotnet run --project src/Steward.Cli -- maintain --artifact structure --apply
 dotnet run --project src/Steward.Cli -- check
 ```
@@ -304,5 +304,6 @@ dotnet run --project src/Steward.Cli -- check
 - [CONTRIBUTING.md](../../../CONTRIBUTING.md) — contributor workflow and PR expectations
 - [.steward/policy.yaml](../../../.steward/policy.yaml) — enforced repo contract
 - [.steward/path-policy.yaml](../../../.steward/path-policy.yaml) — naming and path rules
-- [docs/planning-index.md](../../../docs/planning-index.md) — navigation hub
-- [docs/implementation-status.md](../../../docs/implementation-status.md) — current version truth
+- [docs/README.md](../../../docs/README.md) — documentation landing page
+- [docs/project/status.md](../../../docs/project/status.md) — current repository truth
+- [docs/project/roadmap.md](../../../docs/project/roadmap.md) — current and next scope

@@ -6,9 +6,22 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ## [Unreleased]
 
+### Added In Unreleased
+
+- SARIF 2.1.0 output for `steward check` and merge-base-aware `check --since <ref>` validation.
+- Deterministic STWD-018 fragment-link auto-fix.
+- Closed artifact-family schemas and H1 title-pattern validation (STWD-019).
+- H2 section-heading pattern validation (STWD-020) and ordered document section schemas (STWD-021).
+
 ### Changed In Unreleased
 
 - Stabilized the CLI parser dependency on `System.CommandLine` 2.0.0 and aligned the root help snapshot with the stable renderer output.
+- Reorganized repository documentation around a small active project spine, a selective docs landing page, and a lifecycle-governed historical archive.
+- Moved the master requirements source under `docs/requirements/` and renamed the generated decision index to `docs/decisions/README.md`.
+
+### Fixed In Unreleased
+
+- Hardened subdirectory execution, config validation, orphan detection, and changed-file resolution following the `v0.18.0` review pass.
 
 ## [0.17.0] - 2026-04-19
 

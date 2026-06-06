@@ -3,7 +3,7 @@ type: rfc
 status: Deferred
 description: Proposes a typed resource-address model aligned across file, Markdown, search, and reference surfaces
 resolves: REQ-ADDR-002 through REQ-ADDR-005 and REQ-SEARCH-012 follow-on alignment on the pre-1.0 line
-last_updated: 2026-04-18
+last_updated: 2026-06-06
 ---
 
 # RFC-009: Typed Resource Addresses and Search Alignment
@@ -75,7 +75,7 @@ Examples:
 
 - `steward://file/README.md`
 - `steward://heading/docs/requirements/PRD.md#heading[Goals]`
-- `steward://frontmatter/docs/planning/milestone-plan.md#frontmatter.status`
+- `steward://frontmatter/docs/project/roadmap.md#frontmatter.status`
 - `steward://managed-region/STRUCTURE.md#managed[steward:structure]`
 
 ### Address Kinds In The First Slice

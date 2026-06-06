@@ -1,32 +1,34 @@
 ---
 type: documentation
 status: Active
-last_updated: 2026-04-19
+summary: Main landing page for Steward user documentation and internal project documentation
+last_updated: 2026-06-06
 standalone: true
 ---
 
-# Documentation Directory
+# Steward Documentation
 
-This directory contains both user-facing product documentation and internal project governance documents.
+Use this page to choose the right documentation path. It is intentionally selective; historical records are kept in the archive rather than mixed into current guidance.
 
-## User-facing documentation
+## Start Here
 
-Documentation for people using Steward in their own repositories:
+| Need | Go to |
+|------|-------|
+| Use Steward in another repository | [User guides](guide/README.md) |
+| Contribute to Steward | [Project documentation](project/README.md) |
+| See what is true now | [Project status](project/status.md) |
+| See current and next scope | [Roadmap](project/roadmap.md) |
+| See unscheduled work | [Backlog](project/backlog.md) |
+| Follow contributor and agent workflows | [Workflow guide](project/workflow-guide.md) |
 
-**[docs/guide/](guide/README.md)** — Maintainer guide, contributor guide, configuration reference, agent integration.
+## Decisions
 
-## Internal project documents
+[Decision records](decisions/README.md) contain the generated RFC and ADR status index. The records explain why durable product and architecture choices were made.
 
-Documentation about the Steward project itself. These are for contributors to the Steward source code, not for end users of the CLI.
+## Requirements
 
-| Directory | Contents |
-|-----------|----------|
-| [planning/](planning/) | Implementation plans, milestone tracking, delivery strategy, workflow guides |
-| [decisions/](decisions/) | ADRs, RFCs, and the decision index |
-| [requirements/](requirements/) | Product requirements, assumptions, constraints |
-| [audits/](audits/) | Periodic reviews, assessments, and quality audits |
-| [reviews/](reviews/) | Targeted code and process reviews |
+The [product requirements document](requirements/PRD.md) is the canonical product-intent document. Supporting material includes [assumptions and constraints](requirements/assumptions-constraints.md), [requirements traceability](requirements/requirements-traceability.md), and the preserved [master requirements source](requirements/master-requirements-source.md).
 
-## Navigation
+## Historical Archive
 
-The [planning index](planning-index.md) is the central navigation hub for all internal project documents. The [implementation status](implementation-status.md) tracks what has been delivered in each version.
+[History](history/README.md) preserves audits, reviews, completed plans, superseded authorities, and traceability stubs. These records are evidence, not current project truth.

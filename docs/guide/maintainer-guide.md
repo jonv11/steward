@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-04-19
+last_updated: 2026-06-06
 ---
 
 # Maintainer Guide
@@ -368,4 +368,4 @@ governance:
 - **Three init profiles.** `software`, `docs`, and `minimal` are available. `mixed` and `knowledge` are defined internally but not yet scaffolded.
 - **Search is basic.** `steward search` supports substring and regex matching. No fuzzy or semantic search.
 - **`search --role` matches explicit artifact declarations only.** It does not find family-classified files. To find all files in a family, use glob patterns or `steward orient --full`.
-- **3 of 18 rules support auto-fix.** Most violations require manual remediation. The fixable rules are STWD-003 (frontmatter), STWD-007 (stale artifacts), and STWD-012 (freshness dates).
+- **4 of 21 rules support auto-fix.** Most violations require manual remediation. The fixable rules are STWD-003 (frontmatter), STWD-007 (stale artifacts), STWD-012 (freshness dates), and STWD-018 (unambiguous fragment links).
