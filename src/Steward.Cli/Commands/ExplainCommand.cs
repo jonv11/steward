@@ -178,6 +178,8 @@ public static class ExplainCommand
             "STWD-017" => "Rename duplicate headings so each normalized Markdown anchor slug is unique within the file.",
             "STWD-018" => "Verify the heading exists in the target file or update the fragment anchor. Anchors are lower-cased with spaces and punctuation replaced by hyphens. Rename the heading in the target or fix the link's fragment.",
             "STWD-019" => "Update the H1 heading to match the title_pattern regex declared for its artifact family. Pattern matching is case-sensitive. If a regex is invalid, fix it in policy.yaml — invalid patterns produce a warning diagnostic.",
+            "STWD-020" => "Update the H2 heading to match the section_pattern regex declared for its artifact family. Pattern matching is case-sensitive. If a regex is invalid, fix it in policy.yaml — invalid patterns produce a warning diagnostic.",
+            "STWD-021" => "Add any missing required H2 sections to the document, remove or rename unlisted sections (if allow_extra: false), or reorder sections to match the sequence in section_schema. The schema is declared in policy.yaml under the artifact family.",
             _ => "No specific remediation guidance available."
         };
     }
@@ -480,6 +482,8 @@ public static class ExplainCommand
                 "STWD-017" => isMarkdown,                       // unique-heading-text: md files
                 "STWD-018" => isMarkdown,                       // broken-fragment-anchor: md files
                 "STWD-019" => matchedFamily != null,            // family-title-pattern: family members only
+                "STWD-020" => matchedFamily != null,            // family-section-pattern: family members only
+                "STWD-021" => matchedFamily != null,            // family-section-schema: family members only
                 _ => true
             })
             .Select(r => r.RuleId)

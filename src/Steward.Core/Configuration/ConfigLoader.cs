@@ -399,6 +399,21 @@ public sealed class ConfigLoader
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(family.SectionPattern))
+            {
+                try
+                {
+                    _ = new Regex(family.SectionPattern, RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new StewardConfigException(
+                        $"Invalid section_pattern regex '{family.SectionPattern}' for artifact family '{family.Family}' in '{path}': {ex.Message}",
+                        path,
+                        ex);
+                }
+            }
+
             if (family.FrontmatterSchema?.AllowedFields != null)
             {
                 foreach (var field in family.FrontmatterSchema.AllowedFields)

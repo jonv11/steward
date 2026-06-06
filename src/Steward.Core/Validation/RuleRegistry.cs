@@ -27,7 +27,9 @@ public static class RuleRegistry
         new FamilyMinCountRule(),
         new FamilyNamingPatternRule(),
         new FamilyTitlePatternRule(),
+        new FamilySectionPatternRule(),
         new UniqueHeadingTextRule(),
-        new BrokenFragmentAnchorRule()
+        new BrokenFragmentAnchorRule(),
+        new FamilySectionSchemaRule()
     ];
 }
