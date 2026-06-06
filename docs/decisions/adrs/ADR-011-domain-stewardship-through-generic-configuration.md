@@ -11,7 +11,7 @@ description: Keeps domain-specific stewardship needs in generic repository confi
 
 ## Context
 
-Two maintainer use-case files (`docs/audits/maintainer-usecase-expectations.md` and `docs/audits/maintainer-usecase-ideas.md`) describe the needs of a story/worldbuilding/adaptation repository in detail. They request capabilities such as canon integrity validation, timeline consistency checking, plot-thread lifecycle enforcement, adaptation freshness tracking, and continuity-specific rules.
+Two maintainer use-case files (`docs/history/audits/maintainer-usecase-expectations.md` and `docs/history/audits/maintainer-usecase-ideas.md`) describe the needs of a story/worldbuilding/adaptation repository in detail. They request capabilities such as canon integrity validation, timeline consistency checking, plot-thread lifecycle enforcement, adaptation freshness tracking, and continuity-specific rules.
 
 These requests are legitimate: the PRD explicitly names "knowledge, content, lore, story, or creative repositories" as a target archetype (PRD §6), and the configuration model is designed to support varied repository types without hardcoded assumptions (REQ-CORE-004, REQ-CORE-007, REQ-CONFIG-005).
 

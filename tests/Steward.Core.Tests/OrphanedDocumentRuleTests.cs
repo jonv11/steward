@@ -149,4 +149,34 @@ public class OrphanedDocumentRuleTests
 
         diagnostics.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Evaluate_ScopedRun_FileReferencedByOutOfScopeFile_NoFalsePositive()
+    {
+        // docs/index.md (out of scope) links to docs/guide.md (in scope).
+        // Running with only docs/guide.md in TargetFiles must NOT flag it as orphaned,
+        // because AllDiscoveredFiles provides the full inbound-link graph.
+        var fs = new InMemoryFileSystem();
+        fs.AddFile("/repo/docs/index.md", "# Index\n\nSee [guide](guide.md).");
+        fs.AddFile("/repo/docs/guide.md", "# Guide");
+
+        var context = new ValidationContext
+        {
+            Policy = null,
+            PathPolicy = null,
+            TargetFiles = [new DiscoveredFile("docs/guide.md", 100, false)],
+            AllDiscoveredFiles =
+            [
+                new DiscoveredFile("docs/index.md", 200, false),
+                new DiscoveredFile("docs/guide.md", 100, false)
+            ],
+            FileSystem = fs,
+            RepositoryRoot = "/repo"
+        };
+
+        var rule = new OrphanedDocumentRule();
+        var diagnostics = await rule.EvaluateAsync(context);
+
+        diagnostics.Should().BeEmpty("docs/guide.md is referenced by docs/index.md which is in AllDiscoveredFiles");
+    }
 }

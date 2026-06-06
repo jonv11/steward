@@ -101,6 +101,23 @@ public static class FrontmatterEditor
     }
 
     /// <summary>
+    /// Replaces all frontmatter fields with the provided dictionary in a single pass.
+    /// Used when multiple field changes (renames, additions, removals) must be applied atomically
+    /// to avoid sequential-write conflicts when more than one change targets the same file.
+    /// </summary>
+    public static EditResult ReplaceAllFields(
+        StructuredDocument doc,
+        Dictionary<string, object?> newFields,
+        string message)
+    {
+        if (doc.Frontmatter == null)
+            return EditResult.Error("Cannot replace fields: document has no frontmatter block.");
+
+        var lines = doc.RawContent.Split('\n').ToList();
+        return ReplaceFrontmatter(doc, lines, newFields, message);
+    }
+
+    /// <summary>
     /// Reads the <c>last_updated</c> frontmatter field from a Markdown file and returns it as a UTC DateTime.
     /// Returns null when the file has no frontmatter, the field is absent, or the value cannot be parsed.
     /// </summary>

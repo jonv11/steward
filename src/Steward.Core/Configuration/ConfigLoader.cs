@@ -115,7 +115,8 @@ public sealed class ConfigLoader
         }
 
         if (!string.IsNullOrWhiteSpace(config.Output?.Format) &&
-            !Enum.TryParse<OutputFormat>(config.Output.Format, ignoreCase: true, out _))
+            !string.Equals(config.Output.Format, "text", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(config.Output.Format, "json", StringComparison.OrdinalIgnoreCase))
         {
             throw new StewardConfigException(
                 $"Invalid output.format '{config.Output.Format}' in '{path}'. Valid values: text, json.",
@@ -164,6 +165,17 @@ public sealed class ConfigLoader
             {
                 throw new StewardConfigException(
                     $"Invalid artifact importance '{artifact.Importance}' in '{path}'. Valid values: required, recommended, optional.",
+                    path);
+            }
+
+            if (artifact.Required &&
+                !string.IsNullOrWhiteSpace(artifact.Importance) &&
+                !string.Equals(artifact.Importance, "required", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new StewardConfigException(
+                    $"Contradictory fields for artifact '{artifact.Path}' in '{path}': " +
+                    $"'required: true' conflicts with 'importance: {artifact.Importance}'. " +
+                    $"Remove 'required: true' or change 'importance' to 'required'.",
                     path);
             }
 
@@ -381,6 +393,89 @@ public sealed class ConfigLoader
                         $"Invalid naming_pattern regex '{family.NamingPattern}' for artifact family '{family.Family}' in '{path}': {ex.Message}",
                         path,
                         ex);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(family.TitlePattern))
+            {
+                try
+                {
+                    _ = new Regex(family.TitlePattern, RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new StewardConfigException(
+                        $"Invalid title_pattern regex '{family.TitlePattern}' for artifact family '{family.Family}' in '{path}': {ex.Message}",
+                        path,
+                        ex);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(family.SectionPattern))
+            {
+                try
+                {
+                    _ = new Regex(family.SectionPattern, RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new StewardConfigException(
+                        $"Invalid section_pattern regex '{family.SectionPattern}' for artifact family '{family.Family}' in '{path}': {ex.Message}",
+                        path,
+                        ex);
+                }
+            }
+
+            if (family.FrontmatterSchema?.AllowedFields != null)
+            {
+                foreach (var field in family.FrontmatterSchema.AllowedFields)
+                {
+                    if (string.IsNullOrWhiteSpace(field))
+                    {
+                        throw new StewardConfigException(
+                            $"artifact_families['{family.Family}'].frontmatter_schema.allowed_fields entries must not be blank in '{path}'.",
+                            path);
+                    }
+                }
+            }
+
+            if (family.FrontmatterSchema?.DeprecatedFields != null)
+            {
+                foreach (var key in family.FrontmatterSchema.DeprecatedFields.Keys)
+                {
+                    if (string.IsNullOrWhiteSpace(key))
+                    {
+                        throw new StewardConfigException(
+                            $"artifact_families['{family.Family}'].frontmatter_schema.deprecated_fields keys must not be blank in '{path}'.",
+                            path);
+                    }
+                }
+            }
+
+            // Cross-key checks when allowed_fields is present
+            if (family.FrontmatterSchema?.AllowedFields != null)
+            {
+                var allowedSet = new HashSet<string>(
+                    family.FrontmatterSchema.AllowedFields, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var req in family.FrontmatterSchema.Required ?? [])
+                {
+                    if (!allowedSet.Contains(req))
+                    {
+                        throw new StewardConfigException(
+                            $"artifact_families['{family.Family}'].frontmatter_schema.required field '{req}' must also appear in allowed_fields in '{path}'.",
+                            path);
+                    }
+                }
+
+                foreach (var (deprecated, replacement) in family.FrontmatterSchema.DeprecatedFields ?? [])
+                {
+                    if (replacement != null && !allowedSet.Contains(replacement))
+                    {
+                        throw new StewardConfigException(
+                            $"artifact_families['{family.Family}'].frontmatter_schema.deprecated_fields replacement '{replacement}' for '{deprecated}' must appear in allowed_fields in '{path}'.",
+                            path);
+                    }
                 }
             }
         }

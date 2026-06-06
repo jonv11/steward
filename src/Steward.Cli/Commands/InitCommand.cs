@@ -84,6 +84,8 @@ public static class InitCommand
                         Directory.CreateDirectory(artifactDir);
 
                     var placeholder = GeneratePlaceholder(artifact.Path, artifact.Role);
+                    if (placeholder == null)
+                        continue;
                     File.WriteAllText(artifactFullPath, placeholder);
                     scaffolded.Add(artifact.Path);
                     filesWritten.Add(artifact.Path);
@@ -127,13 +129,18 @@ public static class InitCommand
         return command;
     }
 
-    internal static string GeneratePlaceholder(string path, string? role)
+    internal static string? GeneratePlaceholder(string path, string? role)
     {
+        var fileName = Path.GetFileName(path);
+        if (fileName.Equals("LICENSE", StringComparison.OrdinalIgnoreCase) ||
+            fileName.Equals("LICENSE.md", StringComparison.OrdinalIgnoreCase) ||
+            fileName.Equals("LICENSE.txt", StringComparison.OrdinalIgnoreCase))
+            return null; // Users must supply their own license text; STWD-001 will report it missing.
+
         var name = Path.GetFileNameWithoutExtension(path);
         if (path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
             return $"# {name}\n\n> TODO: Add content.\n";
 
-        // Non-markdown files (e.g. LICENSE) get a minimal placeholder.
         return $"TODO: Add {name} content.\n";
     }
 }

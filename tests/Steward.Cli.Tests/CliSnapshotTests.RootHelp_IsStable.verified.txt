@@ -5,7 +5,7 @@ Usage:
   steward [command] [options]
 
 Options:
-  -o, --output <Json|Text>                      Output format: text or json [default: Text]
+  -o, --output <Json|Sarif|Text>                Output format: text or json; sarif is supported by check only [default: Text]
   -v, --verbosity <Debug|Normal|Quiet|Verbose>  Verbosity level: quiet, normal, verbose, or debug [default: Normal]
   --no-color                                    Disable colored output
   -c, --config <path>                           Path to .steward configuration directory

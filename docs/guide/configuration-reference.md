@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-04-19
+last_updated: 2026-06-06
 ---
 
 # Configuration Reference
@@ -60,6 +60,8 @@ These serve different purposes:
 
 - **`discovery.exclude`** makes files completely invisible to Steward. Use it for build output, dependencies, tool installations, and anything that should never appear in any Steward command.
 - **`coverage.exclude`** excludes files from the governance coverage percentage reported by `steward status --coverage`, but those files are still discovered, validated, and shown in other commands. Use it for test fixtures, generated files, or vendor content you govern but don't want counting against your coverage metric.
+
+SARIF is not a valid repository-wide `output.format` default. Use `steward check --output sarif` explicitly when a CI system needs SARIF 2.1.0; other commands support text and JSON.
 
 ## policy.yaml
 
@@ -164,11 +166,26 @@ artifact_families:
     importance: recommended
     frontmatter_schema:
       required: [type, status]
+      allowed_fields: [type, status, description, last_updated]
       allowed_values:
         type: [adr]
         status: [Draft, Proposed, Accepted, Superseded, Deprecated]
+      deprecated_fields:
+        date: last_updated
     required_sections: [Context, Decision, Consequences]
     naming_pattern: "^ADR-[0-9]{3}-[a-z0-9-]+\\.md$"
+    title_pattern: "^ADR-[0-9]{3}: .+"
+    section_pattern: "^[A-Z][A-Za-z ]+$"
+    section_schema:
+      heading_match: exact
+      enforce_order: true
+      allow_extra: true
+      sections:
+        - heading: Context
+        - heading: Decision
+        - heading: Consequences
+        - heading: Alternatives
+          required: false
     directory_expectations:
       min_count: 1
 ```
@@ -185,10 +202,28 @@ artifact_families:
 | `importance` | string | `optional` | `required`, `recommended`, or `optional` |
 | `frontmatter_schema.required` | list | `[]` | Frontmatter field names that must be present (STWD-003) |
 | `frontmatter_schema.allowed_values` | map | `{}` | Field→allowed values for validation (case-insensitive) |
+| `frontmatter_schema.allowed_fields` | list | _(none)_ | Complete allowed field set for a closed schema. Unexpected fields produce STWD-003 warnings; global auto-fields are implicitly allowed |
+| `frontmatter_schema.deprecated_fields` | map | `{}` | Deprecated field→replacement mapping, or `null` for removal. STWD-003 reports and can auto-fix migrations |
 | `required_sections` | list | `[]` | Heading text that must appear in matched files (STWD-014) |
 | `naming_pattern` | string | _(none)_ | Regex that matched filenames must satisfy (STWD-016) |
+| `title_pattern` | string | _(none)_ | Case-sensitive regex that the H1 heading must satisfy (STWD-019) |
+| `section_pattern` | string | _(none)_ | Case-sensitive regex that every H2 heading must satisfy (STWD-020) |
+| `section_schema` | object | _(none)_ | H2 document schema for required/optional sections, ordering, and extra-section policy (STWD-021) |
 | `directory_expectations.min_count` | int | _(none)_ | Minimum number of files matching this family (STWD-015) |
 | `directory_expectations.description` | string | _(none)_ | Description shown in min-count violation messages |
+
+#### Section schema fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `section_schema.sections` | list | `[]` | Ordered H2 schema entries |
+| `section_schema.sections[].heading` | string | _(required)_ | Heading text matched against document H2 headings |
+| `section_schema.sections[].required` | bool | `true` | Whether the section must exist |
+| `section_schema.heading_match` | string | `contains` | `contains` for case-insensitive substring matching or `exact` for case-insensitive equality |
+| `section_schema.enforce_order` | bool | `false` | Require present sections to follow schema order |
+| `section_schema.allow_extra` | bool | `true` | Allow H2 headings not declared in the schema |
+
+`config validate` rejects invalid title/section regexes, blank closed-schema fields, required fields omitted from `allowed_fields`, deprecated replacements omitted from `allowed_fields`, and unsupported `heading_match` values.
 
 ### governance section
 
@@ -227,7 +262,7 @@ governance:
 | `frontmatter.auto_fields` | map | `{}` | Field name → `true` to auto-update date fields on locally changed files |
 | `managed_regions.marker` | string | `steward` | Default marker string for managed section delimiters |
 | `managed_regions.enforce_ownership` | bool | — | Whether managed regions are enforced |
-| `completion_policy.rules` | list | `[]` | Rule IDs and descriptions for tracking which rules are considered completion-critical |
+| `completion_policy.rules` | list | `[]` | Rule IDs and descriptions shown in the "Completion:" output summary. Reporting-only — does not affect pass/fail exit code. Use `validation.severity_overrides` to make a rule gate CI. |
 
 #### Auto-fields behavior
 
@@ -312,7 +347,7 @@ maintenance:
       sort: filename
 
     - id: decision-adr-index
-      path: docs/decisions/decision-index.md
+      path: docs/decisions/README.md
       type: index
       source: "docs/decisions/adrs/*.md"
       managed_section: "ADRs"
@@ -407,11 +442,12 @@ At runtime, profile defaults merge in shallowly: your `policy.yaml` scalar/objec
 |---------|----------------|-------------------|-------------------|------------|
 | `software` | `software` | README.md (required), LICENSE (required), CHANGELOG.md, CONTRIBUTING.md | 500 lines | `[README.md]` |
 | `docs` | `documentation` | README.md (required), docs/ (required) | 300 lines | `[README.md]` |
-| `minimal` | `general` | README.md (not required) | 500 lines | _(none)_ |
+| `minimal` | `general` | README.md (`importance: optional`) | 500 lines | _(none)_ |
 | `mixed` | `mixed` | README.md (required), docs/ | 500 lines | `[README.md]` |
 | `knowledge` | `knowledge` | README.md (required) | 1000 lines | `[README.md]` |
 
 > **Note:** `mixed` and `knowledge` profiles are defined internally but not yet offered via `steward init`. Only `software`, `docs`, and `minimal` are available for scaffolding.
+> **Importance resolution:** The `minimal` profile sets `importance: optional` explicitly on README.md. Without this explicit override, the `authoritative` role default would make the artifact required. If your repo `policy.yaml` declares the same artifact without an explicit `importance:` field, role defaults apply. See [importance precedence](#artifact-fields) for the full resolution chain.
 
 ## Configuration precedence
 
@@ -454,10 +490,14 @@ Run `config validate` after every policy change. Run `config doctor` periodicall
 | STWD-015 | warning | family-completeness | Artifact families with min_count must meet the declared minimum | No |
 | STWD-016 | warning | naming | Files matched by an artifact family must satisfy the family's naming_pattern | No |
 | STWD-017 | warning | structure | Heading text must be unique within a Markdown file after anchor-style normalization | No |
-| STWD-018 | warning | broken-fragment-anchor | Markdown fragment links should reference headings that actually exist in the target file | No |
+| STWD-018 | warning | broken-fragment-anchor | Markdown fragment links should reference headings that actually exist in the target file | Yes |
+| STWD-019 | warning | family-title-pattern | Artifact-family H1 titles should match the declared title pattern | No |
+| STWD-020 | warning | family-section-pattern | Artifact-family H2 headings should match the declared section pattern | No |
+| STWD-021 | warning | family-section-schema | Artifact-family H2 sections should satisfy the declared document schema | No |
 
-Three rules support auto-fix via `steward check --fix --apply`:
+Four rules support auto-fix via `steward check --fix --apply`:
 
 - **STWD-003** — adds missing frontmatter fields with placeholder values
 - **STWD-007** — regenerates stale maintained artifacts
 - **STWD-012** — updates the `last_updated` frontmatter date
+- **STWD-018** — repairs fragment links when a single unambiguous heading match exists

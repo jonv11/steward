@@ -4,7 +4,7 @@ Thank you for contributing. This file covers working on the Steward source code 
 
 ## Workflow Guide
 
-The canonical reference for how work should be done in this repo is [docs/planning/workflow-guide.md](docs/planning/workflow-guide.md). It covers all workflow types — features, bug fixes, documentation, reviews, releases, and more — with specific steps, validation requirements, and definitions of done.
+The canonical reference for how work should be done in this repo is [docs/project/workflow-guide.md](docs/project/workflow-guide.md). It covers all workflow types — features, bug fixes, documentation, reviews, releases, and more — with specific steps, validation requirements, and definitions of done.
 
 Start there for process questions. The rest of this file covers setup and quick-reference commands.
 
@@ -20,7 +20,7 @@ steward check
 
 Agent guidance lives in [AGENTS.md](AGENTS.md). Steward CLI operational guidance for agents lives in [.agents/skills/steward-cli/SKILL.md](.agents/skills/steward-cli/SKILL.md).
 
-For the strongest repo-specific orientation flow, start with `README.md`, then [docs/planning-index.md](docs/planning-index.md), [docs/implementation-status.md](docs/implementation-status.md), [docs/planning/implementation-instructions.md](docs/planning/implementation-instructions.md), and [docs/requirements/PRD.md](docs/requirements/PRD.md). Open `steward.sln` when you are ready to enter the code. If you are changing repo guidance or stewardship behavior, inspect `.steward/policy.yaml` next. After structural moves or new documentation, refresh the generated map with `steward maintain --artifact structure --apply`.
+For the strongest repo-specific orientation flow, start with `README.md`, then [docs/README.md](docs/README.md), [project status](docs/project/status.md), [roadmap](docs/project/roadmap.md), and the [workflow guide](docs/project/workflow-guide.md). Open `steward.sln` when you are ready to enter the code. If you are changing repo guidance or stewardship behavior, inspect `.steward/policy.yaml` next. After structural moves or new documentation, refresh generated artifacts with `steward maintain --apply`.
 
 ## Development Workflow
 
@@ -34,13 +34,13 @@ For the strongest repo-specific orientation flow, start with `README.md`, then [
 ## Pull Requests
 
 - One logical change per PR.
-- Use [Conventional Commits](docs/planning/workflow-guide.md#commit-conventions) for all commit messages.
+- Use [Conventional Commits](docs/project/workflow-guide.md#commit-conventions) for all commit messages.
 - `npm run lint:md` must pass when your change touches Markdown or workflow docs.
 - All `dotnet test` must pass.
 - `steward check` must exit 0 before submitting.
 - Add a CHANGELOG.md entry under the appropriate version heading.
-- Follow the [shared finalization checklist](docs/planning/workflow-guide.md#shared-finalization-checklist) before submitting.
+- Follow the [shared finalization checklist](docs/project/workflow-guide.md#shared-finalization-checklist) before submitting.
 
 ## Release Process
 
-Pre-`1.0.0` releases are documented in [docs/planning/release-process.md](docs/planning/release-process.md). Tag-driven GitHub Actions handle NuGet publication automatically.
+Pre-`1.0.0` releases are documented in [docs/project/release-process.md](docs/project/release-process.md). Tag-driven GitHub Actions handle NuGet publication automatically.

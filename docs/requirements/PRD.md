@@ -3,8 +3,8 @@ type: prd
 document_id: PRD-0001
 version: 0.10.0
 status: Accepted
-source: Derived from MRD-0001 (repository-steward-master-requirements.md)
-last_updated: 2026-04-18
+source: Derived from MRD-0001 (master-requirements-source.md)
+last_updated: 2026-06-06
 ---
 
 # Repository Steward — Product Requirements Document
@@ -380,7 +380,7 @@ Requirements are grouped by capability area. Full traceability to MRD-0001 requi
 
 ## 12. Open Questions (Post-RFC)
 
-All product-level open questions have been resolved through accepted RFCs. See [Decision Index](../decisions/decision-index.md).
+All product-level open questions have been resolved through accepted RFCs. See [Decision Index](../decisions/README.md).
 
 Remaining forward-looking items intentionally scheduled later on the pre-1.0 line:
 

@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-04-19
+last_updated: 2026-06-06
 ---
 
 # Contributor Guide
@@ -55,6 +55,7 @@ Before committing, check that your changes comply with the repository's rules:
 steward check                    # Full repository validation
 steward check --scope staged     # Only validate git-staged files
 steward check --scope changed    # Only validate git-modified files (staged + unstaged)
+steward check --since origin/main # Validate the merge-base-aware branch diff
 ```
 
 Use `--scope staged` for the tightest pre-commit check — it validates only what you're about to commit.
@@ -87,13 +88,14 @@ steward check --fix              # Preview what Steward would fix
 steward check --fix --apply      # Apply the fixes
 ```
 
-Three rules support auto-fix:
+Four rules support auto-fix:
 
 | Rule | What it fixes |
 |------|---------------|
 | STWD-003 | Adds missing frontmatter fields with placeholder values |
 | STWD-007 | Regenerates stale maintained artifacts |
 | STWD-012 | Updates the `last_updated` frontmatter date |
+| STWD-018 | Repairs fragment links when one unambiguous heading match exists |
 
 All other rules require manual remediation. Run `steward explain <rule-id>` for guidance on any rule.
 
@@ -198,6 +200,7 @@ Recommended Artifacts:
 | `steward orient --signals` | Same, plus missing/stale signals |
 | `steward check` | Full validation |
 | `steward check --scope staged` | Validate only staged files |
+| `steward check --since <ref>` | Validate files changed since the merge base with a branch, tag, or commit |
 | `steward check --fix --apply` | Apply automatic fixes |
 | `steward explain <rule-id>` | Understand a specific rule |
 | `steward explain path <file>` | See all rules that apply to a file |
@@ -256,3 +259,5 @@ steward status --output json
 ```
 
 JSON output uses a standard envelope with schema versioning, structured diagnostics, and machine-readable error information.
+
+For CI systems that consume static-analysis results, `steward check --output sarif` emits SARIF 2.1.0. SARIF is a check-only export format; other commands support text and JSON.

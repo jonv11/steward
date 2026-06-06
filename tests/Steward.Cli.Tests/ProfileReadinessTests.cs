@@ -32,7 +32,7 @@ public class ProfileReadinessTests : IDisposable
     {
         // Only advertised profiles per ADR-014; mixed/knowledge deferred
         yield return ["docs", "docs-repo", "documentation", new[] { "README.md", "docs/" }, new[] { "README.md" }];
-        yield return ["minimal", "minimal-repo", "general", new[] { "README.md" }, Array.Empty<string>()];
+        yield return ["minimal", "minimal-repo", "general", Array.Empty<string>(), Array.Empty<string>()];
     }
 
     public static IEnumerable<object[]> CheckProfiles()
@@ -44,7 +44,7 @@ public class ProfileReadinessTests : IDisposable
     public static IEnumerable<object[]> FailureCases()
     {
         yield return ["docs", "docs-repo", "docs", "docs/"];
-        yield return ["minimal", "minimal-repo", "README.md", "README.md"];
+        // minimal profile: README.md is now importance: optional, so removing it does not fail.
     }
 
     [Theory]
@@ -71,9 +71,10 @@ public class ProfileReadinessTests : IDisposable
             var showData = showDoc.RootElement.GetProperty("data");
             showData.GetProperty("config").GetProperty("profile").GetString().Should().Be(profile);
             showData.GetProperty("policy").GetProperty("repository").GetProperty("type").GetString().Should().Be(expectedRepositoryType);
-            GetArtifactPaths(showData.GetProperty("policy").GetProperty("artifacts"))
-                .Should()
-                .Contain(expectedRequiredArtifacts);
+            if (expectedRequiredArtifacts.Length > 0)
+                GetArtifactPaths(showData.GetProperty("policy").GetProperty("artifacts"))
+                    .Should()
+                    .Contain(expectedRequiredArtifacts);
 
             var (statusExitCode, statusOutput, statusError) = CliTestHelper.InvokeCapture("status", "--output", "json");
             statusExitCode.Should().Be(0, statusError);
@@ -172,8 +173,10 @@ public class ProfileReadinessTests : IDisposable
     }
 
     [Fact]
-    public void MinimalProfile_StatusTreatsReadmeAsRequiredViaRoleDefaults()
+    public void MinimalProfile_StatusTreatsReadmeAsOptional()
     {
+        // ProfileDefaults sets importance: optional explicitly on README.md for the minimal
+        // profile, preventing the authoritative role default from making it required.
         InWorkingCopy("minimal-repo", _ =>
         {
             var (initExitCode, _, initError) = CliTestHelper.InvokeCapture("init", "--profile", "minimal");
@@ -188,17 +191,17 @@ public class ProfileReadinessTests : IDisposable
                 .EnumerateArray()
                 .Single(artifact => artifact.GetProperty("path").GetString() == "README.md");
 
+            // required: false and explicit importance: optional
             readmeArtifact.GetProperty("required").GetBoolean().Should().BeFalse();
+            readmeArtifact.GetProperty("importance").GetString().Should().Be("optional");
 
             var (_, statusOutput, _) = CliTestHelper.InvokeCapture("status", "--output", "json");
             using var statusDoc = JsonDocument.Parse(statusOutput);
 
+            // README.md must NOT appear in requiredArtifacts
             GetArtifactPaths(statusDoc.RootElement.GetProperty("data").GetProperty("requiredArtifacts"))
                 .Should()
-                .ContainSingle()
-                .Which
-                .Should()
-                .Be("README.md");
+                .NotContain("README.md");
         });
     }
 

@@ -1,13 +1,19 @@
 ---
 type: requirements
 document_id: TRACE-0001
-version: 0.10.0
-status: Accepted
-source: Maps MRD-0001 requirements to milestones and PRD sections
-last_updated: 2026-04-16
+status: Active
+source: Maps MRD-0001 requirements to PRD sections and first-delivery milestones
+last_updated: 2026-06-06
 ---
 
 # Requirements Traceability
+
+This document maps stable requirements to their sources and first-delivery milestones.
+It is not an implementation-status tracker.
+
+**Current implementation state lives in [docs/project/status.md](../project/status.md).**
+Current and next milestone live in [docs/project/roadmap.md](../project/roadmap.md).
+Unscheduled work lives in [docs/project/backlog.md](../project/backlog.md).
 
 ---
 
@@ -32,8 +38,8 @@ last_updated: 2026-04-16
 | REQ-CONFIG-008 | CONFIG | 8.2 | v0.10.0 | ✅ Implemented |
 | REQ-CONFIG-009 | CONFIG | 8.2 | v0.3.0 | ✅ Implemented |
 | REQ-VALIDATE-001 | VALIDATION | 8.3 | v0.4.0 | ✅ Implemented |
-| REQ-VALIDATE-002 | VALIDATION | 8.3 | v0.4.0 | ⚠️ Partial — scoped check semantics broken (B6) |
-| REQ-VALIDATE-003 | VALIDATION | 8.3 | v0.4.0 | ⚠️ Partial — scoped check semantics broken (B6) |
+| REQ-VALIDATE-002 | VALIDATION | 8.3 | v0.4.0 | ✅ Implemented |
+| REQ-VALIDATE-003 | VALIDATION | 8.3 | v0.4.0 | ✅ Implemented |
 | REQ-VALIDATE-004 | VALIDATION | 8.3 | v0.4.0–v0.9.0 | ✅ Implemented |
 | REQ-VALIDATE-005 | VALIDATION | 8.3 | v0.4.0 | ✅ Implemented |
 | REQ-VALIDATE-006 | VALIDATION | 8.3 | v0.4.0 | ✅ Implemented |
@@ -198,7 +204,9 @@ last_updated: 2026-04-16
 
 ## Summary
 
-- **Implemented:** 133 requirements
-- **Partial:** 32 requirements
+*Snapshot as of last traceability review. Authoritative current state lives in [docs/project/status.md](../project/status.md).*
+
+- **Implemented:** 135 requirements
+- **Partial:** 30 requirements
 - **Planned on later pre-1.0 milestones:** 7 requirements
 - **Total:** 172 requirements

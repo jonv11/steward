@@ -95,7 +95,7 @@ artifact_families:
   - family: audit
     display_name: Audit Report
     match:
-      path_pattern: "docs/audits/*.md"
+      path_pattern: "docs/history/audits/*.md"
     role: audit
     importance: optional
 ```

@@ -2,7 +2,8 @@
 type: adr
 status: Accepted
 category: Technical
-description: Defines the text and JSON output strategy, stdout or stderr contract, and color handling
+description: Defines text and JSON output, check-only SARIF export, stream contracts, and color handling
+last_updated: 2026-06-06
 ---
 
 # ADR-006: Output Formatting Strategy
@@ -17,7 +18,7 @@ The CLI must support both human-readable and machine-readable output from the sa
 
 ### Format selection
 
-All commands support `--output text` (default) and `--output json`.
+All commands support `--output text` (default) and `--output json`. `steward check` additionally supports `--output sarif` for SARIF 2.1.0 export. SARIF is command-scoped and is not valid as the repository-wide default in `config.yaml`.
 
 ### Formatter abstraction
 
@@ -35,6 +36,8 @@ public interface IOutputFormatter
 
 Two implementations: `TextFormatter` (human-friendly, colored) and `JsonFormatter` (machine-friendly, stable schema).
 
+The check command uses a dedicated buffered SARIF writer when SARIF is requested. Other commands reject SARIF with a usage error instead of silently falling back to text.
+
 ### Text formatter
 
 - Uses ANSI colors when stdout is a terminal and `--no-color` is not set.
@@ -51,6 +54,13 @@ Two implementations: `TextFormatter` (human-friendly, colored) and `JsonFormatte
 - Uses `System.Text.Json` with source-generated serializers for performance.
 - No colorization, no progress indicators.
 
+### SARIF writer
+
+- Available only from `steward check`.
+- Emits one SARIF 2.1.0 document on stdout.
+- Maps Steward rule metadata, severities, messages, and file locations into SARIF runs, rules, and results.
+- Routes incidental text messages to stderr so stdout remains parseable.
+
 ### stdout / stderr contract
 
 | Stream | Content | Stable |
@@ -61,7 +71,7 @@ Two implementations: `TextFormatter` (human-friendly, colored) and `JsonFormatte
 ### Color handling
 
 1. If `--no-color` is set: no ANSI codes.
-2. If `--output json`: no ANSI codes.
+2. If `--output json` or `--output sarif`: no ANSI codes.
 3. If stdout is not a terminal (piped): no ANSI codes.
 4. Otherwise: ANSI colors enabled.
 

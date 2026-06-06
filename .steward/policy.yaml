@@ -4,50 +4,92 @@ repository:
   type: tool
 
 artifacts:
-  # Agent guidance entry points.
   - path: AGENTS.md
     role: guide
-    description: Primary entry point for coding agents — what to read, what to do, and how to work in this repo
+    description: Primary entry point for coding agents working in the Steward source repository
     required: true
     importance: required
 
-  # Session-start spine and high-trust entry points.
   - path: README.md
     role: authoritative
-    description: Project overview, local usage, contributor quick start, and primary landing page
+    description: Product overview, installation, command reference, and public project status
     required: true
     importance: required
 
-  - path: docs/planning-index.md
+  - path: docs/README.md
     role: guide
-    description: Central navigation hub for requirements, decisions, planning, audits, and source material
-    index_of: docs/planning
+    description: Selective landing page for user documentation and internal project documentation
     required: true
     importance: required
 
-  - path: docs/implementation-status.md
+  - path: docs/project/README.md
+    role: guide
+    description: Contributor landing page for the active project documentation spine
+    required: true
+    importance: required
+
+  - path: docs/project/status.md
     role: current-state
-    description: "Current release-line truth: implemented scope, version posture, and remaining pre-1.0 work"
+    description: Current repository facts, implemented capabilities, and known health gaps
     required: true
     importance: required
     freshness:
       max_age_days: 30
 
-  - path: docs/planning/implementation-instructions.md
+  - path: docs/project/roadmap.md
+    role: roadmap
+    description: Current milestone and next milestone only
+    required: true
+    importance: required
+    freshness:
+      max_age_days: 45
+
+  - path: docs/project/backlog.md
+    role: backlog
+    description: Validated but unscheduled work
+    importance: recommended
+
+  - path: docs/project/workflow-guide.md
     role: workflow
-    description: Contributor execution guide for the active pre-1.0 work and next-step priorities
+    description: Canonical contributor and agent workflow reference
+    importance: recommended
+
+  - path: docs/project/release-process.md
+    role: workflow
+    description: Authoritative operator guide for intentional public pre-1.0 releases
+    importance: recommended
+
+  - path: docs/project/release-publication-checklist.md
+    role: workflow
+    description: Local verification and publication checklist for intentional releases
     importance: recommended
 
   - path: docs/requirements/PRD.md
     role: vision
-    description: Canonical product requirements and repository purpose
+    description: Canonical product requirements and design principles
     required: true
     importance: required
 
-  - path: docs/decisions/decision-index.md
+  - path: docs/requirements/master-requirements-source.md
+    role: requirements
+    description: Original MRD source from which the PRD and traceability matrix were derived
+    importance: recommended
+
+  - path: docs/requirements/requirements-traceability.md
+    role: requirements
+    description: Traceability from MRD requirements to decisions and implementation state
+    importance: recommended
+
+  - path: docs/decisions/README.md
     role: decision-log
-    description: Index of accepted RFCs and ADRs with links to the decision record set
+    description: Generated status index for RFCs and ADRs
     index_of: docs/decisions
+    required: true
+    importance: required
+
+  - path: CHANGELOG.md
+    role: changelog
+    description: Canonical release history and unreleased change record
     required: true
     importance: required
 
@@ -57,67 +99,34 @@ artifacts:
     required: true
     importance: required
 
-  # Repo governance surfaces that matter when maintaining Steward-on-Steward.
   - path: .steward/policy.yaml
     role: governance
-    description: Repo-specific Steward contract for orientation, artifact roles, and maintenance behavior
+    description: Enforced repository contract for documentation and artifact governance
     importance: recommended
 
-  # Core requirements and repository contract.
-  - path: repository-steward-master-requirements.md
-    role: requirements
-    description: Original MRD source from which the PRD and traceability matrix are derived
-    importance: recommended
-
-  - path: docs/requirements/requirements-traceability.md
-    role: requirements
-    description: Traceability matrix from MRD requirements to milestones and current implementation status
-    importance: recommended
-
-  # Key planning artifacts — only structurally essential ones, not every planning doc
-  - path: docs/planning/milestone-plan.md
-    role: milestones
-    description: Delivered and planned pre-1.0 milestone sequencing from v0.1.0 onward
-    importance: recommended
-
-  - path: docs/planning/pre-1-0-readiness-plan.md
-    role: roadmap
-    description: Active pre-1.0 readiness plan and categorized remaining work before first stable shipment
-    importance: recommended
-    freshness:
-      max_age_days: 45
-
-  - path: docs/planning/workflow-guide.md
-    role: workflow
-    description: Canonical reference for how all categories of work should be performed — feature, bug fix, docs, review, release, governance
-    importance: recommended
-
-  - path: docs/planning/release-process.md
-    role: workflow
-    description: Authoritative operator guide for intentional public pre-1.0 releases
-    importance: recommended
-
-  - path: CHANGELOG.md
-    role: changelog
-    description: Canonical release-notes source for intentional versioned releases
-    required: true
-    importance: recommended
-
-  # Generated orientation surfaces.
   - path: STRUCTURE.md
     role: generated
-    description: Generated repository map refreshed by steward maintain after structural changes
+    description: Generated repository map refreshed after structural changes
     importance: recommended
 
-  # Optional directory anchors shape orientation without overloading status output.
+  - path: docs/guide/
+    role: guide
+    description: End-user documentation for Steward adopters and contributors
+    importance: optional
+
+  - path: docs/project/
+    role: workflow
+    description: Small active spine for current project truth and contributor operations
+    importance: optional
+
   - path: docs/requirements/
     role: requirements
-    description: Requirements, assumptions, and traceability documents
+    description: Product requirements, assumptions, source material, and traceability
     importance: optional
 
   - path: docs/decisions/
     role: governance
-    description: Decision records root for indexes, ADRs, and RFCs
+    description: Decision records root for generated indexes, ADRs, and RFCs
     importance: optional
 
   - path: docs/decisions/adrs/
@@ -130,33 +139,46 @@ artifacts:
     description: Request for Comments collection
     importance: optional
 
-  - path: docs/planning/
-    role: workflow
-    description: Active planning, execution guidance, release preparation, and roadmap material
-    importance: optional
-
-  - path: docs/audits/
-    role: audit
-    description: Assessments, review records, and supporting evidence for stewardship decisions
-    importance: optional
-
-  - path: docs/reviews/
-    role: audit
-    description: Config, contract, and rule-system reviews — active synthesis and stress-test documents
+  - path: docs/history/
+    role: archive
+    description: Point-in-time evidence and superseded planning kept outside the active authority path
     importance: optional
 
 artifact_families:
+  # Lifecycle vocabulary for project/planning/review/history documents:
+  #   Draft, Active, Completed, Superseded, Historical
+  # Decision-specific vocabulary for ADRs and RFCs:
+  #   Proposed, Accepted, Deprecated, Deferred
+  # These two vocabularies serve different purposes and must not be conflated.
+  # ADR/RFC status tracks the acceptance state of a decision record.
+  # Project document status tracks the active/archived lifecycle of a planning artifact.
+
   - family: adr
     display_name: Architecture Decision Record
     match:
       path_pattern: "docs/decisions/adrs/ADR-*.md"
     role: governance
     importance: recommended
+    naming_pattern: "^ADR-[0-9]{3}-[a-z0-9-]+\\.md$"
+    title_pattern: "^ADR-[0-9]{3}: .+"
     frontmatter_schema:
       required: [type, status, category]
+      # decision_date: immutable field recording when the decision was made.
+      # last_updated: auto-maintained by steward maintain; do not use for decision chronology.
+      allowed_fields: [type, status, category, description, last_updated, decision_date]
       allowed_values:
         type: [adr]
         status: [Draft, Proposed, Accepted, Superseded, Deprecated]
+    section_schema:
+      sections:
+        - heading: "Context"
+          required: true
+        - heading: "Decision"
+          required: true
+        - heading: "Consequences"
+          required: true
+        - heading: "Alternatives"
+          required: false
 
   - family: rfc
     display_name: Request for Comments
@@ -164,26 +186,45 @@ artifact_families:
       path_pattern: "docs/decisions/rfcs/RFC-*.md"
     role: governance
     importance: recommended
+    naming_pattern: "^RFC-[0-9]{3}-[a-z0-9-]+(?:-draft)?\\.md$"
+    title_pattern: "^RFC-[0-9]{3}: .+"
     frontmatter_schema:
       required: [type, status, resolves]
       allowed_values:
         type: [rfc]
         status: [Draft, Proposed, Accepted, Superseded, Deprecated, Deferred]
+    section_schema:
+      heading_match: contains
+      sections:
+        - heading: "Context"
+          required: true
+        - heading: "Problem Statement"
+          required: false
+        - heading: "Proposed"
+          required: false
+        - heading: "Alternatives"
+          required: false
+        - heading: "Consequences"
+          required: false
 
-  - family: planning
-    display_name: Planning Document
+  - family: project
+    display_name: Active Project Document
     match:
-      path_pattern: "docs/planning/*.md"
+      path_pattern: "docs/project/*.md"
     role: workflow
-    importance: optional
+    importance: recommended
     frontmatter_schema:
-      required: [type, status]
+      required: [type, status, summary]
+      # Active project docs must be Draft or Active only.
+      # Completed, Superseded, and Historical project/planning docs belong under docs/history/**,
+      # not under docs/project/*.
       allowed_values:
-        type: [planning]
-        status: [Draft, Active, Accepted, Completed, Superseded]
+        type: [project]
+        status: [Draft, Active]
+      allowed_fields: [type, status, summary, last_updated, review_after]
 
   - family: requirements
-    display_name: Requirements Supporting Document
+    display_name: Requirements Document
     match:
       path_pattern: "docs/requirements/*.md"
     role: requirements
@@ -192,26 +233,59 @@ artifact_families:
       required: [type, status]
       allowed_values:
         type: [prd, requirements]
-        status: [Draft, Accepted, Active, Superseded]
+        status: [Draft, Accepted, Active, Completed, Superseded, Historical]
 
-  - family: audit
-    display_name: Audit / Review Record
+  - family: historical-stub
+    display_name: Historical Traceability Stub
     match:
-      path_pattern: "docs/audits/*.md"
-    role: audit
+      path_pattern: "docs/history/stubs/*.md"
+    role: archive
     importance: optional
+    frontmatter_schema:
+      required: [type, status, summary, superseded_by]
+      allowed_values:
+        type: [stub]
+        status: [Superseded, Historical]
 
-  - family: review
-    display_name: Config / Contract Review
+  - family: historical-audit
+    display_name: Historical Audit Evidence
     match:
-      path_pattern: "docs/reviews/*.md"
-    role: audit
+      path_pattern: "docs/history/audits/*.md"
+    role: archive
     importance: optional
     frontmatter_schema:
       required: [type, status]
       allowed_values:
-        type: [review, planning]
-        status: [Draft, Active, Complete, Completed, Superseded]
+        type: [audit]
+        status: [Historical]
+
+  - family: historical-review
+    display_name: Historical Review Evidence
+    match:
+      path_pattern: "docs/history/reviews/*.md"
+    role: archive
+    importance: optional
+    frontmatter_schema:
+      required: [type, status]
+      # Historical reviews must use type: review.
+      # Historical planning records belong to the historical-plan family (docs/history/plans/**).
+      allowed_values:
+        type: [review]
+        status: [Historical]
+      deprecated_fields:
+        date: last_updated
+
+  - family: historical-plan
+    display_name: Historical Planning Record
+    match:
+      path_pattern: "docs/history/plans/*.md"
+    role: archive
+    importance: optional
+    frontmatter_schema:
+      required: [type, status]
+      allowed_values:
+        type: [planning, documentation]
+        status: [Completed, Superseded, Historical]
 
   - family: skill
     display_name: Agent Skill
@@ -229,32 +303,33 @@ governance:
       last_updated: true
   start_here:
     - README.md
-    - docs/planning-index.md
-    - docs/implementation-status.md
-    - docs/planning/implementation-instructions.md
-    - docs/planning/workflow-guide.md
-    - docs/requirements/PRD.md
-    - steward.sln
+    - docs/README.md
+    - docs/project/status.md
+    - docs/project/roadmap.md
   completion_policy:
     rules:
       - id: STWD-001
         description: required artifact(s) missing
+      - id: STWD-003
+        description: lifecycle or schema metadata invalid
       - id: STWD-007
         description: maintained artifact(s) stale -> run 'steward maintain --apply'
       - id: STWD-008
         description: broken internal link(s)
       - id: STWD-009
         description: broken artifact reference(s) in policy
-      - id: STWD-012
-        description: state or readiness document(s) stale -> refresh current repo truth
+      - id: STWD-013
+        description: active document(s) missing navigation or standalone intent
 
 validation:
   disabled_rules: []
+  severity_overrides:
+    STWD-007: error
+    STWD-013: warning
   path_overrides:
     - pattern: "tests/Steward.TestFixtures/Repos/**"
       disabled_rules:
         - STWD-013
-
 
 maintenance:
   artifacts:
@@ -273,13 +348,13 @@ maintenance:
           - "**/publish/**"
           - ".steward/**"
     - id: decision-rfc-index
-      path: docs/decisions/decision-index.md
+      path: docs/decisions/README.md
       type: directory-index
       source: "docs/decisions/rfcs/RFC-*.md"
       managed_section: decision-rfc-index
       sort: filename
     - id: decision-adr-index
-      path: docs/decisions/decision-index.md
+      path: docs/decisions/README.md
       type: directory-index
       source: "docs/decisions/adrs/ADR-*.md"
       managed_section: decision-adr-index

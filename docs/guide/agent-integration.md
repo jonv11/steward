@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-04-19
+last_updated: 2026-06-06
 ---
 
 # Using Steward with AI Agents
@@ -13,7 +13,7 @@ Steward is designed to work well in agent-driven workflows. AI coding agents can
 - **Structured diagnostics.** Every violation includes a rule ID, file path, severity, message, and remediation guidance.
 - **JSON output.** The main command surface supports `--output json` with a standard envelope, machine-readable error codes, and suggested next steps; remaining universal expected-failure-path cleanup is tracked as later pre-1.0 work.
 - **Deterministic behavior.** Same input produces same output. No network calls, no non-determinism.
-- **Scoped validation.** `--scope changed` and `--scope staged` validate only modified files, keeping feedback tight.
+- **Scoped validation.** `--scope changed`, `--scope staged`, and merge-base-aware `--since <ref>` validation keep feedback tight.
 - **Explainability.** `steward explain <rule-id>` and `steward explain path <file>` give agents the context needed to fix issues without guessing.
 
 ## The agent validation loop
@@ -53,6 +53,12 @@ Before modifying a file, the agent can check what rules apply, what frontmatter 
 steward check --scope changed --output json
 ```
 
+For pull-request automation, validate the branch diff against its merge base:
+
+```bash
+steward check --since origin/main --output json
+```
+
 ### Step 4: Diagnose failures
 
 The JSON output includes structured diagnostics:
@@ -79,13 +85,21 @@ steward explain STWD-003 --output json
 
 ### Step 5: Remediate
 
-For auto-fixable rules (STWD-003, STWD-007, STWD-012):
+For auto-fixable rules (STWD-003, STWD-007, STWD-012, STWD-018):
 
 ```bash
 steward check --fix --apply
 ```
 
 For other rules, use the remediation guidance from `steward explain` to make manual fixes.
+
+CI systems that consume static-analysis results can use:
+
+```bash
+steward check --since origin/main --output sarif
+```
+
+SARIF 2.1.0 is available only from `steward check`. Use JSON for structured output from other commands.
 
 ## Exit codes
 
@@ -144,7 +158,7 @@ steward md edit fm-set docs/my-doc.md --field status --value Active --apply
 ## Limitations agents should know
 
 - **`search --role` only matches explicit artifact declarations**, not family-classified files. To find all files in a family, use glob patterns or `steward orient --full --output json`.
-- **3 of 18 rules support auto-fix.** Most violations require the agent to make manual edits.
+- **4 of 21 rules support auto-fix.** Most violations require the agent to make manual edits.
 - **Text-mode output** includes remediation guidance but not structured next-step hints. Use `--output json` for richer machine-readable diagnostics.
 - **No network calls.** Steward cannot fetch remote content or interact with hosting platforms.
 

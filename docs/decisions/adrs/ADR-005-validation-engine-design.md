@@ -3,6 +3,7 @@ type: adr
 status: Accepted
 category: Architecture
 description: Defines the validation engine, rule registry, diagnostics model, and fixable-rule contract
+last_updated: 2026-06-06
 ---
 
 # ADR-005: Validation Engine Design
@@ -117,7 +118,7 @@ public sealed class FileEdit
 }
 ```
 
-`--fix` applies all computed fixes. `--dry-run` reports what `--fix` would change.
+`--fix` previews all computed fixes. `--fix --apply` writes the previewed deterministic edits.
 
 ### Secret filtering
 
@@ -130,7 +131,7 @@ The output pipeline applies a `SecretFilter` to all diagnostic messages and snip
 ## Alternatives considered
 
 1. **Roslyn-analyzer-style architecture:** Overly complex for repository-level checks. Roslyn analyzers are designed for C# source code, not repository structure.
-2. **Pipeline/middleware pattern:** Considered, but rules are independent and don't benefit from ordering. A flat registry with parallel execution is simpler.
+2. **Pipeline/middleware pattern:** Considered, but rules are independent and don't benefit from ordering. A flat registry with sequential execution is simpler and sufficient for the current rule count.
 3. **External rule plugins (MEF/loading DLLs):** Deferred beyond v1.0.0. Internal rules are sufficient for the planned scope. The `IValidationRule` interface is designed to support future plugin loading.
 
 ## Consequences

@@ -11,7 +11,7 @@ description: Defines the direction for per-type artifact schemas in policy-drive
 
 ## Context
 
-The use-case consolidation analysis (`docs/audits/usecase-consolidation-proposal.md`) identifies the artifact type schema system as the single most impactful capability gap. Of 55 canonical use-case items, 12 directly depend on per-type artifact definitions.
+The use-case consolidation analysis (`docs/history/audits/usecase-consolidation-proposal.md`) identifies the artifact type schema system as the single most impactful capability gap. Of 55 canonical use-case items, 12 directly depend on per-type artifact definitions.
 
 Currently, Steward validates frontmatter fields globally (`required_frontmatter_fields` in policy.yaml, enforced by STWD-003). Path-policy provides path-based rules. Artifact declarations in policy.yaml assign roles and requirement levels. However, there is no unified mechanism to declare that artifacts of a given type must have specific frontmatter fields with specific value constraints, specific required sections, specific naming patterns, or specific lifecycle status values.
 

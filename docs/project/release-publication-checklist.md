@@ -1,0 +1,96 @@
+---
+type: project
+status: Active
+summary: Verification and publication checklist for intentional Steward releases
+last_updated: 2026-06-06
+---
+
+# Release Publication Checklist
+
+- **Applies to:** Any intentional Steward release (pre-1.0 and stable)
+- **Governed by:** [ADR-009 — Packaging and Distribution](../decisions/adrs/ADR-009-packaging-distribution.md), [ADR-013 — Pre-1.0 Versioning](../decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md)
+- **Process guide:** [Release Process](../project/release-process.md)
+
+---
+
+## Prerequisites
+
+- [ ] The current release boundary in [roadmap.md](roadmap.md) is resolved or explicitly deferred with documented rationale.
+- [ ] The chosen bump matches ADR-013 and the highest merged release-intent label since the previous release.
+- [ ] Version string in `Directory.Build.props` (`Version`, `AssemblyVersion`, `FileVersion`) is updated to the target release version.
+- [ ] `CHANGELOG.md` contains a dated section for the target release version and `Unreleased` is adjusted accordingly.
+- [ ] `steward version` output matches the target release version.
+- [ ] `README.md`, `AGENTS.md`, `status.md`, and `roadmap.md` describe the target as pending release without claiming publication.
+- [ ] CI is green on all three platforms (Windows, Linux, macOS) from `.github/workflows/ci.yml`.
+- [ ] If this is the first use of the tag-driven GitHub Release workflow, the workflow definition has been reviewed and the label set in `.github/release-labels.json` has been synchronized into GitHub.
+
+## Local Verification
+
+Run these commands from the repository root:
+
+```bash
+# 1. Install repo-local Markdown lint dependencies
+npm ci
+
+# 2. Lint Markdown
+npm run lint:md
+
+# 3. Clean build
+dotnet build steward.sln -c Release
+
+# 4. Full test suite
+dotnet test steward.sln -c Release --no-build
+
+# 5. Repo governance check
+dotnet run --project src/Steward.Cli -c Release --no-build -- check
+
+# 6. Build release assets and checksums
+pwsh ./scripts/release/Build-ReleaseAssets.ps1 -Version <VERSION>
+
+# 7. Export release notes from the changelog
+pwsh ./scripts/release/Export-ReleaseNotes.ps1 -Version <VERSION>
+
+# 8. Install from the locally built package and smoke-test
+dotnet tool install --tool-path ./.tools/steward --add-source ./artifacts/release/v<VERSION> Steward --version <VERSION>
+./.tools/steward/steward version
+./.tools/steward/steward orient
+./.tools/steward/steward check
+```
+
+## Tagging
+
+```bash
+# Create annotated tag matching Directory.Build.props version
+git tag -a v<VERSION> -m "Release v<VERSION>"
+git push origin v<VERSION>
+```
+
+The push triggers `.github/workflows/release.yml`, which re-runs Markdown lint, rebuilds/tests, runs `steward check`, validates the tag against `Directory.Build.props`, creates or updates the GitHub Release, and uploads the published assets.
+
+## NuGet Publication
+
+The tagged release workflow publishes to nuget.org automatically when `NUGET_ORG_API_KEY` is configured in GitHub.
+
+```bash
+# Optional local fallback if the workflow publish needs manual recovery
+dotnet nuget push artifacts/release/v<VERSION>/Steward.<VERSION>.nupkg \
+  --api-key <NUGET_ORG_API_KEY> \
+  --source https://api.nuget.org/v3/index.json \
+  --skip-duplicate
+```
+
+Verify on [nuget.org](https://www.nuget.org/packages/Steward) that the package appears, then install from the public feed:
+
+```bash
+dotnet tool install --global Steward --version <VERSION>
+steward version
+```
+
+## Post-Release
+
+- [ ] Confirm the GitHub Release page contains the `.nupkg`, all expected zipped bundles, and `SHA256SUMS.txt`.
+- [ ] Confirm the GitHub Release notes match the target `CHANGELOG.md` entry.
+- [ ] Download at least one asset and verify its checksum.
+- [ ] Update `README.md`, `AGENTS.md`, [status.md](status.md), and [roadmap.md](roadmap.md) from pending-release wording to shipped state.
+- [ ] Commit the post-release state update and identify the next roadmap decision boundary.
+- [ ] If this was a stable release (`1.0.0+`), record the authorization and post-release state in [status.md](status.md) and [roadmap.md](roadmap.md).

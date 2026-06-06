@@ -71,7 +71,7 @@ artifacts:
     role: authoritative
     required: true
     description: Project overview
-  - path: docs/planning/milestone-plan.md
+  - path: docs/project/roadmap.md
     role: milestones
     importance: recommended
     description: Pre-1.0 milestone sequencing
@@ -79,7 +79,7 @@ artifacts:
 governance:
   start_here:              # Entry points for orientation
     - README.md
-    - docs/planning-index.md
+    - docs/README.md
   frontmatter:
     required_fields: [status]
     auto_fields:

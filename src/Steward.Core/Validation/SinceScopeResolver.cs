@@ -1,0 +1,27 @@
+using Steward.Core.Discovery;
+
+namespace Steward.Core.Validation;
+
+/// <summary>
+/// Returns only files changed since the merge-base of a given ref and HEAD.
+/// </summary>
+public sealed class SinceScopeResolver : IScopeResolver
+{
+    private readonly string _sinceRef;
+
+    public SinceScopeResolver(string sinceRef) => _sinceRef = sinceRef;
+
+    public IReadOnlyList<DiscoveredFile> Resolve(IReadOnlyList<DiscoveredFile> allFiles, string repositoryRoot)
+    {
+        var result = GitDiffHelper.GetChangedFilesSince(repositoryRoot, _sinceRef);
+
+        if (result.GitError != null)
+            throw new InvalidOperationException($"Invalid --since ref '{_sinceRef}': {result.GitError}");
+
+        if (result.Paths == null)
+            return allFiles; // git unavailable — fall back to full scope.
+
+        var changedSet = new HashSet<string>(result.Paths, StringComparer.OrdinalIgnoreCase);
+        return allFiles.Where(f => changedSet.Contains(f.RelativePath)).ToList();
+    }
+}

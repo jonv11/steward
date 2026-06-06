@@ -14,7 +14,7 @@ This repo is both the source implementation of the tool and its own self-dogfood
 - The repo uses its own `.steward/` config to enforce governance on its own docs, plans, decisions, and artifacts.
 - Changes to the CLI must also pass the repo's own steward governance checks.
 
-Current version: `v0.16.0` (pre-`1.0.0`).
+Release candidate: `v0.18.0` (pending publication, pre-`1.0.0`). Latest published release: `v0.17.0`.
 
 ## What Agents Do Here
 
@@ -37,9 +37,10 @@ Read these in order before starting any substantive work:
 | Document | Why |
 |----------|-----|
 | [README.md](README.md) | Product overview, commands, config model, exit codes, contributor path |
-| [docs/planning-index.md](docs/planning-index.md) | Central navigation for all planning, decisions, requirements, and audit docs |
-| [docs/implementation-status.md](docs/implementation-status.md) | Current version baseline, delivered scope, remaining pre-1.0 gaps |
-| [docs/planning/implementation-instructions.md](docs/planning/implementation-instructions.md) | Active contributor execution guide and next-step priorities |
+| [docs/README.md](docs/README.md) | Selective landing page for user docs, project docs, decisions, requirements, and history |
+| [docs/project/status.md](docs/project/status.md) | Current implemented capabilities, repository health, and known gaps |
+| [docs/project/roadmap.md](docs/project/roadmap.md) | Current milestone and next milestone only |
+| [docs/project/workflow-guide.md](docs/project/workflow-guide.md) | Canonical contributor and agent execution workflow |
 | [docs/requirements/PRD.md](docs/requirements/PRD.md) | Canonical product requirements and design principles |
 
 Open `steward.sln` when you are ready to enter the code. If you are changing repo governance or `.steward/` config, inspect `.steward/policy.yaml` next.
@@ -49,27 +50,29 @@ Open `steward.sln` when you are ready to enter the code. If you are changing rep
 When documents disagree, trust in this order:
 
 1. **`.steward/policy.yaml`** — the enforced repo contract for artifact governance
-2. **`docs/implementation-status.md`** — current version truth and delivered scope
-3. **`docs/planning/implementation-instructions.md`** — active contributor execution order
-4. **`docs/requirements/PRD.md`** — product intent and design principles
-5. **Audit docs** — evidence and historical analysis; not current truth unless a live document explicitly points to them
-6. **`README.md`** — end-user-facing; kept consistent with the above but written for external consumers
+2. **`docs/project/status.md`** — current implemented capability and repository-health truth
+3. **`docs/project/roadmap.md`** — current and next milestone scope
+4. **`docs/project/backlog.md`** — validated but unscheduled work
+5. **`docs/requirements/PRD.md`** — product intent and design principles
+6. **`docs/decisions/README.md` and decision records** — accepted design authority
+7. **`docs/history/**`** — point-in-time evidence, never current truth
+8. **`README.md`** — end-user-facing summary kept consistent with the above
 
 Older audits describe past states. Verify claims against current code, tests, or the live documents listed above.
 
 ## How to Work in This Repo
 
-The canonical workflow reference is [docs/planning/workflow-guide.md](docs/planning/workflow-guide.md). It defines the expected process for every category of work — features, bug fixes, documentation, reviews, releases, governance changes, and more.
+The canonical workflow reference is [docs/project/workflow-guide.md](docs/project/workflow-guide.md). It defines the expected process for every category of work — features, bug fixes, documentation, reviews, releases, governance changes, and more.
 
 Key points for agents:
 
-- **Identify the right workflow** for your change using the [workflow selection guide](docs/planning/workflow-guide.md#workflow-selection-guide).
-- **Follow the steps** in order, including the [shared finalization checklist](docs/planning/workflow-guide.md#shared-finalization-checklist).
-- **Use Conventional Commits** with specific, descriptive messages. See [commit conventions](docs/planning/workflow-guide.md#commit-conventions).
+- **Identify the right workflow** for your change using the [workflow selection guide](docs/project/workflow-guide.md#workflow-selection-guide).
+- **Follow the steps** in order, including the [shared finalization checklist](docs/project/workflow-guide.md#shared-finalization-checklist).
+- **Use Conventional Commits** with specific, descriptive messages. See [commit conventions](docs/project/workflow-guide.md#commit-conventions).
 - **One logical change per commit.** Do not bundle unrelated work.
 - **Update affected docs** in the same change. Documentation drift is a defect.
 - **Do not bump versions casually.** Follow [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
-- **Only perform release work when explicitly requested.** See [release execution workflow](docs/planning/workflow-guide.md#6-release-execution).
+- **Only perform release work when explicitly requested.** See [release execution workflow](docs/project/workflow-guide.md#6-release-execution).
 
 ## Using the Steward CLI in This Repo
 
@@ -89,7 +92,7 @@ See [.agents/skills/steward-cli/SKILL.md](.agents/skills/steward-cli/SKILL.md) f
 src/Steward.Cli/       CLI entry point and commands
 src/Steward.Core/      Core library: validation, Markdown, maintenance, orientation
 tests/                 Core and CLI test suites, shared fixtures
-docs/                  Planning, requirements, decisions, audits, reviews
+docs/                  User guides, active project truth, decisions, requirements, and history
 .steward/              Repo-local steward governance config
 .agents/               Agent guidance and skills
 scripts/release/       Release asset scripts
@@ -97,7 +100,7 @@ scripts/release/       Release asset scripts
 
 ## Conventions Not to Break
 
-- Do not hand-edit `STRUCTURE.md` or `docs/decisions/decision-index.md` — they are managed by steward.
+- Do not hand-edit `STRUCTURE.md` or the managed sections in `docs/decisions/README.md` — they are managed by steward.
 - Do not introduce new `1.x` version references in active docs or metadata.
 - Do not skip `npm run lint:md` when you modify Markdown or workflow docs.
 - Do not skip `steward check` before finishing any change.

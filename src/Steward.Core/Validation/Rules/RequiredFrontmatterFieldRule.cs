@@ -7,16 +7,17 @@ using Steward.Core.Validation;
 namespace Steward.Core.Validation.Rules;
 
 /// <summary>
-/// STWD-003: Checks that required frontmatter fields exist in Markdown files.
-/// Supports global requirements, path-scoped requirements, and artifact-family schema requirements.
-/// Implements IFixableRule to insert missing fields with placeholder values.
+/// STWD-003: Frontmatter must satisfy the declared family schema.
+/// Covers required fields, controlled vocabularies, unexpected fields (allowed_fields),
+/// and deprecated field migration (deprecated_fields).
+/// Implements IFixableRule to insert missing fields and rename/remove deprecated fields.
 /// </summary>
 public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
 {
     public string RuleId => "STWD-003";
     public string Category => "frontmatter";
     public DiagnosticSeverity DefaultSeverity => DiagnosticSeverity.Error;
-    public string Description => "Required frontmatter fields must be present in Markdown files.";
+    public string Description => "Frontmatter must satisfy the declared family schema.";
 
     public Task<IReadOnlyList<Diagnostic>> EvaluateAsync(ValidationContext context)
     {
@@ -79,6 +80,7 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
             // Explicit artifacts keep their explicit role/classification, but family governance
             // still contributes frontmatter requirements and allowed values.
             string? matchedFamilyName = null;
+            ArtifactFamilyDefinition? matchedFamily = null;
             if (hasFamilies)
             {
                 var frontmatterFields = doc.Frontmatter?.Fields != null
@@ -86,7 +88,7 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
                         .ToDictionary(kv => kv.Key, kv => (object?)kv.Value, StringComparer.OrdinalIgnoreCase)
                     : null;
 
-                var matchedFamily = familyClassifier.Classify(file.RelativePath, frontmatterFields);
+                matchedFamily = familyClassifier.Classify(file.RelativePath, frontmatterFields);
                 if (matchedFamily != null)
                 {
                     matchedFamilyName = matchedFamily.Family;
@@ -108,7 +110,10 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
                 }
             }
 
-            if (effectiveFields.Count == 0 && effectiveAllowedValues.Count == 0)
+            var hasNewFamilyChecks = matchedFamily?.FrontmatterSchema?.AllowedFields != null
+                || matchedFamily?.FrontmatterSchema?.DeprecatedFields != null;
+
+            if (effectiveFields.Count == 0 && effectiveAllowedValues.Count == 0 && !hasNewFamilyChecks)
                 continue;
 
             var familyContext = matchedFamilyName != null ? $" [family: {matchedFamilyName}]" : "";
@@ -187,6 +192,88 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
                     }
                 }
             }
+
+            // Check allowed_fields (closed schema) — Warning severity
+            if (matchedFamily?.FrontmatterSchema?.AllowedFields != null)
+            {
+                var allowedSet = new HashSet<string>(
+                    matchedFamily.FrontmatterSchema.AllowedFields, StringComparer.OrdinalIgnoreCase);
+
+                // Fields in governance.frontmatter.auto_fields are implicitly allowed in every family
+                foreach (var k in context.Policy?.Governance?.Frontmatter?.AutoFields?.Keys
+                                   ?? Enumerable.Empty<string>())
+                    allowedSet.Add(k);
+
+                // Deprecated fields take precedence — don't double-flag as unexpected
+                var deprecatedKeys = new HashSet<string>(
+                    matchedFamily.FrontmatterSchema.DeprecatedFields?.Keys ?? Enumerable.Empty<string>(),
+                    StringComparer.OrdinalIgnoreCase);
+
+                foreach (var key in doc.Frontmatter.Fields.Keys)
+                {
+                    if (allowedSet.Contains(key) || deprecatedKeys.Contains(key)) continue;
+
+                    diagnostics.Add(new Diagnostic(
+                        RuleId: RuleId,
+                        Severity: DiagnosticSeverity.Warning,
+                        Category: Category,
+                        Path: file.RelativePath,
+                        Line: doc.Frontmatter.Range.Start,
+                        Message: $"Frontmatter field '{key}' is not declared in allowed_fields for family '{matchedFamily.Family}' in '{file.RelativePath}'.{familyContext}",
+                        Remediation: $"Remove '{key}' from frontmatter, or add it to the family's allowed_fields in policy.yaml.",
+                        Source: "policy.yaml",
+                        Details: new Dictionary<string, object> { ["unexpectedField"] = key }));
+                }
+            }
+
+            // Check deprecated_fields — Warning (or Error when both deprecated and replacement coexist)
+            if (matchedFamily?.FrontmatterSchema?.DeprecatedFields != null)
+            {
+                foreach (var (deprecated, replacement) in matchedFamily.FrontmatterSchema.DeprecatedFields)
+                {
+                    if (!doc.Frontmatter.Fields.ContainsKey(deprecated)) continue;
+
+                    if (replacement != null && doc.Frontmatter.Fields.ContainsKey(replacement))
+                    {
+                        diagnostics.Add(new Diagnostic(
+                            RuleId: RuleId,
+                            Severity: DiagnosticSeverity.Error,
+                            Category: Category,
+                            Path: file.RelativePath,
+                            Line: doc.Frontmatter.Range.Start,
+                            Message: $"Frontmatter field '{deprecated}' is deprecated in favor of '{replacement}', and both are present in '{file.RelativePath}'.{familyContext}",
+                            Remediation: $"Remove the deprecated field '{deprecated}'. The replacement '{replacement}' is already present.",
+                            Source: "policy.yaml",
+                            Details: new Dictionary<string, object>
+                            {
+                                ["deprecatedField"] = deprecated,
+                                ["conflict"] = (object)true
+                            }));
+                    }
+                    else
+                    {
+                        var msg = replacement != null
+                            ? $"Frontmatter field '{deprecated}' is deprecated in family '{matchedFamily.Family}'; use '{replacement}' instead in '{file.RelativePath}'.{familyContext}"
+                            : $"Frontmatter field '{deprecated}' is deprecated in family '{matchedFamily.Family}' and should be removed from '{file.RelativePath}'.{familyContext}";
+                        var remediation = replacement != null
+                            ? $"Rename '{deprecated}' to '{replacement}'."
+                            : $"Remove the deprecated field '{deprecated}'.";
+                        diagnostics.Add(new Diagnostic(
+                            RuleId: RuleId,
+                            Severity: DiagnosticSeverity.Warning,
+                            Category: Category,
+                            Path: file.RelativePath,
+                            Line: doc.Frontmatter.Range.Start,
+                            Message: msg,
+                            Remediation: remediation,
+                            Source: "policy.yaml",
+                            Details: new Dictionary<string, object>
+                            {
+                                ["deprecatedField"] = deprecated
+                            }));
+                    }
+                }
+            }
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
@@ -197,10 +284,8 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
         var diagnostics = await EvaluateAsync(context);
         var fixes = new List<Fix>();
 
-        // Group missing-field diagnostics by file path so we can batch all missing
-        // fields into a single frontmatter edit per file.
+        // Collect missing-field diagnostics grouped by file
         var missingByFile = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-
         foreach (var diag in diagnostics)
         {
             if (diag.Path == null) continue;
@@ -218,7 +303,33 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
             fields.Add(field);
         }
 
-        foreach (var (relPath, fields) in missingByFile)
+        // Collect deprecated-field diagnostics grouped by file (Warning only — Error conflicts are not fixable)
+        var deprecatedByFile = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var diag in diagnostics)
+        {
+            if (diag.Path == null) continue;
+            if (diag.Severity != DiagnosticSeverity.Warning) continue;
+            if (diag.Details == null || !diag.Details.TryGetValue("deprecatedField", out var depObj)) continue;
+
+            var deprecated = depObj?.ToString();
+            if (string.IsNullOrWhiteSpace(deprecated)) continue;
+
+            if (!deprecatedByFile.TryGetValue(diag.Path, out var entries))
+            {
+                entries = [];
+                deprecatedByFile[diag.Path] = entries;
+            }
+            entries.Add(deprecated);
+        }
+
+        // Process all files that need any fix — one Fix object per file to avoid write conflicts
+        var allFiles = new HashSet<string>(missingByFile.Keys, StringComparer.OrdinalIgnoreCase);
+        allFiles.UnionWith(deprecatedByFile.Keys);
+
+        // Build family classifier once for deprecated-field lookups
+        var familyClassifier = new ArtifactFamilyClassifier(context.Policy?.ArtifactFamilies);
+
+        foreach (var relPath in allFiles)
         {
             var fullPath = Path.Combine(context.RepositoryRoot, relPath);
             if (!context.FileSystem.FileExists(fullPath))
@@ -228,20 +339,76 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
             var doc = context.DocumentCache?.GetOrParse(relPath)
                 ?? MarkdownParser.Parse(relPath, content);
 
-            // Insert all missing fields at once with placeholder values
-            var placeholders = fields.ToDictionary(
-                f => f,
-                f => (string)"",
-                StringComparer.OrdinalIgnoreCase);
+            if (doc.Frontmatter == null) continue;
 
-            var result = FrontmatterEditor.SetFields(doc, placeholders);
+            // Clone the current fields dict (preserve ordering)
+            var newFields = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kv in doc.Frontmatter.Fields)
+                newFields[kv.Key] = kv.Value;
+
+            var descriptionParts = new List<string>();
+
+            // Step A: Apply deprecated-field renames first so their values are available
+            if (deprecatedByFile.TryGetValue(relPath, out var deprecatedKeys))
+            {
+                // Re-classify to find the matched family's DeprecatedFields map
+                var frontmatterFields = doc.Frontmatter.Fields
+                    .ToDictionary(kv => kv.Key, kv => (object?)kv.Value, StringComparer.OrdinalIgnoreCase);
+                var matchedFamily = familyClassifier.Classify(relPath, frontmatterFields);
+                var deprecatedMap = matchedFamily?.FrontmatterSchema?.DeprecatedFields;
+
+                var renamed = new List<string>();
+                var removed = new List<string>();
+
+                foreach (var deprecated in deprecatedKeys)
+                {
+                    if (!newFields.TryGetValue(deprecated, out var oldValue)) continue;
+
+                    string? replacement = null;
+                    deprecatedMap?.TryGetValue(deprecated, out replacement);
+
+                    newFields.Remove(deprecated);
+
+                    if (replacement != null && !newFields.ContainsKey(replacement))
+                    {
+                        newFields[replacement] = oldValue;
+                        renamed.Add($"'{deprecated}'→'{replacement}'");
+                    }
+                    else
+                    {
+                        removed.Add($"'{deprecated}'");
+                    }
+                }
+
+                if (renamed.Count > 0)
+                    descriptionParts.Add($"Renamed deprecated field(s): {string.Join(", ", renamed)}.");
+                if (removed.Count > 0)
+                    descriptionParts.Add($"Removed deprecated field(s): {string.Join(", ", removed)}.");
+            }
+
+            // Step B: Insert missing fields (only if not already present after renames)
+            if (missingByFile.TryGetValue(relPath, out var missingFields))
+            {
+                var inserted = new List<string>();
+                foreach (var field in missingFields)
+                {
+                    if (!newFields.ContainsKey(field))
+                    {
+                        newFields[field] = "";
+                        inserted.Add(field);
+                    }
+                }
+                if (inserted.Count > 0)
+                    descriptionParts.Add($"Inserted missing field(s) [{string.Join(", ", inserted)}] with placeholder values.");
+            }
+
+            if (descriptionParts.Count == 0) continue;
+
+            var description = string.Join(" ", descriptionParts);
+            var result = FrontmatterEditor.ReplaceAllFields(doc, newFields, description);
             if (result.HasChanges)
             {
-                fixes.Add(new Fix(
-                    RuleId,
-                    relPath,
-                    $"Insert missing frontmatter field(s) [{string.Join(", ", fields)}] in '{relPath}' with placeholder values.",
-                    result.NewContent));
+                fixes.Add(new Fix(RuleId, relPath, description, result.NewContent));
             }
         }
 

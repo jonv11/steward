@@ -66,7 +66,7 @@ public static class ProfileDefaults
             Repository = new RepositoryInfo { Type = "general" },
             Artifacts =
             [
-                new() { Path = "README.md", Role = "authoritative", Required = false, Description = "Project overview" },
+                new() { Path = "README.md", Role = "authoritative", Required = false, Importance = "optional", Description = "Project overview" },
             ],
             Governance = new GovernanceConfig
             {

@@ -8,12 +8,13 @@
     // Generated artifacts are maintained by Steward and should not be hand-edited
     // to satisfy lint-only formatting concerns.
     "STRUCTURE.md",
-    "docs/decisions/decision-index.md",
+    "docs/decisions/README.md",
 
-    // Historical/source material is preserved for provenance rather than normalized
-    // to the active repo style guide.
-    "docs/audits/**/*.md",
-    "repository-steward-master-requirements.md",
+    // Historical evidence under docs/history/** is intentionally excluded from markdown lint.
+    // These files are preserved for provenance and traceability, not normalized to the active
+    // repo style guide. This is a deliberate preservation exception, not an oversight.
+    "docs/history/**/*.md",
+    "docs/requirements/master-requirements-source.md",
 
     // Embedded fixture repositories intentionally model external content and should
     // not participate in repo-document quality gates.

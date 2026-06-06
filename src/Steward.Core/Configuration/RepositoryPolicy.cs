@@ -248,13 +248,59 @@ public sealed class ArtifactFamilyDefinition
     [YamlMember(Alias = "naming_pattern")]
     public string? NamingPattern { get; set; }
 
+    /// <summary>Regex enforced against the H1 heading text of matched files. Enforced by STWD-019.</summary>
+    [YamlMember(Alias = "title_pattern")]
+    public string? TitlePattern { get; set; }
+
+    /// <summary>Regex enforced against all H2 heading texts of matched files. Enforced by STWD-020.</summary>
+    [YamlMember(Alias = "section_pattern")]
+    public string? SectionPattern { get; set; }
+
     /// <summary>Required heading sections that must be present in matched files.</summary>
     [YamlMember(Alias = "required_sections")]
     public List<string>? RequiredSections { get; set; }
 
+    /// <summary>Document structure template enforced on H2 headings of matched files. Enforced by STWD-021.</summary>
+    [YamlMember(Alias = "section_schema")]
+    public SectionSchemaConfig? SectionSchema { get; set; }
+
     /// <summary>Directory-level expectations for this family (e.g. min_count).</summary>
     [YamlMember(Alias = "directory_expectations")]
     public DirectoryExpectations? DirectoryExpectations { get; set; }
+}
+
+public sealed class SectionSchemaConfig
+{
+    /// <summary>Ordered list of expected H2 sections. Required entries must be present; optional entries are validated for order if enforce_order is true.</summary>
+    [YamlMember(Alias = "sections")]
+    public List<SectionSchemaEntry>? Sections { get; set; }
+
+    /// <summary>
+    /// How to match document H2 headings against schema heading names.
+    /// "contains" (default) — schema heading is a case-insensitive substring of the H2 text, handles numbered sections like "1. Context".
+    /// "exact" — case-insensitive exact match.
+    /// </summary>
+    [YamlMember(Alias = "heading_match")]
+    public string? HeadingMatch { get; set; }
+
+    /// <summary>When true, H2 sections present in the document must appear in the order listed in sections[]. Default false.</summary>
+    [YamlMember(Alias = "enforce_order")]
+    public bool EnforceOrder { get; set; }
+
+    /// <summary>When false, H2 headings not matching any schema entry emit a Warning. Default true.</summary>
+    [YamlMember(Alias = "allow_extra")]
+    public bool AllowExtra { get; set; } = true;
+}
+
+public sealed class SectionSchemaEntry
+{
+    /// <summary>The heading text (or substring, when heading_match is "contains") to match against H2 headings.</summary>
+    [YamlMember(Alias = "heading")]
+    public string? Heading { get; set; }
+
+    /// <summary>When true (default), a diagnostic is emitted if no H2 satisfies this entry. When false, the section is optional.</summary>
+    [YamlMember(Alias = "required")]
+    public bool Required { get; set; } = true;
 }
 
 public sealed class DirectoryExpectations
@@ -291,4 +337,19 @@ public sealed class ArtifactFamilyFrontmatterSchema
     /// <summary>Controlled vocabularies: each field maps to its allowed string values.</summary>
     [YamlMember(Alias = "allowed_values")]
     public Dictionary<string, List<string>>? AllowedValues { get; set; }
+
+    /// <summary>
+    /// Closed-schema field list. When present, any frontmatter key not in this list (and not in
+    /// governance.frontmatter.auto_fields) emits a STWD-003 Warning. Absent = open schema.
+    /// </summary>
+    [YamlMember(Alias = "allowed_fields")]
+    public List<string>? AllowedFields { get; set; }
+
+    /// <summary>
+    /// Deprecated field names mapped to their canonical replacements (or null for removal-only).
+    /// STWD-003 emits a Warning when a deprecated field is found; Error when both the deprecated
+    /// field and its non-null replacement coexist. Fixable via --fix --apply.
+    /// </summary>
+    [YamlMember(Alias = "deprecated_fields")]
+    public Dictionary<string, string?>? DeprecatedFields { get; set; }
 }

@@ -22,41 +22,9 @@
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/
-│   ├── audits/
-│   │   ├── ai-agent-contract-review-2026-04-18.md
-│   │   ├── artifact-hygiene-cleanup-review-2026-04-16.md
-│   │   ├── assessment-coding-agent-usefulness.md
-│   │   ├── audit-curation-decision-log-2026-04-18.md
-│   │   ├── cli-expectation-fidelity-assessment-2026-04-17.md
-│   │   ├── cli-expectation-fidelity-reassessment-2026-04-16.md
-│   │   ├── cli-expectation-fidelity-review-2026-04-16.md
-│   │   ├── cli-full-assessment-2026-04-16.md
-│   │   ├── code-quality-pass-2026-04-16.md
-│   │   ├── documentation-overhaul-completion-2026-04-19.md
-│   │   ├── end-user-documentation-path-audit-2026-04-17.md
-│   │   ├── fresh-eyes-onboarding-audit-2026-04-18.md
-│   │   ├── fresh-eyes-reaudit-onboarding-2026-04-18.md
-│   │   ├── historical-audit-synthesis.md
-│   │   ├── maintainer-remarks-implementation-summary-2026-04-18.md
-│   │   ├── maintainer-review.md
-│   │   ├── maintainer-usecase-expectations.md
-│   │   ├── maintainer-usecase-ideas.md
-│   │   ├── pre-1-0-release-process-pass-2026-04-17.md
-│   │   ├── profile-readiness-review-2026-04-16.md
-│   │   ├── release-governance-conformance-review-2026-04-16.md
-│   │   ├── release-readiness-assessment-2026-04-15.md
-│   │   ├── repo-actionability-pass-2026-04-16.md
-│   │   ├── repo-quality-hardening-pass-2026-04-18.md
-│   │   ├── repository-audit-2026-04-14.md
-│   │   ├── review-requirements.md
-│   │   ├── rule-system-completeness-audit-2026-04-18.md
-│   │   ├── usability-review-2026-04-15.md
-│   │   ├── usecase-consolidation-proposal.md
-│   │   ├── v1-product-readiness-review-2026-04-19.md
-│   │   └── workflow-analysis-2026-04-18.md
 │   ├── decisions/
 │   │   ├── adrs
-│   │   ├── decision-index.md
+│   │   ├── README.md
 │   │   └── rfcs
 │   ├── guide/
 │   │   ├── agent-integration.md
@@ -64,37 +32,29 @@
 │   │   ├── contributor-guide.md
 │   │   ├── maintainer-guide.md
 │   │   └── README.md
-│   ├── implementation-status.md
-│   ├── planning/
-│   │   ├── curation-notes.md
-│   │   ├── delivery-strategy.md
-│   │   ├── future-enhancements-backlog.md
-│   │   ├── implementation-instructions.md
-│   │   ├── milestone-plan.md
-│   │   ├── pre-1-0-readiness-plan.md
-│   │   ├── pre-release-blockers.md
+│   ├── history/
+│   │   ├── audits
+│   │   ├── plans
+│   │   ├── README.md
+│   │   ├── reviews
+│   │   └── stubs
+│   ├── project/
+│   │   ├── backlog.md
+│   │   ├── README.md
 │   │   ├── release-process.md
 │   │   ├── release-publication-checklist.md
-│   │   ├── repo-quality-hardening-pass-plan.md
-│   │   ├── rfc-007-governance-enhancements-backlog.md
-│   │   ├── v0-15-draft-preparation.md
+│   │   ├── roadmap.md
+│   │   ├── status.md
 │   │   └── workflow-guide.md
-│   ├── planning-index.md
 │   ├── README.md
-│   ├── requirements/
-│   │   ├── assumptions-constraints.md
-│   │   ├── PRD.md
-│   │   └── requirements-traceability.md
-│   └── reviews/
-│       ├── ai-agent-contract-review.md
-│       ├── config-expressiveness-stress-test.md
-│       ├── draft-rfc-disposition-review-2026-04-18.md
-│       ├── review-synthesis-action-plan.md
-│       └── rule-system-completeness-audit.md
+│   └── requirements/
+│       ├── assumptions-constraints.md
+│       ├── master-requirements-source.md
+│       ├── PRD.md
+│       └── requirements-traceability.md
 ├── package-lock.json
 ├── package.json
 ├── README.md
-├── repository-steward-master-requirements.md
 ├── scripts/
 │   └── release/
 │       ├── Build-ReleaseAssets.ps1
@@ -132,6 +92,8 @@
     │   ├── ChangeImpactTests.cs
     │   ├── CheckCommandTests.cs
     │   ├── CheckFixTests.cs
+    │   ├── CheckSinceTests.cs
+    │   ├── CheckSubdirectoryTests.cs
     │   ├── CliIdentityTests.cs
     │   ├── CliSnapshotTests.CheckJson_IsStable.verified.txt
     │   ├── CliSnapshotTests.cs
@@ -155,6 +117,7 @@
     │   ├── ProfileReadinessTests.cs
     │   ├── ProgramErrorHandlingTests.cs
     │   ├── RefsCommandTests.cs
+    │   ├── SarifOutputTests.cs
     │   ├── SearchCommandTests.cs
     │   ├── StableSurfaceContractTests.cs
     │   ├── StagedCompletenessTests.cs
@@ -175,8 +138,12 @@
     │   ├── DiagnosticTests.cs
     │   ├── DirectoryIndexMaintainerTests.cs
     │   ├── ExitCodeConstantsTests.cs
+    │   ├── FamilyAllowedAndDeprecatedFieldTests.cs
     │   ├── FamilyMinCountRuleTests.cs
     │   ├── FamilyNamingPatternRuleTests.cs
+    │   ├── FamilySectionPatternRuleTests.cs
+    │   ├── FamilySectionSchemaRuleTests.cs
+    │   ├── FamilyTitlePatternRuleTests.cs
     │   ├── FileDiscoveryServiceTests.cs
     │   ├── ForbiddenPathRuleTests.cs
     │   ├── FreshnessRuleFixTests.cs
@@ -205,6 +172,7 @@
     │   ├── SearchEngineTests.cs
     │   ├── SecretFilterTests.cs
     │   ├── SectionSizeRuleTests.cs
+    │   ├── SinceScopeResolverTests.cs
     │   ├── Steward.Core.Tests.csproj
     │   ├── StructuralEditorTests.cs
     │   ├── UniqueHeadingTextRuleTests.cs

@@ -4,6 +4,7 @@ status: Accepted
 description: Defines the CLI command hierarchy, naming, global options, and interaction conventions
 resolves: >-
   Product questions about command hierarchy, naming, global options, and CLI UX conventions
+last_updated: 2026-06-06
 ---
 
 # RFC-001: CLI Command Structure
@@ -38,7 +39,7 @@ The requirements specify many capabilities (check, orient, search, outline, mark
 
 ```
 steward
-├── check [--scope full|changed|staged] [--paths <path>...] [--output json|text] [--fix] [--dry-run] [--quiet]
+├── check [--scope full|changed|staged] [--since <ref>] [--paths <path>...] [--output text|json|sarif] [--fix] [--apply] [--quiet]
 ├── orient [--depth <n>] [--output json|text] [--signals] [--compact]
 ├── outline [<path>] [--depth <n>] [--sizes] [--lines] [--headings] [--output json|text]
 ├── search <query> [--mode content|headings|all] [--role <artifact-role>] [--max <n>] [--regex] [--output json|text]
@@ -66,7 +67,7 @@ steward
 
 | Option | Short | Default | Description |
 |--------|-------|---------|-------------|
-| `--output` | `-o` | `text` | Output format: `text` or `json` |
+| `--output` | `-o` | `text` | Output format: `text` or `json`; `sarif` is supported only by `check` |
 | `--verbosity` | `-v` | `normal` | Verbosity: `quiet`, `normal`, `verbose`, `debug` |
 | `--no-color` | | `false` | Disable colored output |
 | `--config` | `-c` | auto-detect | Path to config directory |
@@ -76,7 +77,7 @@ steward
 - Commands use lowercase single words where possible (`check`, `orient`, `search`).
 - Subcommands under `md` use verbs (`query`, `edit`, `outline`).
 - Options use `--kebab-case`.
-- Boolean flags have no value: `--dry-run`, `--no-color`, `--sizes`.
+- Boolean flags have no value: `--fix`, `--apply`, `--no-color`, `--sizes`.
 - Enum options use lowercase values: `--scope full`, `--output json`.
 
 ### Exit code scheme
