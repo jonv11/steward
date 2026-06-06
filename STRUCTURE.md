@@ -177,8 +177,10 @@
     │   ├── DiagnosticTests.cs
     │   ├── DirectoryIndexMaintainerTests.cs
     │   ├── ExitCodeConstantsTests.cs
+    │   ├── FamilyAllowedAndDeprecatedFieldTests.cs
     │   ├── FamilyMinCountRuleTests.cs
     │   ├── FamilyNamingPatternRuleTests.cs
+    │   ├── FamilyTitlePatternRuleTests.cs
     │   ├── FileDiscoveryServiceTests.cs
     │   ├── ForbiddenPathRuleTests.cs
     │   ├── FreshnessRuleFixTests.cs

@@ -22,7 +22,7 @@ Deferred RFCs remain in the RFC table with `Status: Deferred`; accepted ADRs and
 | RFC-011: Markdown Split and Extract Workflows | [RFC-011-markdown-split-and-extract-workflows.md](rfcs/RFC-011-markdown-split-and-extract-workflows.md) | Accepted | Defines preview-first Markdown split planning and extract-section workflows |
 | RFC-012: Heading-Level Markdown Refactors | [RFC-012-heading-level-markdown-refactors.md](rfcs/RFC-012-heading-level-markdown-refactors.md) | Deferred | Defines heading-level Markdown refactor operations starting with safe, reference-aware heading rename |
 | RFC-013: Governed Suppressions and Expiring Debt | [RFC-013-governed-suppressions-and-expiring-debt.md](rfcs/RFC-013-governed-suppressions-and-expiring-debt.md) | Deferred | Defines structured, metadata-bearing suppression governance with optional expiry, ownership, and auditability for policy exceptions |
-| RFC-014: Closed Artifact Family Schema and Title Convention Enforcement | [RFC-014-closed-family-schema-and-title-pattern.md](rfcs/RFC-014-closed-family-schema-and-title-pattern.md) | Proposed | Extends artifact family schemas with closed-field validation, deprecated-field migration, and per-family H1 title-pattern enforcement to make family schemas authoritative rather than merely additive |
+| RFC-014: Closed Artifact Family Schema and Title Convention Enforcement | [RFC-014-closed-family-schema-and-title-pattern.md](rfcs/RFC-014-closed-family-schema-and-title-pattern.md) | Accepted | Extends artifact family schemas with closed-field validation, deprecated-field migration, and per-family H1 title-pattern enforcement to make family schemas authoritative rather than merely additive |
 
 <!-- steward:end -->
 
