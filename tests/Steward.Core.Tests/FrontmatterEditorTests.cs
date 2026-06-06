@@ -113,4 +113,53 @@ public class FrontmatterEditorTests
         result.NewContent.Should().Contain("Body text here.");
         result.NewContent.Should().Contain("# Title");
     }
+
+    // ── RFC-014: ReplaceAllFields ──────────────────────────────────────────────
+
+    [Fact]
+    public void ReplaceAllFields_OverwritesFieldsWithNewDictionary()
+    {
+        var content = "---\ntype: adr\ndate: 2025-01-01\n---\n# Title\n";
+        var doc = ParseDoc(content);
+
+        var newFields = new Dictionary<string, object?>
+        {
+            ["type"] = "adr",
+            ["last_updated"] = "2025-01-01"
+            // "date" is intentionally absent — simulates deprecated field rename
+        };
+        var result = FrontmatterEditor.ReplaceAllFields(doc, newFields, "Renamed date→last_updated.");
+
+        result.HasChanges.Should().BeTrue();
+        result.NewContent.Should().Contain("last_updated:");
+        result.NewContent.Should().NotContain("date:");
+        result.NewContent.Should().Contain("# Title");
+    }
+
+    [Fact]
+    public void ReplaceAllFields_NoFrontmatter_ReturnsError()
+    {
+        var content = "# Just a heading, no frontmatter.\n";
+        var doc = ParseDoc(content);
+
+        var result = FrontmatterEditor.ReplaceAllFields(
+            doc,
+            new Dictionary<string, object?> { ["type"] = "adr" },
+            "Should fail.");
+
+        result.IsError.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ReplaceAllFields_PreservesDocumentBodyAfterFrontmatter()
+    {
+        var content = "---\ntype: adr\n---\n# ADR-001: Title\n\nContent here.\n";
+        var doc = ParseDoc(content);
+
+        var newFields = new Dictionary<string, object?> { ["type"] = "adr", ["status"] = "Draft" };
+        var result = FrontmatterEditor.ReplaceAllFields(doc, newFields, "Added status.");
+
+        result.NewContent.Should().Contain("# ADR-001: Title");
+        result.NewContent.Should().Contain("Content here.");
+    }
 }

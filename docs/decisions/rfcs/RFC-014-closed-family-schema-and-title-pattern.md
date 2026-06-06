@@ -1,6 +1,6 @@
 ---
 type: rfc
-status: Proposed
+status: Implemented
 description: Extends artifact family schemas with closed-field validation, deprecated-field migration, and per-family H1 title-pattern enforcement to make family schemas authoritative rather than merely additive
 resolves: >-
   Frontmatter drift from undeclared fields accumulating silently in governed

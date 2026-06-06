@@ -248,6 +248,10 @@ public sealed class ArtifactFamilyDefinition
     [YamlMember(Alias = "naming_pattern")]
     public string? NamingPattern { get; set; }
 
+    /// <summary>Regex enforced against the H1 heading text of matched files. Enforced by STWD-019.</summary>
+    [YamlMember(Alias = "title_pattern")]
+    public string? TitlePattern { get; set; }
+
     /// <summary>Required heading sections that must be present in matched files.</summary>
     [YamlMember(Alias = "required_sections")]
     public List<string>? RequiredSections { get; set; }
@@ -291,4 +295,19 @@ public sealed class ArtifactFamilyFrontmatterSchema
     /// <summary>Controlled vocabularies: each field maps to its allowed string values.</summary>
     [YamlMember(Alias = "allowed_values")]
     public Dictionary<string, List<string>>? AllowedValues { get; set; }
+
+    /// <summary>
+    /// Closed-schema field list. When present, any frontmatter key not in this list (and not in
+    /// governance.frontmatter.auto_fields) emits a STWD-003 Warning. Absent = open schema.
+    /// </summary>
+    [YamlMember(Alias = "allowed_fields")]
+    public List<string>? AllowedFields { get; set; }
+
+    /// <summary>
+    /// Deprecated field names mapped to their canonical replacements (or null for removal-only).
+    /// STWD-003 emits a Warning when a deprecated field is found; Error when both the deprecated
+    /// field and its non-null replacement coexist. Fixable via --fix --apply.
+    /// </summary>
+    [YamlMember(Alias = "deprecated_fields")]
+    public Dictionary<string, string?>? DeprecatedFields { get; set; }
 }

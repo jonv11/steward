@@ -152,11 +152,15 @@ artifact_families:
       path_pattern: "docs/decisions/adrs/ADR-*.md"
     role: governance
     importance: recommended
+    naming_pattern: "^ADR-[0-9]{3}-[a-z0-9-]+\\.md$"
+    title_pattern: "^ADR-[0-9]{3}: .+"
     frontmatter_schema:
       required: [type, status, category]
       allowed_values:
         type: [adr]
         status: [Draft, Proposed, Accepted, Superseded, Deprecated]
+      deprecated_fields:
+        date: last_updated
 
   - family: rfc
     display_name: Request for Comments
@@ -164,6 +168,8 @@ artifact_families:
       path_pattern: "docs/decisions/rfcs/RFC-*.md"
     role: governance
     importance: recommended
+    naming_pattern: "^RFC-[0-9]{3}-[a-z0-9-]+(?:-draft)?\\.md$"
+    title_pattern: "^RFC-[0-9]{3}: .+"
     frontmatter_schema:
       required: [type, status, resolves]
       allowed_values:
@@ -181,6 +187,10 @@ artifact_families:
       allowed_values:
         type: [planning]
         status: [Draft, Active, Accepted, Completed, Superseded]
+      allowed_fields: [type, status, description]
+      deprecated_fields:
+        document_id: ~
+        version: ~
 
   - family: requirements
     display_name: Requirements Supporting Document
@@ -212,6 +222,8 @@ artifact_families:
       allowed_values:
         type: [review, planning]
         status: [Draft, Active, Complete, Completed, Superseded]
+      deprecated_fields:
+        date: last_updated
 
   - family: skill
     display_name: Agent Skill

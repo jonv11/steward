@@ -205,4 +205,178 @@ public class ConfigLoaderFamilyValidationTests
         policy!.ArtifactFamilies.Should().HaveCount(2);
         policy.ArtifactFamilies!.Select(f => f.Family).Should().BeEquivalentTo(["adr", "rfc"]);
     }
+
+    // ── RFC-014: allowed_fields ────────────────────────────────────────────────
+
+    [Fact]
+    public void LoadPolicy_AllowedFields_BlankEntry_ThrowsConfigException()
+    {
+        var yaml = """
+            artifact_families:
+              - family: adr
+                match:
+                  path_pattern: "docs/adrs/*.md"
+                frontmatter_schema:
+                  required: [type]
+                  allowed_fields: [type, ""]
+            """;
+        var (loader, _) = SetupWithPolicy(yaml);
+
+        var act = () => loader.LoadPolicy("root/.steward");
+        act.Should().Throw<StewardConfigException>()
+            .WithMessage("*allowed_fields*blank*");
+    }
+
+    [Fact]
+    public void LoadPolicy_AllowedFields_RequiredFieldMissingFromAllowedFields_ThrowsConfigException()
+    {
+        var yaml = """
+            artifact_families:
+              - family: adr
+                match:
+                  path_pattern: "docs/adrs/*.md"
+                frontmatter_schema:
+                  required: [type, status]
+                  allowed_fields: [type]
+            """;
+        var (loader, _) = SetupWithPolicy(yaml);
+
+        var act = () => loader.LoadPolicy("root/.steward");
+        act.Should().Throw<StewardConfigException>()
+            .WithMessage("*status*allowed_fields*");
+    }
+
+    [Fact]
+    public void LoadPolicy_AllowedFields_AllRequiredFieldsPresent_DoesNotThrow()
+    {
+        var yaml = """
+            artifact_families:
+              - family: adr
+                match:
+                  path_pattern: "docs/adrs/*.md"
+                frontmatter_schema:
+                  required: [type, status]
+                  allowed_fields: [type, status, description]
+            """;
+        var (loader, _) = SetupWithPolicy(yaml);
+
+        var act = () => loader.LoadPolicy("root/.steward");
+        act.Should().NotThrow();
+    }
+
+    // ── RFC-014: deprecated_fields ─────────────────────────────────────────────
+
+    [Fact]
+    public void LoadPolicy_DeprecatedFields_BlankKey_ThrowsConfigException()
+    {
+        var yaml = """
+            artifact_families:
+              - family: adr
+                match:
+                  path_pattern: "docs/adrs/*.md"
+                frontmatter_schema:
+                  deprecated_fields:
+                    "": last_updated
+            """;
+        var (loader, _) = SetupWithPolicy(yaml);
+
+        var act = () => loader.LoadPolicy("root/.steward");
+        act.Should().Throw<StewardConfigException>()
+            .WithMessage("*deprecated_fields*blank*");
+    }
+
+    [Fact]
+    public void LoadPolicy_AllowedFields_DeprecatedReplacementMissingFromAllowedFields_ThrowsConfigException()
+    {
+        var yaml = """
+            artifact_families:
+              - family: adr
+                match:
+                  path_pattern: "docs/adrs/*.md"
+                frontmatter_schema:
+                  required: [type]
+                  allowed_fields: [type]
+                  deprecated_fields:
+                    date: last_updated
+            """;
+        var (loader, _) = SetupWithPolicy(yaml);
+
+        // last_updated is the replacement but is not in allowed_fields
+        var act = () => loader.LoadPolicy("root/.steward");
+        act.Should().Throw<StewardConfigException>()
+            .WithMessage("*last_updated*allowed_fields*");
+    }
+
+    [Fact]
+    public void LoadPolicy_AllowedFields_NullReplacementExemptFromAllowedFieldsCheck_DoesNotThrow()
+    {
+        var yaml = """
+            artifact_families:
+              - family: adr
+                match:
+                  path_pattern: "docs/adrs/*.md"
+                frontmatter_schema:
+                  required: [type]
+                  allowed_fields: [type]
+                  deprecated_fields:
+                    old_field: ~
+            """;
+        var (loader, _) = SetupWithPolicy(yaml);
+
+        // null replacement (removal-only) is exempt from the allowed_fields check
+        var act = () => loader.LoadPolicy("root/.steward");
+        act.Should().NotThrow();
+    }
+
+    // ── RFC-014: title_pattern ─────────────────────────────────────────────────
+
+    [Fact]
+    public void LoadPolicy_TitlePattern_InvalidRegex_ThrowsConfigException()
+    {
+        var yaml = """
+            artifact_families:
+              - family: adr
+                match:
+                  path_pattern: "docs/adrs/*.md"
+                title_pattern: "[invalid(regex"
+            """;
+        var (loader, _) = SetupWithPolicy(yaml);
+
+        var act = () => loader.LoadPolicy("root/.steward");
+        act.Should().Throw<StewardConfigException>()
+            .WithMessage("*title_pattern*invalid*");
+    }
+
+    [Fact]
+    public void LoadPolicy_TitlePattern_ValidRegex_DoesNotThrow()
+    {
+        var yaml = """
+            artifact_families:
+              - family: adr
+                match:
+                  path_pattern: "docs/adrs/*.md"
+                title_pattern: "^ADR-[0-9]{3}: .+"
+            """;
+        var (loader, _) = SetupWithPolicy(yaml);
+
+        var act = () => loader.LoadPolicy("root/.steward");
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void LoadPolicy_TitlePattern_ParsedIntoModel()
+    {
+        var yaml = """
+            artifact_families:
+              - family: adr
+                match:
+                  path_pattern: "docs/adrs/*.md"
+                title_pattern: "^ADR-[0-9]{3}: .+"
+            """;
+        var (loader, _) = SetupWithPolicy(yaml);
+
+        var policy = loader.LoadPolicy("root/.steward");
+
+        policy!.ArtifactFamilies![0].TitlePattern.Should().Be("^ADR-[0-9]{3}: .+");
+    }
 }
