@@ -19,11 +19,7 @@ Items here are intentionally unscheduled. Moving an item into committed scope re
 
 ## Defects
 
-Confirmed against source during an adoption trial on two external repositories (`jvcode`, `mdrule`) on 2026-08-24.
-
-| Defect | Evidence |
-|--------|----------|
-| `maintain` reports maintenance failures as `OK` | In `IndexMaintainer.cs`, both "target file does not exist" and "managed section not found" return `HasChanges = false` with no failure signal, so the CLI renders them as `OK`. A maintenance artifact that silently does nothing is indistinguishable from one that is up to date. `MaintenanceAction` has no status field to carry the distinction |
+None open. The defects confirmed during the 2026-08-24 adoption trial on two external repositories (`jvcode`, `mdrule`) have all been fixed; see the CHANGELOG for what changed.
 
 ## Validated Enhancements
 

@@ -18,7 +18,9 @@ public sealed class ManagedSectionMaintainer : IArtifactMaintainer
                 ArtifactPath = config.Path,
                 Type = Type,
                 Description = $"Target file '{config.Path}' does not exist.",
-                HasChanges = false
+                HasChanges = false,
+                IsBlocked = true,
+                BlockedReason = $"Create '{config.Path}', or point the '{config.Id}' maintenance artifact at a file that exists."
             };
         }
 
@@ -35,7 +37,9 @@ public sealed class ManagedSectionMaintainer : IArtifactMaintainer
                 ArtifactPath = config.Path,
                 Type = Type,
                 Description = "No source content could be computed.",
-                HasChanges = false
+                HasChanges = false,
+                IsBlocked = true,
+                BlockedReason = $"Set source on the '{config.Id}' maintenance artifact to a file that exists."
             };
         }
 
@@ -49,7 +53,9 @@ public sealed class ManagedSectionMaintainer : IArtifactMaintainer
                 ArtifactPath = config.Path,
                 Type = Type,
                 Description = $"Managed section '{sectionId}' markers not found.",
-                HasChanges = false
+                HasChanges = false,
+                IsBlocked = true,
+                BlockedReason = $"Add managed region markers to '{config.Path}': <!-- steward:begin id=\"{sectionId}\" --> and <!-- steward:end -->."
             };
         }
 

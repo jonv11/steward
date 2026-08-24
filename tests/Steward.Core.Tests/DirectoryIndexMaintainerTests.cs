@@ -195,4 +195,63 @@ public class DirectoryIndexMaintainerTests
         action.IsBlocked.Should().BeTrue();
         action.Description.Should().Contain("missing a non-empty frontmatter.description");
     }
+
+    [Fact]
+    public void Evaluate_MissingManagedSectionTarget_IsBlocked()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/docs/alpha.md", "---\ntitle: Alpha\ndescription: First\n---\n# Alpha");
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "doc-index",
+            Path = "docs/index.md",
+            Type = "directory-index",
+            Source = "docs/*.md",
+            ManagedSection = "doc-index"
+        };
+
+        var context = new MaintenanceContext
+        {
+            RepositoryRoot = "/repo",
+            FileSystem = fs,
+            Files = [new DiscoveredFile("docs/alpha.md", 10, false)]
+        };
+
+        var action = new DirectoryIndexMaintainer().Evaluate(config, context);
+
+        action.HasChanges.Should().BeFalse();
+        action.IsBlocked.Should().BeTrue();
+        action.BlockedReason.Should().Contain("docs/index.md");
+    }
+
+    [Fact]
+    public void Evaluate_ManagedSectionMarkersMissing_IsBlocked()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/docs/alpha.md", "---\ntitle: Alpha\ndescription: First\n---\n# Alpha")
+            .AddFile("/repo/docs/index.md", "# Index\n\nNo markers here.");
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "doc-index",
+            Path = "docs/index.md",
+            Type = "directory-index",
+            Source = "docs/*.md",
+            ManagedSection = "doc-index"
+        };
+
+        var context = new MaintenanceContext
+        {
+            RepositoryRoot = "/repo",
+            FileSystem = fs,
+            Files = [new DiscoveredFile("docs/alpha.md", 10, false)]
+        };
+
+        var action = new DirectoryIndexMaintainer().Evaluate(config, context);
+
+        action.HasChanges.Should().BeFalse();
+        action.IsBlocked.Should().BeTrue();
+        action.BlockedReason.Should().Contain("steward:begin id=\"doc-index\"");
+    }
 }

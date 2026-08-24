@@ -254,6 +254,16 @@ steward maintain              # Preview what would be generated
 steward maintain --apply      # Apply changes
 ```
 
+Each artifact reports one of three statuses:
+
+| Status | Meaning |
+|--------|---------|
+| `OK` | The artifact is up to date; nothing to do. |
+| `MAINTAIN` | Content is stale and `--apply` will regenerate it. |
+| `BLOCKED` | Steward cannot maintain the artifact at all — the target file is missing, its managed-region markers are absent, or its `source` does not exist. The line below the status says what to fix. |
+
+`BLOCKED` is not a passing state: `--apply` writes nothing for that artifact until you resolve the cause.
+
 Generated artifacts (like `STRUCTURE.md` or indexes) should not be hand-edited — Steward regenerates them and `steward check` will flag stale content (STWD-007).
 
 ## Step 7: Add to CI

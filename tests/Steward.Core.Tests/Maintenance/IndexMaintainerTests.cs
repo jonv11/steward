@@ -225,4 +225,50 @@ public class IndexMaintainerTests
         var second = maintainer.Evaluate(config, CreateContext(fs, files));
         second.HasChanges.Should().BeFalse();
     }
+
+    [Fact]
+    public void Evaluate_MissingManagedSectionTarget_IsBlocked()
+    {
+        var fs = new InMemoryFileSystem().AddFile("/repo/docs/a.md", "# A");
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "idx",
+            Path = "INDEX.md",
+            Type = "index",
+            Source = "docs/*.md",
+            ManagedSection = "idx"
+        };
+
+        var action = new IndexMaintainer().Evaluate(
+            config, CreateContext(fs, new DiscoveredFile("docs/a.md", 10, false)));
+
+        action.HasChanges.Should().BeFalse();
+        action.IsBlocked.Should().BeTrue();
+        action.BlockedReason.Should().Contain("INDEX.md");
+    }
+
+    [Fact]
+    public void Evaluate_ManagedSectionMarkersMissing_IsBlocked()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/docs/a.md", "# A")
+            .AddFile("/repo/INDEX.md", "# Index\n\nNo markers here.");
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "idx",
+            Path = "INDEX.md",
+            Type = "index",
+            Source = "docs/*.md",
+            ManagedSection = "idx"
+        };
+
+        var action = new IndexMaintainer().Evaluate(
+            config, CreateContext(fs, new DiscoveredFile("docs/a.md", 10, false)));
+
+        action.HasChanges.Should().BeFalse();
+        action.IsBlocked.Should().BeTrue();
+        action.BlockedReason.Should().Contain("steward:begin id=\"idx\"");
+    }
 }
