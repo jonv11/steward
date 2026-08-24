@@ -28,7 +28,7 @@ Creating or updating repository artifacts: requirements, planning docs, PRDs, AD
 
 Implementing features based on repo documents, fixing bugs in the CLI or core library, improving docs, keeping artifacts in sync with code, preparing commits with conventional commit messages, and handling version or release work when explicitly requested.
 
-Both categories use the steward CLI as a navigation and validation surface. See [.agents/skills/steward-cli/SKILL.md](.agents/skills/steward-cli/SKILL.md) for how to use it effectively in this repo.
+Both categories use the steward CLI as a navigation and validation surface. See [.agents/skills/steward-self-cli/SKILL.md](.agents/skills/steward-self-cli/SKILL.md) for how to use it effectively in this repo.
 
 ## What to Read First
 
@@ -78,13 +78,24 @@ Key points for agents:
 
 When orientation, validation, artifact inspection, or Markdown structural work is relevant to your task, use the steward CLI.
 
-See [.agents/skills/steward-cli/SKILL.md](.agents/skills/steward-cli/SKILL.md) for:
+See [.agents/skills/steward-self-cli/SKILL.md](.agents/skills/steward-self-cli/SKILL.md) for:
 
 - when to use and when to skip the CLI
 - the recommended workflow for this repo specifically
 - high-value commands and their caveats
 - guardrails against noisy or harmful edits
 - verification expectations before finishing work
+
+### Portable Steward CLI skills
+
+This repo also authors the general-purpose skills that teach *any* repository's agents how to use `steward` as a product — not specific to this repo, and usable once copied into another repo's `.agents/skills/`:
+
+- [.agents/skills/steward-cli/SKILL.md](.agents/skills/steward-cli/SKILL.md) — install and orientation entry point
+- [.agents/skills/steward-cli-maintainer/SKILL.md](.agents/skills/steward-cli-maintainer/SKILL.md) — configuring `.steward/` governance
+- [.agents/skills/steward-cli-contributor/SKILL.md](.agents/skills/steward-cli-contributor/SKILL.md) — validating changes against an existing policy
+- [.agents/skills/steward-cli-agent/SKILL.md](.agents/skills/steward-cli-agent/SKILL.md) — automated validation loops, JSON/SARIF, structural Markdown editing
+
+Do not confuse these with `steward-self-cli` above, which is specific to working in this source repo.
 
 ## Project Layout
 

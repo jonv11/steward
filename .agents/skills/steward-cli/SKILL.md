@@ -1,309 +1,90 @@
 ---
 name: steward-cli
-description: Orient, validate, and maintain artifacts in this repository using the Steward CLI. Use when navigating the repo, checking governance, inspecting a file's rules, refreshing generated artifacts, or extracting Markdown content.
+description: Install and orient with the Steward CLI (`steward`) in any repository — a configurable stewardship tool that validates documentation structure, governance policy, and generated artifacts against a `.steward/` contract. Use when a repo has (or should have) a `.steward/` directory, when asked to install/set up Steward, or to decide which Steward persona skill applies. Routes to steward-cli-maintainer (configure governance), steward-cli-contributor (validate changes), or steward-cli-agent (automate validation loops, CI, JSON/SARIF output). Not for the Steward source repo itself — that's steward-self-cli.
 ---
 
-# SKILL: Using the Steward CLI in This Repository
+# Steward CLI
 
-## Purpose
+Steward is a stewardship CLI: it validates a repository's documentation structure, naming conventions, and artifact policy against a declarative `.steward/` contract, and can maintain generated artifacts (structure trees, indexes) deterministically. No network calls, no non-determinism — same input, same output.
 
-Use `steward` to orient, inspect governance, validate, and maintain artifacts in this repository using its own `.steward/` contract. This skill covers operating on the repo as a governed repository — not implementing Steward internals.
+This skill is the entry point. It covers installation and the commands that work with zero configuration. For task-specific work, it routes to one of three persona skills.
 
-## When to Use This Skill
+## Which skill do you actually need?
 
-Use steward when you need to:
+| You are... | Doing... | Use |
+|---|---|---|
+| A maintainer | Setting up `.steward/`, declaring required artifacts, defining rules, wiring CI | **steward-cli-maintainer** |
+| A contributor | Validating your own changes before committing, fixing a failed `steward check` | **steward-cli-contributor** |
+| An AI agent | Running an automated validate→diagnose→fix loop, parsing JSON/SARIF, gating a PR | **steward-cli-agent** |
+| Anyone, in the Steward source repo | Working on Steward's own code/docs | **steward-self-cli** (repo-specific, not this skill) |
 
-- Get a fast, semantically classified map of the repo before starting work
-- Understand what governance rules apply to a file before editing it
-- Validate doc, config, or structural changes before finishing
-- Refresh maintained artifacts (`STRUCTURE.md`, decision indexes) after structural changes
-- Extract Markdown sections or frontmatter from planning, requirements, or README content without hand-parsing
-- Check which Markdown files reference a file you are about to move or rename
+The three persona skills assume the CLI is already installed and cover their workflow end-to-end — read this skill first only for install and orientation, then load the persona skill.
 
-## When Not to Use This Skill
+## Install
 
-- Use `dotnet build steward.sln` and `dotnet test steward.sln` for build and test verification. Steward does not replace these.
-- Use standard file search and code navigation for implementation work: finding C# symbols, reading test fixtures, investigating build failures.
-- Do not run `config suggest` as the default workflow on this repo. The existing config is intentional and richer than the suggestion surface.
-- Do not use `search --role` when you need every document in a family such as `docs/requirements/*.md`. In this repo, `search --role` only finds explicit `artifacts[]` role entries, not all family-matched docs. Use glob patterns or `orient --full` instead.
-
-## Repo-Specific Prerequisites
-
-- Run all commands from the repo root so `.steward/` is auto-discovered.
-- This repo is the Steward source repo, so you can run the CLI from source:
+Requires the **.NET 10 SDK** (10.0+). Verify with `dotnet --version`; earlier SDKs will not run Steward.
 
 ```bash
-dotnet run --project src/Steward.Cli -- <command>
+# From a published NuGet package (latest release)
+dotnet tool install --global Steward
+
+# From source, tool-path install (to test unreleased work, or pin a specific checkout)
+git clone https://github.com/jonv11/steward.git
+cd steward
+dotnet build steward.sln -c Release
+dotnet pack src/Steward.Cli -c Release --no-build
+dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward
+export PATH="$PWD/.tools/steward:$PATH"
 ```
 
-- If steward is installed globally or at `.tools/steward/steward`, you can use the bare `steward` command instead.
-- This repo uses all three config files: `.steward/config.yaml`, `.steward/policy.yaml`, and `.steward/path-policy.yaml`. Read `.steward/policy.yaml` before making assumptions about what is governed.
-- Run `npm ci` when you need the repo-local Markdown lint commands (`npm run lint:md`, `npm run lint:md:fix`).
+Self-contained release bundles (`win-x64`, `linux-x64`, `osx-arm64`) and checksums are also on the [GitHub Releases page](https://github.com/jonv11/steward/releases).
 
-## How This Repo's Config Shapes Usage
+**The `global.json` trap:** never invoke Steward via `dotnet run --project <path-to-steward-checkout>` from inside a *different* repository you're validating — that repository's own `global.json` can pin a different SDK and silently break the run. Always use a tool-path or global install (or the built executable directly) when operating on a repo other than Steward's own source checkout.
 
-| Config fact | Practical implication |
-|-------------|----------------------|
-| `profile: software` is active | Profile defaults apply, but `.steward/policy.yaml` is the real contract — read it, not the profile docs |
-| `discovery.exclude` removes `node_modules/**` | Installing repo-local npm dependencies for Markdown linting does not pollute steward discovery or coverage |
-| `governance.start_here` defines the session-start spine | `orient --signals` surfaces exactly these docs plus core decision roots |
-| `coverage.exclude` removes `tests/Steward.TestFixtures/Repos/**` | `status --coverage` numbers reflect the main repo, not embedded fixture repos |
-| Maintained artifacts are `STRUCTURE.md` plus the RFC/ADR sections in `docs/decisions/README.md` | Run `maintain --apply` after structural or decision-record changes |
-| Freshness windows: `docs/project/status.md` (30 days), `docs/project/roadmap.md` (45 days) | STWD-012 fires when current truth becomes stale |
-| `docs/project/**`, `docs/requirements/**`, decisions, and `docs/history/**` have lifecycle schemas | Active authorities and historical evidence are distinguishable by policy |
+## Works with zero configuration
 
-## Recommended Workflow
-
-### 1. Orient before acting
+These commands run immediately on any repository, `.steward/` or not:
 
 ```bash
-dotnet run --project src/Steward.Cli -- orient --signals
+steward version
+steward orient              # curated repo-start orientation
+steward orient --full --tree
+steward outline [path]      # directory tree, or heading outline for a .md file
+steward status              # required/recommended artifact state at a glance
 ```
 
-This surfaces the configured start-here docs, core decision roots, and state indicators. Use `--full --tree` when you need the full classified inventory.
+A `.steward/` directory unlocks policy-driven validation (`steward check`), frontmatter enforcement, artifact families, and maintenance — that's what the persona skills configure and use.
 
-### 2. Check repo state
+## The three config files
+
+| File | Purpose | Required |
+|---|---|---|
+| `.steward/config.yaml` | Runtime: output format, discovery/coverage exclusions | No |
+| `.steward/policy.yaml` | The contract: artifacts, artifact families, governance, validation, maintenance | No, but needed for meaningful validation |
+| `.steward/path-policy.yaml` | Naming conventions, forbidden/required paths | No |
+
+All three are optional and independently useful; `steward init --profile <software\|docs\|minimal>` scaffolds the first two as a starting point.
+
+## Exit codes (every persona needs these)
+
+| Code | Meaning |
+|---|---|
+| 0 | Clean — this includes runs with `warning`/`info` diagnostics, only `error` severity fails |
+| 1 | At least one `error`-severity diagnostic |
+| 2 | Usage error — bad arguments or config |
+| 3 | Internal error |
+
+Most validation rules default to `warning` severity, which reports but does not fail the exit code. Only STWD-001, STWD-002, STWD-003, and STWD-005 default to `error`. This is the single most common source of "why didn't CI catch that" surprises — see steward-cli-maintainer for how to raise a rule's severity.
+
+## Discover the rest live, don't memorize it
+
+Steward documents itself; treat these as the source of truth over any cached table, since exact field names, rule sets, and defaults shift between versions:
 
 ```bash
-dotnet run --project src/Steward.Cli -- status --coverage
+steward --help
+steward <command> --help
+steward explain                      # list all validation rules
+steward explain <rule-id>            # one rule's meaning, severity, remediation
+steward explain path <file>          # rules that apply to a specific file
+steward config show --effective      # resolved runtime config + merged policy
 ```
-
-Shows required and recommended artifacts, freshness state, artifact family counts, and governance coverage.
-
-### 3. Inspect before editing a governed file
-
-```bash
-dotnet run --project src/Steward.Cli -- explain path docs/project/status.md
-```
-
-Shows classification, matched path-policy pattern, required frontmatter, and applicable rules. Do this before editing files under `docs/project/`, `docs/requirements/`, `docs/decisions/`, or `docs/history/`.
-
-### 4. Make changes with normal tools
-
-Edit files, write code, update docs — steward does not interfere with your editing workflow.
-
-### 5. Refresh maintained artifacts after structural changes
-
-If you added, moved, or renamed Markdown files, run:
-
-```bash
-dotnet run --project src/Steward.Cli -- maintain --artifact structure --apply
-```
-
-If you added or moved ADRs or RFCs, also run:
-
-```bash
-dotnet run --project src/Steward.Cli -- maintain --apply
-```
-
-`STRUCTURE.md` and the managed sections in `docs/decisions/README.md` are generated — never hand-edit them.
-
-### 6. Validate before finishing
-
-```bash
-dotnet run --project src/Steward.Cli -- check
-```
-
-Must exit 0. Fix all errors; review all warnings. If you changed Markdown, also run `npm run lint:md`. If you changed CLI code or tests, also run `dotnet test steward.sln`.
-
-## High-Value Commands for This Repo
-
-### `orient --signals`
-
-Use first for session-start understanding. Surfaces configured start-here docs, decision roots, and state indicators without dumping the full inventory. Use `--full --tree` for the complete classified hierarchy.
-
-```bash
-dotnet run --project src/Steward.Cli -- orient --signals
-dotnet run --project src/Steward.Cli -- orient --full --tree
-```
-
-### `status --coverage`
-
-Use after orientation to see artifact health, freshness, family counts, and coverage.
-
-```bash
-dotnet run --project src/Steward.Cli -- status --coverage
-dotnet run --project src/Steward.Cli -- status --coverage --output json
-```
-
-### `explain path <file>`
-
-Use before editing any governed doc or config path. Shows classification, matched rules, required frontmatter, and any applicable family schema. Explicit artifact declarations take precedence over family classification — some files show artifact info rather than `family:<name>`.
-
-```bash
-dotnet run --project src/Steward.Cli -- explain path docs/project/roadmap.md
-dotnet run --project src/Steward.Cli -- explain path docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md
-```
-
-### `check`, `check --scope changed`, `check --since <ref>`, and `check --output sarif`
-
-Use `check` as the final governance verification after any change. Use `--scope changed` during iteration to narrow feedback, then run a full `check` before finishing.
-
-`--since <ref>` validates only files changed since the merge-base of `<ref>` and HEAD (three-dot comparison). Use this in CI to enforce policy on exactly the PR diff:
-
-```bash
-dotnet run --project src/Steward.Cli -- check --since origin/main
-```
-
-`--output sarif` emits SARIF 2.1.0, the format consumed by GitHub Advanced Security for inline PR annotations:
-
-```bash
-dotnet run --project src/Steward.Cli -- check --output sarif > results.sarif
-```
-
-```bash
-dotnet run --project src/Steward.Cli -- check
-dotnet run --project src/Steward.Cli -- check --scope changed
-dotnet run --project src/Steward.Cli -- check --output json
-dotnet run --project src/Steward.Cli -- check --since origin/main
-dotnet run --project src/Steward.Cli -- check --since origin/main --output sarif
-```
-
-### `config show --effective`, `config validate`, `config doctor`
-
-Use when inspecting or changing `.steward/*`. `config show --effective` prints the merged runtime policy. `config validate` catches syntax and semantic errors. `config doctor` catches valid-but-ineffective declarations (dead start_here entries, unmatched patterns, unreachable families).
-
-Do not treat `config suggest` as authoritative on this repo — the existing policy is richer and intentional.
-
-```bash
-dotnet run --project src/Steward.Cli -- config show --effective
-dotnet run --project src/Steward.Cli -- config validate
-dotnet run --project src/Steward.Cli -- config doctor
-```
-
-### `md query`
-
-Use for structured extraction from Markdown when you need exact sections or frontmatter values without writing ad hoc parsers. Selectors are exact — use the visible heading text.
-
-```bash
-dotnet run --project src/Steward.Cli -- md query README.md "heading[Commands]"
-dotnet run --project src/Steward.Cli -- md query --pattern "docs/project/*.md" frontmatter.status
-dotnet run --project src/Steward.Cli -- md query docs/project/status.md "#current-baseline"
-```
-
-### `refs <path>`
-
-Use before moving or rewriting a navigation document to see Markdown link impact.
-
-```bash
-dotnet run --project src/Steward.Cli -- refs docs/project/status.md --to
-dotnet run --project src/Steward.Cli -- refs README.md --from
-```
-
-### `maintain --artifact structure --apply`
-
-Use after adding, removing, or moving repo files so `STRUCTURE.md` stays correct.
-
-```bash
-dotnet run --project src/Steward.Cli -- maintain --artifact structure --apply
-dotnet run --project src/Steward.Cli -- maintain --apply   # all maintained artifacts
-```
-
-## Guardrails
-
-- Treat `README.md`, `docs/README.md`, `docs/project/status.md`, `docs/project/roadmap.md`, `docs/project/backlog.md`, `docs/requirements/PRD.md`, decision records, and `.steward/policy.yaml` as active truth. Treat `docs/history/**` as evidence only.
-- Do not assume older audits describe current behavior. Verify claims against current code, `--help` output, the live config, or passing tests.
-- Do not hand-edit `STRUCTURE.md` or managed sections in `docs/decisions/README.md`.
-- Preview before applying mutations. `maintain` previews by default; `check --fix` requires `--apply` to commit fixes.
-- Do not force every task through steward. Normal file edits, builds, tests, and code search still belong to standard tools.
-- `--json-envelope standard` is not yet applied consistently across all commands. If you get unexpected output on a mutation command, check stderr and exit code, not just the JSON body. This is a known contract gap being addressed in later pre-1.0 milestones.
-
-## Verification Expectations
-
-After `.steward/*` changes:
-
-```bash
-dotnet run --project src/Steward.Cli -- config show --effective
-dotnet run --project src/Steward.Cli -- config validate
-dotnet run --project src/Steward.Cli -- config doctor
-dotnet run --project src/Steward.Cli -- check
-```
-
-After Markdown or structural changes:
-
-1. Link active files from `docs/README.md` or `docs/project/README.md`; mark archived evidence `standalone: true`
-2. Run `maintain --artifact structure --apply` (and `maintain --apply` for decision indexes)
-3. Run `npm run lint:md`
-4. Run `check`
-
-After C# source changes:
-
-```bash
-dotnet test steward.sln
-dotnet run --project src/Steward.Cli -- check
-```
-
-## Example Flows
-
-### Start a session in this repo
-
-```bash
-dotnet run --project src/Steward.Cli -- orient --signals
-dotnet run --project src/Steward.Cli -- status --coverage
-```
-
-Then read the start-here docs that orient surfaced.
-
-### Add or update an active project document
-
-```bash
-# 1. Check naming expectations
-dotnet run --project src/Steward.Cli -- explain path docs/project/my-new-doc.md
-
-# 2. Prefer updating status, roadmap, or backlog before creating another authority
-# 3. If a new file is justified, use type: project and link it from docs/project/README.md
-# 4. Refresh structure
-dotnet run --project src/Steward.Cli -- maintain --artifact structure --apply
-
-# 5. Validate
-dotnet run --project src/Steward.Cli -- check
-```
-
-### Add a new ADR or RFC
-
-```bash
-# 1. Check naming pattern (ADR-NNN-lower-kebab.md or RFC-NNN-lower-kebab.md)
-dotnet run --project src/Steward.Cli -- explain path docs/decisions/adrs/ADR-015-my-decision.md
-
-# 2. Create the file with required frontmatter (type, status, category for ADRs; type, status, resolves for RFCs)
-# 3. Refresh decision index and structure
-dotnet run --project src/Steward.Cli -- maintain --apply
-dotnet run --project src/Steward.Cli -- maintain --artifact structure --apply
-
-# 4. Validate
-dotnet run --project src/Steward.Cli -- check
-```
-
-### Inspect governance before editing policy config
-
-```bash
-dotnet run --project src/Steward.Cli -- config show --effective
-dotnet run --project src/Steward.Cli -- config validate
-dotnet run --project src/Steward.Cli -- config doctor
-```
-
-### Move or rename a doc
-
-```bash
-# See what links to it before moving
-dotnet run --project src/Steward.Cli -- refs docs/project/old-name.md --to
-
-# Preview the move
-dotnet run --project src/Steward.Cli -- refactor move docs/project/old-name.md docs/project/new-name.md --preview
-
-# Apply
-dotnet run --project src/Steward.Cli -- refactor move docs/project/old-name.md docs/project/new-name.md --apply
-dotnet run --project src/Steward.Cli -- maintain --artifact structure --apply
-dotnet run --project src/Steward.Cli -- check
-```
-
-## References
-
-- [AGENTS.md](../../../AGENTS.md) — repo-level agent guidance and source-of-truth precedence
-- [README.md](../../../README.md) — product overview, full command reference, config model
-- [CONTRIBUTING.md](../../../CONTRIBUTING.md) — contributor workflow and PR expectations
-- [.steward/policy.yaml](../../../.steward/policy.yaml) — enforced repo contract
-- [.steward/path-policy.yaml](../../../.steward/path-policy.yaml) — naming and path rules
-- [docs/README.md](../../../docs/README.md) — documentation landing page
-- [docs/project/status.md](../../../docs/project/status.md) — current repository truth
-- [docs/project/roadmap.md](../../../docs/project/roadmap.md) — current and next scope

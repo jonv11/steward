@@ -2,7 +2,7 @@
 type: project
 status: Active
 summary: Canonical contributor and agent workflow for all categories of repository work
-last_updated: 2026-06-06
+last_updated: 2026-08-24
 ---
 
 # Workflow Guide
@@ -358,7 +358,7 @@ This workflow has two phases: the review itself and the remediation.
 
 **Objective:** Update guidance that coding agents use to navigate and work in this repository.
 
-**When to use:** Changing `AGENTS.md`, `.agents/skills/steward-cli/SKILL.md`, `CONTRIBUTING.md`, or other agent-facing documentation.
+**When to use:** Changing `AGENTS.md`, `.agents/skills/steward-self-cli/SKILL.md`, `CONTRIBUTING.md`, or other agent-facing documentation.
 
 **Prerequisites:**
 
@@ -499,7 +499,7 @@ ADRs and RFCs follow the [documentation update](#4-documentation-update) workflo
 
 **Agents should:**
 
-- Read [AGENTS.md](../../AGENTS.md) and [.agents/skills/steward-cli/SKILL.md](../../.agents/skills/steward-cli/SKILL.md) for repo-specific tooling guidance.
+- Read [AGENTS.md](../../AGENTS.md) and [.agents/skills/steward-self-cli/SKILL.md](../../.agents/skills/steward-self-cli/SKILL.md) for repo-specific tooling guidance.
 - Run `steward orient --signals` at session start for context.
 - Follow this workflow guide for process decisions.
 - Run the finalization checklist before presenting work as complete.

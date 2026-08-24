@@ -3,7 +3,11 @@
 ```text
 ├── .agents/
 │   └── skills/
-│       └── steward-cli
+│       ├── steward-cli
+│       ├── steward-cli-agent
+│       ├── steward-cli-contributor
+│       ├── steward-cli-maintainer
+│       └── steward-self-cli
 ├── .editorconfig
 ├── .github/
 │   ├── dependabot.yml

@@ -18,7 +18,7 @@ steward status --coverage
 steward check
 ```
 
-Agent guidance lives in [AGENTS.md](AGENTS.md). Steward CLI operational guidance for agents lives in [.agents/skills/steward-cli/SKILL.md](.agents/skills/steward-cli/SKILL.md).
+Agent guidance lives in [AGENTS.md](AGENTS.md). Steward CLI operational guidance for agents lives in [.agents/skills/steward-self-cli/SKILL.md](.agents/skills/steward-self-cli/SKILL.md).
 
 For the strongest repo-specific orientation flow, start with `README.md`, then [docs/README.md](docs/README.md), [project status](docs/project/status.md), [roadmap](docs/project/roadmap.md), and the [workflow guide](docs/project/workflow-guide.md). Open `steward.sln` when you are ready to enter the code. If you are changing repo guidance or stewardship behavior, inspect `.steward/policy.yaml` next. After structural moves or new documentation, refresh generated artifacts with `steward maintain --apply`.
 
