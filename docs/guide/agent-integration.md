@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-06-06
+last_updated: 2026-08-24
 ---
 
 # Using Steward with AI Agents
@@ -105,10 +105,12 @@ SARIF 2.1.0 is available only from `steward check`. Use JSON for structured outp
 
 | Code | Meaning | Agent action |
 |------|---------|-------------|
-| 0 | Clean | Proceed |
-| 1 | Validation failures | Parse diagnostics, fix issues, re-check |
+| 0 | Clean | Proceed — note this includes runs with `warning`/`info` diagnostics |
+| 1 | Validation failures | At least one `error` diagnostic. Parse diagnostics, fix issues, re-check |
 | 2 | Usage error | Fix command invocation |
 | 3 | Internal error | Report to user |
+
+Exit code 0 does **not** mean there were no diagnostics — only that none were `error` severity. Agents that must act on warnings should parse the `diagnostics` array from `--output json` rather than branching on the exit code alone.
 
 ## Setting up Steward for agent use in your repo
 
@@ -148,12 +150,36 @@ steward md query README.md "heading[Features]" --output json
 # Add a section
 steward md edit ensure-section README.md --heading "FAQ" --under "Commands" --apply
 
+# Plan a split of an oversized document (non-mutating)
+steward md split plan docs/big-doc.md --max-lines 400 --output json
+
 # Extract a section to a new file
 steward md edit extract-section README.md --selector "heading[Features]" --to docs/features.md --apply
 
 # Update frontmatter
-steward md edit fm-set docs/my-doc.md --field status --value Active --apply
+steward md edit fm-set docs/my-doc.md --key status --value Active --apply
 ```
+
+### MdPath selectors
+
+`md query` and `md edit extract-section` locate content with an MdPath selector:
+
+| Selector | Selects |
+|----------|---------|
+| `frontmatter` | The entire frontmatter block |
+| `frontmatter.<field>` | A single frontmatter field |
+| `heading[Name]` | The section whose heading text is `Name` |
+| `heading[Parent/Child]` | A nested heading path |
+| `heading[#N]` | The Nth heading in document order (1-based) |
+| `heading[Name].lists` | List blocks inside that section |
+| `heading[Name].tables` | Table blocks inside that section |
+| `heading[Name].codeblocks` | Code blocks inside that section |
+| `managed[<id>]` | A managed region by id |
+| `managed[*]` | All managed regions |
+| `#anchor-slug` | A heading resolved through Markdown anchor normalization |
+| `README.md#anchor-slug` | Link-style form of the same anchor lookup |
+
+Heading matching is exact — there is no fuzzy or partial mode. When a heading's exact text is unknown, run `steward md outline <file>` first, or use the `#anchor-slug` form, which normalizes the heading the way a Markdown link fragment does.
 
 ## Limitations agents should know
 

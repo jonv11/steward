@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-06-06
+last_updated: 2026-08-24
 ---
 
 # Maintainer Guide
@@ -80,7 +80,7 @@ Available profiles:
 
 | Profile | Best for | Creates |
 |---------|----------|---------|
-| `software` | Code repositories with standard docs | README, LICENSE, CHANGELOG, CONTRIBUTING placeholders |
+| `software` | Code repositories with standard docs | Declares README, LICENSE, CHANGELOG, CONTRIBUTING; scaffolds placeholders for all but LICENSE |
 | `docs` | Documentation-focused repositories | README placeholder + docs/ directory |
 | `minimal` | Lightweight starting point | Minimal config, no required artifacts |
 
@@ -179,6 +179,8 @@ validation:
       disabled_rules: [STWD-003, STWD-012]  # No frontmatter or freshness for drafts
 ```
 
+Suppression is global or glob-scoped. The one per-file exemption is `standalone: true` in a file's own frontmatter, which suppresses STWD-013 (discoverability) for that file. No other rule can be waived on a single file â€” scope it with a `path_overrides` glob instead.
+
 **Set up automatic maintenance:**
 
 ```yaml
@@ -256,13 +258,28 @@ Generated artifacts (like `STRUCTURE.md` or indexes) should not be hand-edited â
 
 ## Step 7: Add to CI
 
-Add `steward check` to your CI pipeline. It returns exit code 0 on success and 1 on validation failures.
+Add `steward check` to your CI pipeline.
 
 ```yaml
 # Example GitHub Actions step
 - name: Validate repository governance
   run: steward check
 ```
+
+### What actually fails the build
+
+`steward check` exits 1 only when there is at least one **`error`**-severity diagnostic. `warning` and `info` diagnostics are printed but exit 0.
+
+This matters when you configure CI: most rules default to `warning`, so by default they report without gating. To make a rule block a merge, raise its severity:
+
+```yaml
+validation:
+  severity_overrides:
+    STWD-008: error    # broken internal links now fail CI
+    STWD-016: error    # family naming violations now fail CI
+```
+
+Rules that default to `error` (STWD-001, STWD-002, STWD-003, STWD-005) gate CI without any override. `governance.completion_policy` is reporting-only and never affects the exit code.
 
 ## Example configurations
 
@@ -384,3 +401,6 @@ governance:
 - **Search is basic.** `steward search` supports substring and regex matching. No fuzzy or semantic search.
 - **`search --role` matches explicit artifact declarations only.** It does not find family-classified files. To find all files in a family, use glob patterns or `steward orient --full`.
 - **4 of 21 rules support auto-fix.** Most violations require manual remediation. The fixable rules are STWD-003 (frontmatter), STWD-007 (stale artifacts), STWD-012 (freshness dates), and STWD-018 (unambiguous fragment links).
+- **No baseline or phase-in mode.** Enabling a rule applies it to every existing file at once. On a large repository with existing content, turning on something like `governance.frontmatter.required_fields` produces a violation for every non-conforming file immediately. Adopt incrementally instead: scope new rules to a directory with `validation.frontmatter_requirements` or an artifact family, keep repository-wide rules at `warning` until the backlog is cleared, and use `steward check --since <ref>` so CI only judges what the branch touched.
+- **Policy cannot be shared between repositories.** There is no `extends:` or import mechanism. Running the same governance across several repositories means copying `.steward/` and keeping the copies in sync yourself.
+- **`explain path` lists which rules apply, not why.** It does not report which config file or stanza activated each rule, or each rule's effective severity. When a rule fires or fails to fire unexpectedly, compare against `steward config show --effective`.

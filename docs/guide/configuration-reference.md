@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-06-06
+last_updated: 2026-08-24
 ---
 
 # Configuration Reference
@@ -274,6 +274,8 @@ This is implemented as an automatic maintenance task. Run `steward maintain --ap
 
 Controls which rules are active and their severity.
 
+**Severity determines whether a rule gates CI.** `steward check` exits 1 only when at least one `error`-severity diagnostic is produced; `warning` and `info` are reported but exit 0. Only STWD-001, STWD-002, STWD-003, and STWD-005 default to `error`. Raise any other rule with `severity_overrides` to make it block a merge.
+
 ```yaml
 validation:
   disabled_rules: [STWD-004]           # Suppress rules globally
@@ -313,6 +315,20 @@ Steward has three ways to exclude files or rules:
 | `discovery.exclude` (config.yaml) | Files invisible to all commands | Build output, node_modules, tool installs |
 | `validation.disabled_rules` | Rules disabled globally | You never want a rule to fire anywhere |
 | `validation.path_overrides[].disabled_rules` | Rules disabled for specific paths | Frontmatter not needed in `src/`, freshness not needed in `drafts/` |
+
+#### Per-file suppression
+
+There is currently one per-file escape hatch, set in the file's own frontmatter rather than in `.steward/`:
+
+```yaml
+---
+standalone: true
+---
+```
+
+`standalone: true` suppresses **STWD-013** (discoverability) for that file only. Use it for archived evidence, historical records, and other documents that are intentionally not linked from any navigation surface.
+
+No other rule supports per-file suppression. For everything else, scope the exemption with a `validation.path_overrides` glob.
 
 #### Frontmatter requirements interaction
 
@@ -418,6 +434,8 @@ rulesets:
 | `rulesets[].rules[].description` | string | _(none)_ | Reason for the rule |
 | `rulesets[].rules[].exact` | bool | `false` | Treat pattern as exact path match instead of glob |
 | `rulesets[].rules[].must_match` | string | _(none)_ | Regex that matching filenames must satisfy (STWD-010) |
+
+> **Note:** `path-policy.yaml` also parses a `kind` field on rules, but nothing reads it. It is accepted for backward compatibility and has no effect.
 
 ### Category values
 

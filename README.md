@@ -88,10 +88,12 @@ If you run Steward via `dotnet run --project` from inside another repository, th
 
 | Code | Meaning |
 | ---- | ------- |
-| 0 | Clean — no validation failures |
-| 1 | Validation failure — one or more rules violated |
+| 0 | Clean — no `error`-severity diagnostics |
+| 1 | Validation failure — at least one `error`-severity diagnostic |
 | 2 | Usage error — invalid arguments or configuration |
 | 3 | Internal error — unexpected runtime failure |
+
+**Only `error` severity affects the exit code.** `warning` and `info` diagnostics are reported but exit 0. Most rules default to `warning`, so a rule you want to gate CI on must be raised to `error` via `validation.severity_overrides` in `policy.yaml`.
 
 ## Commands
 
@@ -111,7 +113,8 @@ If you run Steward via `dotnet run --project` from inside another repository, th
 | `steward refactor move <old> <new>` | Move/rename a file and update all Markdown references (`--preview`, `--apply`) |
 | `steward md outline <file>` | Show Markdown heading hierarchy with line counts |
 | `steward md query <file> <selector>` | Extract content using an MdPath selector or Markdown anchor slug such as `#who-is-steward-for` (`--pattern` for batch) |
-| `steward md edit <operation> <file>` | Structural Markdown editing (sections, frontmatter, blocks) with preview/apply safety |
+| `steward md edit <operation> <file>` | Structural Markdown editing with preview/apply safety: `ensure-section`, `set-section`, `insert-section`, `append-block`, `prepend-block`, `extract-section`, `fm-set`, `fm-merge`, `fm-validate` |
+| `steward md split plan <file>` | Non-mutating analysis proposing sections to extract from an oversized document (`--max-lines`, `--min-section-lines`) |
 | `steward config show [--effective]` | Print raw config files and (with `--effective`) the resolved runtime defaults plus merged policy |
 | `steward config validate` | Check .steward/ YAML files for syntax and field errors |
 | `steward config doctor` | Detect valid-but-ineffective config: dead `start_here` entries, unmatched patterns, unreachable families |
