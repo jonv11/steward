@@ -322,6 +322,10 @@ public static class ConfigCommand
                 {
                     if (string.IsNullOrWhiteSpace(rule.Pattern)) continue;
 
+                    // Prohibitive categories are preventive: matching zero files is the
+                    // success condition, not dead config.
+                    if (IsPreventiveCategory(rule.Category)) continue;
+
                     bool anyMatch;
                     if (rule.Exact)
                     {
@@ -528,6 +532,16 @@ public static class ConfigCommand
 
         return findings;
     }
+
+    /// <summary>
+    /// Path-policy categories that prohibit or hold back paths rather than describe
+    /// existing content. A rule in one of these categories matching no files means the
+    /// prohibition is being honoured, so it must not be reported as dead config.
+    /// </summary>
+    private static bool IsPreventiveCategory(string? category) =>
+        category != null &&
+        (category.Equals("forbidden", StringComparison.OrdinalIgnoreCase) ||
+         category.Equals("reserved", StringComparison.OrdinalIgnoreCase));
 
     internal sealed record DoctorFinding(string Category, string Message, string Remediation);
 

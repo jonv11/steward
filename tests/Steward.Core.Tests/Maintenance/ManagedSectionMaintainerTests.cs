@@ -194,4 +194,67 @@ public class ManagedSectionMaintainerTests
         var second = maintainer.Evaluate(config, CreateContext(fs));
         second.HasChanges.Should().BeFalse();
     }
+
+    [Fact]
+    public void Evaluate_MissingTargetFile_IsBlocked()
+    {
+        var fs = new InMemoryFileSystem().AddFile("/repo/source.txt", "content");
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "sec",
+            Path = "doc.md",
+            Type = "managed-section",
+            Source = "source.txt"
+        };
+
+        var action = new ManagedSectionMaintainer().Evaluate(config, CreateContext(fs));
+
+        action.HasChanges.Should().BeFalse();
+        action.IsBlocked.Should().BeTrue();
+        action.BlockedReason.Should().Contain("doc.md");
+    }
+
+    [Fact]
+    public void Evaluate_MissingSource_IsBlocked()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/doc.md", "# Doc\n\n<!-- steward:begin id=\"sec\" -->\n<!-- steward:end -->");
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "sec",
+            Path = "doc.md",
+            Type = "managed-section",
+            Source = "missing.txt"
+        };
+
+        var action = new ManagedSectionMaintainer().Evaluate(config, CreateContext(fs));
+
+        action.HasChanges.Should().BeFalse();
+        action.IsBlocked.Should().BeTrue();
+        action.BlockedReason.Should().Contain("source");
+    }
+
+    [Fact]
+    public void Evaluate_MarkersMissing_IsBlocked()
+    {
+        var fs = new InMemoryFileSystem()
+            .AddFile("/repo/doc.md", "# Doc\n\nNo markers here.")
+            .AddFile("/repo/source.txt", "content");
+
+        var config = new MaintenanceArtifactConfig
+        {
+            Id = "sec",
+            Path = "doc.md",
+            Type = "managed-section",
+            Source = "source.txt"
+        };
+
+        var action = new ManagedSectionMaintainer().Evaluate(config, CreateContext(fs));
+
+        action.HasChanges.Should().BeFalse();
+        action.IsBlocked.Should().BeTrue();
+        action.BlockedReason.Should().Contain("steward:begin id=\"sec\"");
+    }
 }

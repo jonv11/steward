@@ -287,6 +287,36 @@ artifact_families:
         type: [planning, documentation]
         status: [Completed, Superseded, Historical]
 
+  - family: effort
+    display_name: Effort Record
+    match:
+      path_pattern: ".scratch/*/effort.md"
+    role: workflow
+    importance: recommended
+
+  - family: effort-spec
+    display_name: Effort Specification
+    match:
+      path_pattern: ".scratch/*/spec.md"
+    role: requirements
+    importance: recommended
+
+  - family: effort-map
+    display_name: Effort Wayfinding Map
+    match:
+      path_pattern: ".scratch/*/map.md"
+    role: workflow
+    importance: recommended
+
+  - family: ticket
+    display_name: Effort Ticket
+    match:
+      path_pattern: ".scratch/*/issues/*.md"
+    role: workflow
+    importance: recommended
+    naming_pattern: "^[0-9]{2}-[a-z0-9-]+\\.md$"
+    title_pattern: "^[0-9]+ — .+"
+
   - family: skill
     display_name: Agent Skill
     match:
@@ -330,6 +360,11 @@ validation:
     - pattern: "tests/Steward.TestFixtures/Repos/**"
       disabled_rules:
         - STWD-013
+    # Tickets, specs and maps are a governed corpus reached by effort slug, not by
+    # navigation from start_here. Orphan detection does not apply to them.
+    - pattern: ".scratch/**"
+      disabled_rules:
+        - STWD-013
 
 maintenance:
   artifacts:
@@ -339,6 +374,9 @@ maintenance:
       options:
         depth: 3
         exclude:
+          # Show that the ticket tracker exists, but not one line per effort:
+          # the effort list churns constantly and orients no one.
+          - ".scratch/*/**"
           - "artifacts/**"
           - ".git/**"
           - "**/bin/**"

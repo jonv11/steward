@@ -98,7 +98,9 @@ public sealed class IndexMaintainer : IArtifactMaintainer
                 ArtifactPath = config.Path,
                 Type = Type,
                 Description = $"Target file '{config.Path}' does not exist.",
-                HasChanges = false
+                HasChanges = false,
+                IsBlocked = true,
+                BlockedReason = $"Create '{config.Path}', or point the '{config.Id}' maintenance artifact at a file that exists."
             };
         }
 
@@ -113,7 +115,9 @@ public sealed class IndexMaintainer : IArtifactMaintainer
                 ArtifactPath = config.Path,
                 Type = Type,
                 Description = $"Managed section '{config.ManagedSection}' not found in '{config.Path}'.",
-                HasChanges = false
+                HasChanges = false,
+                IsBlocked = true,
+                BlockedReason = $"Add managed region markers to '{config.Path}': <!-- steward:begin id=\"{config.ManagedSection}\" --> and <!-- steward:end -->."
             };
         }
 

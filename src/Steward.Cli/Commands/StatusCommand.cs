@@ -471,7 +471,18 @@ public static class StatusCommand
                 AddGovernedPath(s);
         }
 
-        // 4. Markdown files reachable from governed navigation surfaces
+        // 4. Files classified into an artifact family
+        if (policy?.ArtifactFamilies is { Count: > 0 })
+        {
+            var classifier = new ArtifactFamilyClassifier(policy.ArtifactFamilies);
+            foreach (var path in mdFiles)
+            {
+                if (classifier.ClassifyFile(path, fileSystem, repositoryRoot) != null)
+                    AddGovernedPath(path);
+            }
+        }
+
+        // 5. Markdown files reachable from governed navigation surfaces
         if (fileSystem != null && !string.IsNullOrWhiteSpace(repositoryRoot))
         {
             while (frontier.Count > 0)

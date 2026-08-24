@@ -6,7 +6,11 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ## [Unreleased]
 
-No unreleased changes yet.
+### Fixed
+
+- `steward maintain` now reports unmaintainable artifacts as `BLOCKED` instead of `OK`. A missing target file, absent managed-region markers, or a missing `source` previously rendered identically to an up-to-date artifact, so an artifact that silently did nothing looked healthy. Affects the `index`, `directory-index`, and `managed-section` maintainers.
+- `steward status --coverage` now counts files matched by an `artifact_families[]` entry as governed. Family-matched files were previously listed as ungoverned even while `status` reported the family as matching them.
+- `config doctor` no longer reports `forbidden` and `reserved` path-policy rules that match no files as dead config. For those categories, matching nothing is the success condition.
 
 ## [0.18.0] - 2026-06-06
 
