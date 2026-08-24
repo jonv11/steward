@@ -105,4 +105,21 @@ scripts/release/       Release asset scripts
 - Do not skip `npm run lint:md` when you modify Markdown or workflow docs.
 - Do not skip `steward check` before finishing any change.
 - Do not treat `search --role` as a complete family-aware search; in this repo it only finds explicit `artifacts[]` role entries, not family-matched docs.
+- Do not leave `.scratch/` ticket state uncommitted. Tickets are tracked repo content; commit `Status:` changes alongside the work they describe. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
 - Do not commit to version bump, tag, or publish without following the release process.
+
+## Agent skills
+
+Configuration consumed by the installed engineering skills (`to-tickets`, `triage`, `to-spec`, `wayfinder`, `domain-modeling`, and friends).
+
+### Issue tracker
+
+Issues and specs live as tracked markdown under `.scratch/<effort-slug>/`, one directory per effort, governed by the `ticket`, `effort`, `effort-spec` and `effort-map` families in `.steward/policy.yaml`; this repo does not use GitHub Issues for agent workflows. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
+
+### Triage labels
+
+Triage roles are used verbatim as `Status:` values on ticket files: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`, plus `done` when the work has landed. See [docs/agents/triage-labels.md](docs/agents/triage-labels.md).
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` at the repo root, with decisions in `docs/decisions/`. See [docs/agents/domain.md](docs/agents/domain.md).

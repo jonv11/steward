@@ -22,6 +22,10 @@
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/
+│   ├── agents/
+│   │   ├── domain.md
+│   │   ├── issue-tracker.md
+│   │   └── triage-labels.md
 │   ├── decisions/
 │   │   ├── adrs
 │   │   ├── README.md
