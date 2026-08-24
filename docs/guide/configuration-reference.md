@@ -450,6 +450,8 @@ rulesets:
 | `optional` | Allowed, no enforcement |
 | `ignored` | Excluded from path-policy evaluation |
 
+> **Note:** `config doctor` does not report `forbidden` or `reserved` rules that match no files. For those categories, matching nothing is the intended outcome. Rules in the other categories are still reported as unmatched patterns.
+
 ## Profiles
 
 Profiles provide starting-point defaults. Run `steward init --profile <name>` to scaffold files based on a profile.

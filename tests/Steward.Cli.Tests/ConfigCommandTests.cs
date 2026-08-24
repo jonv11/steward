@@ -274,6 +274,44 @@ public class ConfigCommandTests : IDisposable
     }
 
     [Fact]
+    public void ConfigDoctor_UnmatchedForbiddenPathRule_ReportsNothing()
+    {
+        var pathPolicy = new PathPolicyDocument
+        {
+            Rulesets = [new PathRuleSet
+            {
+                Rules = [new PathRule { Pattern = "**/*.exe", Category = "forbidden" }]
+            }]
+        };
+
+        var ctx = CreateDoctorContext(policy: null, pathPolicy: pathPolicy,
+            files: [new DiscoveredFile("docs/readme.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ConfigDoctor_UnmatchedReservedPathRule_ReportsNothing()
+    {
+        var pathPolicy = new PathPolicyDocument
+        {
+            Rulesets = [new PathRuleSet
+            {
+                Rules = [new PathRule { Pattern = "docs/reserved/**", Category = "reserved" }]
+            }]
+        };
+
+        var ctx = CreateDoctorContext(policy: null, pathPolicy: pathPolicy,
+            files: [new DiscoveredFile("docs/readme.md", 100, false)]);
+
+        var findings = ConfigCommand.RunDoctor(ctx);
+
+        findings.Should().BeEmpty();
+    }
+
+    [Fact]
     public void ConfigDoctor_UnmatchedPathRule_ReportsIssue()
     {
         var pathPolicy = new PathPolicyDocument

@@ -6,7 +6,9 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ## [Unreleased]
 
-No unreleased changes yet.
+### Fixed
+
+- `config doctor` no longer reports `forbidden` and `reserved` path-policy rules that match no files as dead config. For those categories, matching nothing is the success condition.
 
 ## [0.18.0] - 2026-06-06
 
