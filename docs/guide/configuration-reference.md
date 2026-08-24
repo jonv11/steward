@@ -61,6 +61,16 @@ These serve different purposes:
 - **`discovery.exclude`** makes files completely invisible to Steward. Use it for build output, dependencies, tool installations, and anything that should never appear in any Steward command.
 - **`coverage.exclude`** excludes files from the governance coverage percentage reported by `steward status --coverage`, but those files are still discovered, validated, and shown in other commands. Use it for test fixtures, generated files, or vendor content you govern but don't want counting against your coverage metric.
 
+### What counts as governed
+
+`steward status --coverage` treats a Markdown file as governed when it is reached by any of:
+
+- a declared `artifacts[]` path, or a file under an artifact's `index_of` directory;
+- a `maintenance.artifacts[]` path or a file matched by its `source` scope;
+- a `governance.start_here` entry;
+- an `artifact_families[]` `match` (path pattern and/or frontmatter);
+- a Markdown link from a file already governed by one of the above.
+
 SARIF is not a valid repository-wide `output.format` default. Use `steward check --output sarif` explicitly when a CI system needs SARIF 2.1.0; other commands support text and JSON.
 
 ## policy.yaml

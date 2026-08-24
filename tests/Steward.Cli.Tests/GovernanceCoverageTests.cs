@@ -83,6 +83,34 @@ public class GovernanceCoverageTests
     }
 
     [Fact]
+    public void ComputeCoverage_FamilyMatchedFilesAreGoverned()
+    {
+        var policy = new RepositoryPolicy
+        {
+            ArtifactFamilies =
+            [
+                new ArtifactFamilyDefinition
+                {
+                    Family = "adr",
+                    Match = new ArtifactFamilyMatch { PathPattern = "docs/adr/*.md" }
+                }
+            ]
+        };
+
+        var files = new List<DiscoveredFile>
+        {
+            new("docs/adr/0001-first.md", 100, false),
+            new("docs/adr/0002-second.md", 100, false),
+            new("notes.md", 40, false)
+        };
+
+        var result = StatusCommand.ComputeCoverage(policy, files);
+
+        result.GovernedCount.Should().Be(2);
+        result.Ungoverned.Should().BeEquivalentTo(["notes.md"]);
+    }
+
+    [Fact]
     public void ComputeCoverage_NoMarkdownFiles_100Percent()
     {
         var policy = new RepositoryPolicy();

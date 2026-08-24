@@ -23,7 +23,6 @@ Confirmed against source during an adoption trial on two external repositories (
 
 | Defect | Evidence |
 |--------|----------|
-| Governance coverage ignores artifact families | `ComputeCoverage` in `StatusCommand.cs` derives governed paths from artifacts, maintenance scopes, `start_here`, and link reachability only — `policy.ArtifactFamilies` is never consulted. `status` therefore reports a family as matching N files while listing those same files under "Ungoverned Files". On the trial repository this excluded 259 family-matched files from the coverage numerator |
 | `maintain` reports maintenance failures as `OK` | In `IndexMaintainer.cs`, both "target file does not exist" and "managed section not found" return `HasChanges = false` with no failure signal, so the CLI renders them as `OK`. A maintenance artifact that silently does nothing is indistinguishable from one that is up to date. `MaintenanceAction` has no status field to carry the distinction |
 
 ## Validated Enhancements
