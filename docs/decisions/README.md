@@ -2,7 +2,7 @@
 type: documentation
 status: Active
 summary: Generated status index for Steward RFCs and ADRs
-last_updated: 2026-06-06
+last_updated: 2026-08-24
 ---
 
 # Decision Index
@@ -32,6 +32,7 @@ Deferred RFCs remain in the RFC table with `Status: Deferred`; accepted ADRs and
 | RFC-014: Closed Artifact Family Schema and Title Convention Enforcement | [RFC-014-closed-family-schema-and-title-pattern.md](rfcs/RFC-014-closed-family-schema-and-title-pattern.md) | Accepted | Extends artifact family schemas with closed-field validation, deprecated-field migration, and per-family H1 title-pattern enforcement to make family schemas authoritative rather than merely additive |
 | RFC-015: Section Heading Pattern Enforcement | [RFC-015-section-heading-pattern-enforcement.md](rfcs/RFC-015-section-heading-pattern-enforcement.md) | Accepted | Extends artifact family schemas with per-family H2 section-heading format enforcement, complementing the H1 title_pattern enforcement introduced by RFC-014 |
 | RFC-016: Document Structure Schema Enforcement | [RFC-016-document-structure-schema-enforcement.md](rfcs/RFC-016-document-structure-schema-enforcement.md) | Accepted | Extends artifact family schemas with a section_schema block that declares required and optional H2 sections, complementing STWD-014 required_sections and STWD-020 section_pattern |
+| RFC-017: Rule Phase-In and Baseline | [RFC-017-rule-phase-in-and-baseline.md](rfcs/RFC-017-rule-phase-in-and-baseline.md) | Accepted | Defines a generated baseline mechanism that lets a rule be enabled against a repository's existing content without an immediate wall of errors, while still catching new violations |
 
 <!-- steward:end -->
 

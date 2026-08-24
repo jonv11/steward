@@ -27,9 +27,10 @@ The remaining defects confirmed during the 2026-08-24 adoption trial on two exte
 
 ## Validated Enhancements
 
+Rule phase-in and baseline has moved into committed scope; see the [roadmap](roadmap.md#current-milestone-rule-phase-in-and-baseline).
+
 | Item | Current direction |
 |------|-------------------|
-| Rule phase-in and baseline | Highest-impact adoption gap. Enabling a rule currently applies it to all existing content at once, which blocks adoption on repositories that already have history. Explore a baseline snapshot or a "warn on existing, error on new" mode before adding further rules |
 | `check --fail-on <severity>` | Let CI gate on warnings without rewriting rule severities in `policy.yaml`. Only `error` affects the exit code today, so most rules are non-blocking by default |
 | Shared or inheritable policy | No `extends`/import exists, so multi-repo governance means copying `.steward/` and hand-syncing drift. Evaluate against the offline-first constraint before committing |
 | Policy impact preview | Show what a proposed policy change would do before it is committed. `config doctor` covers dead config, not effect |
@@ -42,7 +43,7 @@ The remaining defects confirmed during the 2026-08-24 adoption trial on two exte
 | Universal JSON expected-failure cleanup | Route the remaining expected-failure paths through the standard envelope before claiming universal JSON coverage |
 | Heading selector fuzzy matching | Add a conservative non-exact selector mode |
 | Workflow/session modeling | Revisit RFC-008 phase 3 after higher-priority trust work |
-| Additional init profiles | Re-enable `mixed` or `knowledge` only when they have distinct, tested contracts |
+| Profile depth and additional init profiles | All 5 profiles (`software`, `docs`, `minimal` public; `mixed`, `knowledge` deferred per ADR-014) only gate file presence/required-optional status today — no archetype-specific behavior beyond that, so most feel like "require a README" with extra steps. Design richer, more differentiated defaults per profile before re-enabling `mixed`/`knowledge` or expanding the public set |
 | Per-path rule severity | `path_overrides` can only disable rules and `severity_overrides` is global, so phasing in a rule declared for a single family forces a repository-wide downgrade. A `path_overrides[].severity_overrides` would express the real intent and partly addresses the phase-in gap above |
 | Family matching on non-YAML metadata | `match.frontmatter` is the only content-based discriminator. Repositories that record `Type:`/`Status:` as body lines rather than YAML cannot split one glob into two families. Both trial repositories hit this and dropped otherwise-justified section schemas because of it |
 | `directory-index` degradation | `directory-index` hard-blocks unless every source file has non-empty `frontmatter.description`, which rules it out for any repository being adopted into. `type: index` degrades to an H1-derived link list and worked; consider the same fallback |

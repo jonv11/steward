@@ -1,39 +1,29 @@
 ---
 type: project
 status: Active
-summary: Pending v0.18.0 publication and the decision boundary for the following milestone
-last_updated: 2026-06-06
-review_after: 2026-07-06
+summary: Rule phase-in and baseline is the committed next milestone after v0.18.0
+last_updated: 2026-08-24
+review_after: 2026-09-25
 ---
 
 # Roadmap
 
-## Current Milestone: Publish `v0.18.0`
+## Current Milestone: Rule Phase-In And Baseline
 
-The `v0.18.0` release candidate is prepared with stronger policy schemas, CI handoff, and validation reliability.
+Committed as the next milestone after `v0.18.0` (published; see [docs/project/status.md](status.md) for its delivered-capability list). Selected over the other backlog candidates because it's the one item both external repositories in the 2026-08-24 adoption trial hit and both flagged as blocking, not just annoying — see the [maintainer configuration experience audit](../history/audits/maintainer-configuration-experience-audit-2026-08-24.md) and the [backlog](backlog.md), which called it the "highest-impact adoption gap."
 
-### Landed
+### Problem
 
-See [docs/project/status.md](status.md) for the authoritative release-candidate capability list.
+Enabling a rule today applies it to all existing content at once. A repository that already has history and turns a rule on gets an immediate wall of errors across every pre-existing file, with no way to say "only enforce this going forward." That makes adopting a new rule into an established repository effectively all-or-nothing.
 
-### Before Release
+### Scope
 
-- run the full local publication checklist and obtain green hosted CI for the release commit
-- run the release process only when explicitly authorized
-- verify the GitHub Release assets and NuGet package, then commit the post-release state update
+Defined in [RFC-017](../decisions/rfcs/RFC-017-rule-phase-in-and-baseline.md) (Accepted): a generated `.steward/baseline.json` snapshots current violations at adoption time so `check` suppresses them while still catching new ones, with a drift signal to show when grandfathered debt gets fixed. Implementation is not yet started or scoped into slices.
 
-### Explicit Deferral
+### Explicit Deferral (carried from v0.18.0)
 
-The remaining universal JSON expected-failure cleanup is deferred from `v0.18.0`. The standard envelope is already the only supported JSON mode and the remaining paths do not block the policy-schema, SARIF, scoped-validation, and reliability scope of this release. The follow-on is tracked in the [backlog](backlog.md).
+The remaining universal JSON expected-failure cleanup was deferred from `v0.18.0`. The standard envelope is already the only supported JSON mode and the remaining paths did not block that release's policy-schema, SARIF, scoped-validation, and reliability scope. Tracked in the [backlog](backlog.md).
 
 ## Next Milestone
 
-No version after `v0.18.0` is committed. The next milestone should be selected after the `v0.18.0` release boundary is reviewed.
-
-Candidate themes:
-
-- a narrow RFC-009 typed-resource-address slice
-- adoption-oriented config transparency and phase-in support
-- deferred Markdown refactors or governed suppressions when prerequisites are satisfied
-
-Unscheduled items belong in the [backlog](backlog.md). `v1.0.0` remains unscheduled until a separate decision explicitly authorizes it under [ADR-013](../decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Not yet selected. Once rule phase-in ships, revisit the backlog's remaining validated enhancements — adoption-oriented config transparency (`--fail-on <severity>`, policy impact preview, policy evaluation trace, governance-gap explanation) is the next-strongest candidate on current evidence, since several of those items are workarounds people reach for in the absence of phase-in. `v1.0.0` remains unscheduled until a separate decision explicitly authorizes it under [ADR-013](../decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
