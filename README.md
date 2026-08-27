@@ -2,7 +2,7 @@
 
 A configurable repository stewardship CLI for humans and AI agents. Steward validates documentation structure, enforces governance policies, and keeps repository artifacts in sync — all driven by declarative YAML configuration.
 
-Release candidate: **`v0.18.1`** (pending publication, pre-`1.0.0`). Latest published release: **`v0.18.0`**. See [Current Status](#current-status).
+Latest published release: **`v0.18.1`** (pre-`1.0.0`). See [Current Status](#current-status).
 
 ## Quick Start
 
@@ -181,13 +181,13 @@ For complete field documentation, valid values, defaults, and configuration exam
 
 ## Current Status
 
-Steward is prepared as a `v0.18.1` release candidate on a pre-`1.0.0` release line. The latest published release remains `v0.18.0` until the tag-driven release and NuGet publication are verified. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Steward's latest published release is `v0.18.1` on a pre-`1.0.0` release line. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
 **What works today:** All 21 validation rules, all commands listed above, three built-in profiles (`software`, `docs`, `minimal`), artifact family classification, deterministic maintenance, Markdown structural editing, JSON and SARIF output, and scoped validation.
 
 **Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 4 of 21 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
 
-**Current release state:** `v0.18.1` metadata and release notes are prepared, but publication is still pending. Stable `v1.0.0` remains unauthorized. See [project status](docs/project/status.md) and the [roadmap](docs/project/roadmap.md).
+**Current release state:** `v0.18.1` is published to nuget.org and GitHub Releases. Stable `v1.0.0` remains unauthorized. See [project status](docs/project/status.md) and the [roadmap](docs/project/roadmap.md).
 
 ## Documentation
 

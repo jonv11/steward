@@ -10,7 +10,7 @@ review_after: 2026-09-25
 
 ## Current Baseline
 
-Steward's latest published version is **`v0.18.0`**. **`v0.18.1`** is prepared as a release candidate: its version metadata and changelog section are in place, but the tag, GitHub Release, and NuGet publication are still pending.
+Steward's latest published version is **`v0.18.1`**, tagged and released to GitHub Releases and nuget.org. It was the first release published through nuget.org trusted publishing.
 
 | Area | Current truth |
 |------|---------------|
@@ -19,7 +19,7 @@ Steward's latest published version is **`v0.18.0`**. **`v0.18.1`** is prepared a
 | Validation rules | 21 (`STWD-001` through `STWD-021`) |
 | Auto-fix rules | 4 (`STWD-003`, `STWD-007`, `STWD-012`, `STWD-018`) |
 | Built-in init profiles | `software`, `docs`, `minimal` |
-| Release posture | `v0.18.0` published, `v0.18.1` pending publication; public `0.x` releases allowed; `1.0.0` requires explicit authorization under ADR-013 |
+| Release posture | `v0.18.1` published; public `0.x` releases allowed; `1.0.0` requires explicit authorization under ADR-013 |
 | Generated repo artifacts | `STRUCTURE.md` and `docs/decisions/README.md` |
 
 ## Delivered In v0.18.0
@@ -32,7 +32,7 @@ Steward's latest published version is **`v0.18.0`**. **`v0.18.1`** is prepared a
 - ordered document section schemas (STWD-021)
 - check-only SARIF enforcement, with repository output defaults limited to text or JSON
 
-## Prepared For v0.18.1 (Pending Publication)
+## Delivered In v0.18.1
 
 A 2026-08-24 adoption trial ran Steward against two external repositories (`jvcode`, `mdrule`) and logged real friction; see the [maintainer configuration experience audit](../history/audits/maintainer-configuration-experience-audit-2026-08-24.md). Three defects it surfaced are already fixed:
 
@@ -50,7 +50,7 @@ Release publication moved to nuget.org trusted publishing: the release workflow 
 
 - Build and tests pass locally.
 - Markdown lint passes.
-- Hosted build, release, and NuGet publication evidence is established through `v0.18.0`.
+- Hosted build, release, and NuGet publication evidence is established through `v0.18.1`.
 - The repository remains pre-1.0; no stable-release authorization has been accepted.
 - The next milestone after `v0.18.1` is rule phase-in and baseline — see the [roadmap](roadmap.md).
 
