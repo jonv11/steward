@@ -127,9 +127,11 @@ git push origin v<VERSION>
 
 ### 7. Let GitHub Actions publish to NuGet
 
-- `.github/workflows/release.yml` publishes the packaged .NET tool to nuget.org using the repository secret `NUGET_ORG_API_KEY`.
+- `.github/workflows/release.yml` publishes the packaged .NET tool to nuget.org using [NuGet trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing). No long-lived API key is stored.
+- The `NuGet/login@v1` step exchanges the job's GitHub OIDC token (`id-token: write`) for an API key valid for one hour, using the repository secret `NUGET_USER` (the nuget.org profile name, not an email address).
+- The matching trusted publishing policy on nuget.org is scoped to owner `jonv11`, repository `steward`, workflow file `release.yml`, with no environment.
 - Publication uses `dotnet nuget push --skip-duplicate` so rerunning a tagged release is safe when the package already exists.
-- The workflow fails if the secret is missing or if no package artifact was produced.
+- The workflow fails if the token exchange returns no key or if no package artifact was produced.
 
 ### 8. Verify post-release state
 

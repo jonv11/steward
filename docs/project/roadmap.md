@@ -1,8 +1,8 @@
 ---
 type: project
 status: Active
-summary: Rule phase-in and baseline is the committed next milestone after v0.18.0
-last_updated: 2026-08-24
+summary: Rule phase-in and baseline is the committed next milestone after v0.18.1
+last_updated: 2026-08-27
 review_after: 2026-09-25
 ---
 
@@ -10,7 +10,7 @@ review_after: 2026-09-25
 
 ## Current Milestone: Rule Phase-In And Baseline
 
-Committed as the next milestone after `v0.18.0` (published; see [docs/project/status.md](status.md) for its delivered-capability list). Selected over the other backlog candidates because it's the one item both external repositories in the 2026-08-24 adoption trial hit and both flagged as blocking, not just annoying — see the [maintainer configuration experience audit](../history/audits/maintainer-configuration-experience-audit-2026-08-24.md) and the [backlog](backlog.md), which called it the "highest-impact adoption gap."
+Committed as the next milestone after `v0.18.1` (see [docs/project/status.md](status.md) for the current release posture). Selected over the other backlog candidates because it's the one item both external repositories in the 2026-08-24 adoption trial hit and both flagged as blocking, not just annoying — see the [maintainer configuration experience audit](../history/audits/maintainer-configuration-experience-audit-2026-08-24.md) and the [backlog](backlog.md), which called it the "highest-impact adoption gap."
 
 ### Problem
 

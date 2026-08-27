@@ -69,10 +69,11 @@ The push triggers `.github/workflows/release.yml`, which re-runs Markdown lint, 
 
 ## NuGet Publication
 
-The tagged release workflow publishes to nuget.org automatically when `NUGET_ORG_API_KEY` is configured in GitHub.
+The tagged release workflow publishes to nuget.org automatically through trusted publishing (OIDC). It needs the repository secret `NUGET_USER` and an active nuget.org trusted publishing policy for owner `jonv11`, repository `steward`, workflow file `release.yml`.
 
 ```bash
-# Optional local fallback if the workflow publish needs manual recovery
+# Optional local fallback if the workflow publish needs manual recovery.
+# Requires a temporary nuget.org API key created by hand; revoke it afterwards.
 dotnet nuget push artifacts/release/v<VERSION>/Steward.<VERSION>.nupkg \
   --api-key <NUGET_ORG_API_KEY> \
   --source https://api.nuget.org/v3/index.json \
