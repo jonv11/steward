@@ -6,7 +6,13 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ## [Unreleased]
 
-### Fixed
+## [0.18.1] - 2026-08-27
+
+### Changed In 0.18.1
+
+- The release workflow publishes to nuget.org through trusted publishing. `NuGet/login@v1` exchanges the job's GitHub OIDC token for a one-hour API key, so no long-lived `NUGET_ORG_API_KEY` secret is stored in the repository.
+
+### Fixed In 0.18.1
 
 - `steward maintain` now reports unmaintainable artifacts as `BLOCKED` instead of `OK`. A missing target file, absent managed-region markers, or a missing `source` previously rendered identically to an up-to-date artifact, so an artifact that silently did nothing looked healthy. Affects the `index`, `directory-index`, and `managed-section` maintainers.
 - `steward status --coverage` now counts files matched by an `artifact_families[]` entry as governed. Family-matched files were previously listed as ungoverned even while `status` reported the family as matching them.
