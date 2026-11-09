@@ -3,7 +3,7 @@ type: requirements
 document_id: TRACE-0001
 status: Active
 source: Maps MRD-0001 requirements to PRD sections and first-delivery milestones
-last_updated: 2026-06-06
+last_updated: 2026-11-09
 ---
 
 # Requirements Traceability
@@ -13,7 +13,7 @@ It is not an implementation-status tracker.
 
 **Current implementation state lives in [docs/project/status.md](../project/status.md).**
 Current and next milestone live in [docs/project/roadmap.md](../project/roadmap.md).
-Unscheduled work lives in [docs/project/backlog.md](../project/backlog.md).
+Unscheduled work lives in the `.scratch/` [issue tracker](../agents/issue-tracker.md).
 
 ---
 

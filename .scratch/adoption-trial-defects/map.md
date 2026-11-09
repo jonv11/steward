@@ -10,7 +10,7 @@ for the evidence.
 
 ## Decisions so far
 
-- None yet. Migrated on 2026-11-09 from the [project backlog](../../docs/project/backlog.md).
+- None yet. Migrated from the project backlog on 2026-11-09; see the [backlog snapshot](../../docs/history/plans/backlog-2026-11-09.md).
 
 ## Fog
 

@@ -2,7 +2,7 @@
 type: project
 status: Active
 summary: Contributor landing page for the small set of active Steward project authorities
-last_updated: 2026-06-06
+last_updated: 2026-11-09
 ---
 
 # Project Documentation
@@ -13,7 +13,7 @@ This directory is the active internal documentation spine for the Steward source
 |----------|------|
 | [Status](status.md) | Current implemented capabilities, repository health, and known gaps |
 | [Roadmap](roadmap.md) | Current milestone and next milestone only |
-| [Backlog](backlog.md) | Validated but unscheduled work |
+| [Issue tracker](../agents/issue-tracker.md) | Every work item — current, next and unscheduled — as `.scratch/` efforts and tickets |
 | [Workflow Guide](workflow-guide.md) | Contributor and agent execution process |
 | [Release Process](release-process.md) | Intentional release governance and operator flow |
 | [Release Publication Checklist](release-publication-checklist.md) | Release verification and publication steps |

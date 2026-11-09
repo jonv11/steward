@@ -1,7 +1,7 @@
 ---
 type: audit
 status: Historical
-last_updated: 2026-08-24
+last_updated: 2026-11-09
 standalone: true
 ---
 
@@ -36,7 +36,7 @@ All eight were corrected in the same pass.
 
 ## Capability Gaps for the Maintainer Use Case
 
-Ranked by adoption impact. Recorded in the [backlog](../../project/backlog.md).
+Ranked by adoption impact. Recorded in the [backlog](../plans/backlog-2026-11-09.md), whose items now live in the `.scratch/` issue tracker.
 
 1. **No baseline or phase-in.** Enabling a rule applies it to all existing content at once. Reproduced: adding `governance.frontmatter.required_fields: [status]` to a repository turned every Markdown file into an error in a single step. On a repository with real history this is a wall a maintainer cannot merge past, so the rule gets disabled instead of adopted. This is the single largest barrier to adopting Steward on an existing repository.
 2. **No per-rule, per-file suppression with justification.** RFC-013 remains deferred. Present granularity is global disable or glob `path_overrides`; a one-file exception forces a glob that over-suppresses. `standalone: true` covers only STWD-013.

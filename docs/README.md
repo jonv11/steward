@@ -2,7 +2,7 @@
 type: documentation
 status: Active
 summary: Main landing page for Steward user documentation and internal project documentation
-last_updated: 2026-06-06
+last_updated: 2026-11-09
 standalone: true
 ---
 
@@ -18,7 +18,7 @@ Use this page to choose the right documentation path. It is intentionally select
 | Contribute to Steward | [Project documentation](project/README.md) |
 | See what is true now | [Project status](project/status.md) |
 | See current and next scope | [Roadmap](project/roadmap.md) |
-| See unscheduled work | [Backlog](project/backlog.md) |
+| See unscheduled work | [Issue tracker](agents/issue-tracker.md) (`.scratch/`) |
 | Follow contributor and agent workflows | [Workflow guide](project/workflow-guide.md) |
 
 ## Decisions

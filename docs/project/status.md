@@ -40,7 +40,7 @@ A 2026-08-24 adoption trial ran Steward against two external repositories (`jvco
 - `steward status --coverage` now counts `artifact_families[]` matches as governed.
 - `config doctor` no longer flags `forbidden`/`reserved` path rules that match nothing as dead config.
 
-One related defect from the same trial is still open: the same dead-config false positive extends to anticipatory `artifact_families` and `validation.path_overrides` (see [backlog](backlog.md)). The rest of the trial's findings became the [backlog](backlog.md)'s validated-enhancements and documentation-gap entries — nothing further from it is scheduled yet.
+One related defect from the same trial is still open: the same dead-config false positive extends to anticipatory `artifact_families` and `validation.path_overrides` (`.scratch/adoption-trial-defects/issues/01-doctor-accepts-anticipatory-config.md`). The rest of the trial's findings became tickets in the `.scratch/` efforts for configuration transparency, policy expressiveness and configuration documentation gaps — nothing further from it is scheduled yet.
 
 The project was also relicensed under Apache-2.0, and routine dependency bumps have landed.
 
@@ -48,11 +48,12 @@ Release publication moved to nuget.org trusted publishing: the release workflow 
 
 ## Since v0.18.1
 
-No CLI or core code has changed since `v0.18.1`; `[Unreleased]` in the [CHANGELOG](../../CHANGELOG.md) is empty. Unreleased work is limited to agent guidance and backlog:
+No CLI or core code has changed since `v0.18.1`; `[Unreleased]` in the [CHANGELOG](../../CHANGELOG.md) is empty. Unreleased work is limited to agent guidance and issue tracking:
 
 - A user-invoked [setup-steward](../../.agents/skills/setup-steward/SKILL.md) skill guides first-time Steward setup in any repository. Because there is no baseline mode yet, it gates a rule in CI only when the repository has zero existing violations of it.
 - The domain glossary convention was renamed from `CONTEXT.md` to `GLOSSARY.md` to match the installed engineering skills.
-- Two `--config` defects found while building that skill were recorded in the [backlog](backlog.md).
+- Two `--config` defects found while building that skill were recorded as tickets in `.scratch/adoption-trial-defects/`.
+- Issue tracking moved from `docs/project/backlog.md` to the local-markdown [issue tracker](../agents/issue-tracker.md) under `.scratch/`, using the same convention as the sibling `graphs-everywhere` and `jvcode` repositories; every backlog item became a ticket, and the old file is kept as a [snapshot](../history/plans/backlog-2026-11-09.md).
 
 ## Current Health
 
@@ -68,7 +69,7 @@ No CLI or core code has changed since `v0.18.1`; `[Unreleased]` in the [CHANGELO
 - The first typed-resource-address implementation slice from RFC-009 is not scheduled as delivered work.
 - `mixed` and `knowledge` profiles remain intentionally unavailable through `init`.
 - `search --role` still matches explicit artifact declarations, not all family-classified files.
-- A relative `--config` path crashes `check` and `config doctor`, and `init` ignores `--config` (see [backlog](backlog.md)).
-- Rule phase-in has no baseline/warn-on-existing mode, which the 2026-08-24 trial flagged as the highest-impact adoption blocker (see [backlog](backlog.md)).
+- A relative `--config` path crashes `check` and `config doctor`, and `init` ignores `--config` (`.scratch/adoption-trial-defects/`).
+- Rule phase-in has no baseline/warn-on-existing mode, which the 2026-08-24 trial flagged as the highest-impact adoption blocker (see the [roadmap](roadmap.md)).
 
-Delivered release details belong in [CHANGELOG.md](../../CHANGELOG.md). Current and next work belongs in the [roadmap](roadmap.md).
+Delivered release details belong in [CHANGELOG.md](../../CHANGELOG.md). Current and next work belongs in the [roadmap](roadmap.md); individual work items belong in the [issue tracker](../agents/issue-tracker.md).

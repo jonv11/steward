@@ -203,7 +203,7 @@ dotnet run --project src/Steward.Cli -- maintain --apply   # all maintained arti
 
 ## Guardrails
 
-- Treat `README.md`, `docs/README.md`, `docs/project/status.md`, `docs/project/roadmap.md`, `docs/project/backlog.md`, `docs/requirements/PRD.md`, decision records, and `.steward/policy.yaml` as active truth. Treat `docs/history/**` as evidence only.
+- Treat `README.md`, `docs/README.md`, `docs/project/status.md`, `docs/project/roadmap.md`, the `.scratch/` tickets, `docs/requirements/PRD.md`, decision records, and `.steward/policy.yaml` as active truth. Treat `docs/history/**` as evidence only.
 - Do not assume older audits describe current behavior. Verify claims against current code, `--help` output, the live config, or passing tests.
 - Do not hand-edit `STRUCTURE.md` or managed sections in `docs/decisions/README.md`.
 - Preview before applying mutations. `maintain` previews by default; `check --fix` requires `--apply` to commit fixes.
@@ -252,7 +252,7 @@ Then read the start-here docs that orient surfaced.
 # 1. Check naming expectations
 dotnet run --project src/Steward.Cli -- explain path docs/project/my-new-doc.md
 
-# 2. Prefer updating status, roadmap, or backlog before creating another authority
+# 2. Prefer updating status, roadmap, or a .scratch ticket before creating another authority
 # 3. If a new file is justified, use type: project and link it from docs/project/README.md
 # 4. Refresh structure
 dotnet run --project src/Steward.Cli -- maintain --artifact structure --apply

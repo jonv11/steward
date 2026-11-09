@@ -67,6 +67,17 @@ The `Type:` field picks the shape. Do not mix them.
 
 A `grilling` ticket has no acceptance criteria on purpose: nothing is built, so there is nothing to check off. If you find yourself writing criteria for one, it was the wrong type.
 
+## Where planning lives
+
+`.scratch/` is the only work-item tracker. There is no separate backlog file: a validated but
+unscheduled item is a ticket whose effort the [roadmap](../project/roadmap.md) does not name.
+The roadmap stays thin — it names the current and next milestone, why they were chosen, and
+which effort carries each — and never restates ticket content.
+
+When work is committed to a milestone, update the roadmap to name its effort. When a ticket
+lands, close it as described below; `docs/project/status.md` records the resulting
+capability, and the CHANGELOG records the release.
+
 ## When a skill says "publish to the issue tracker"
 
 Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed).
@@ -151,7 +162,7 @@ condition on `Type:`, which means no section schema can require `## Acceptance c
 a `task` ticket while forbidding it on a `grilling` one, and neither the field vocabulary nor
 the field order is checked. Nor can steward tell that a directory has both a `spec.md` and a
 `map.md`. Those rules are held by review and by the skills that write the files. The gap is
-recorded in the [backlog](../project/backlog.md) as *Family matching on non-YAML metadata*;
+tracked as `.scratch/policy-expressiveness/issues/02-family-matching-on-body-metadata.md`;
 it is a product gap to close in steward, not a reason to change the ticket format.
 
 One rule is turned off for this tree:

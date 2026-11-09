@@ -2,7 +2,7 @@
 type: documentation
 status: Historical
 summary: Archive guide for point-in-time evidence, completed plans, and supersession stubs
-last_updated: 2026-06-06
+last_updated: 2026-11-09
 standalone: true
 ---
 
@@ -17,4 +17,4 @@ This directory preserves evidence without presenting it as current project autho
 | [plans/](plans/) | Completed, superseded, or historical planning documents |
 | [stubs/](stubs/) | Short traceability records whose substantive content was superseded elsewhere |
 
-Historical records declare lifecycle metadata and `standalone: true`. Use repository search when investigating a past decision or finding. Current truth lives in [project status](../project/status.md), [roadmap](../project/roadmap.md), and [backlog](../project/backlog.md).
+Historical records declare lifecycle metadata and `standalone: true`. Use repository search when investigating a past decision or finding. Current truth lives in [project status](../project/status.md), [roadmap](../project/roadmap.md), and the `.scratch/` [issue tracker](../agents/issue-tracker.md).

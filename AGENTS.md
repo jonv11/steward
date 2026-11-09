@@ -52,7 +52,7 @@ When documents disagree, trust in this order:
 1. **`.steward/policy.yaml`** — the enforced repo contract for artifact governance
 2. **`docs/project/status.md`** — current implemented capability and repository-health truth
 3. **`docs/project/roadmap.md`** — current and next milestone scope
-4. **`docs/project/backlog.md`** — validated but unscheduled work
+4. **`.scratch/`** — every work item as efforts and tickets; see [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md)
 5. **`docs/requirements/PRD.md`** — product intent and design principles
 6. **`docs/decisions/README.md` and decision records** — accepted design authority
 7. **`docs/history/**`** — point-in-time evidence, never current truth

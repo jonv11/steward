@@ -2,10 +2,8 @@
 type: rfc
 status: Accepted
 description: Defines a generated baseline mechanism that lets a rule be enabled against a repository's existing content without an immediate wall of errors, while still catching new violations
-resolves: >-
-  Enabling a rule today applies it to all pre-existing content at once, which the 2026-08-24 maintainer
-  configuration experience audit found both trial repositories hit as a hard adoption blocker
-last_updated: 2026-08-25
+resolves: Enabling a rule today applies it to all pre-existing content at once, which the 2026-08-24 maintainer configuration experience audit found both trial repositories hit as a hard adoption blocker
+last_updated: 2026-11-09
 ---
 
 # RFC-017: Rule Phase-In and Baseline
@@ -18,7 +16,7 @@ Steward validates the full target scope on every `steward check` run. Rule sever
 
 `steward check --since <ref>` already narrows the *file scope* to what changed relative to a merge-base, but that is a scope flag for a single invocation, not a persistent statement that "this content was accepted as of date X." It does not help a repository that wants to enable a rule permanently while grandfathering what already exists.
 
-The 2026-08-24 maintainer configuration experience audit ran Steward against two external repositories (`jvcode`, `mdrule`) with real pre-existing content. Both hit the same wall: enabling a rule meaningful to their governance goals produced an immediate flood of errors across every existing file, with no way to say "enforce this from here forward." The [backlog](../../project/backlog.md) recorded this as the highest-impact adoption gap, and it is now the committed [current milestone](../../project/roadmap.md).
+The 2026-08-24 maintainer configuration experience audit ran Steward against two external repositories (`jvcode`, `mdrule`) with real pre-existing content. Both hit the same wall: enabling a rule meaningful to their governance goals produced an immediate flood of errors across every existing file, with no way to say "enforce this from here forward." The [backlog](../../history/plans/backlog-2026-11-09.md) recorded this as the highest-impact adoption gap, and it is now the committed [current milestone](../../project/roadmap.md).
 
 ### What existing mechanisms do not cover
 

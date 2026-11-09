@@ -44,9 +44,9 @@ artifacts:
     freshness:
       max_age_days: 45
 
-  - path: docs/project/backlog.md
+  - path: .scratch/
     role: backlog
-    description: Validated but unscheduled work
+    description: Local-markdown issue tracker holding every work item as efforts and tickets
     importance: recommended
 
   - path: docs/project/workflow-guide.md

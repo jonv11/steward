@@ -2,7 +2,7 @@
 type: project
 status: Active
 summary: Canonical contributor and agent workflow for all categories of repository work
-last_updated: 2026-08-24
+last_updated: 2026-11-09
 ---
 
 # Workflow Guide
@@ -249,7 +249,7 @@ This workflow has two phases: the review itself and the remediation.
 
 1. **Conduct the review.** Keep working notes local to the branch until findings are stable.
 2. **Record findings** with clear, actionable items. Distinguish between errors (must fix), warnings (should fix), and observations (consider).
-3. **Promote current truth.** Move accepted actions into status, roadmap, backlog, a decision record, or an issue before archiving the review.
+3. **Promote current truth.** Move accepted actions into status, roadmap, a `.scratch/` ticket, or a decision record before archiving the review.
 4. **Archive the evidence.** Put broad repository/system assessments in `docs/history/audits/`; put targeted contract/config/artifact reviews in `docs/history/reviews/`. Use `status: Historical` and `standalone: true`.
 5. **Run finalization checklist.**
 6. **Commit** with `chore:` or `docs:` and a descriptive message.
@@ -258,7 +258,7 @@ This workflow has two phases: the review itself and the remediation.
 
 1. **Triage findings.** Not every finding requires immediate action. Prioritize errors, then warnings.
 2. **Implement fixes** using the appropriate workflow for each fix type (feature, bug fix, docs, etc.).
-3. **Do not turn the archived review into an active tracker.** Track live work in roadmap, backlog, issues, or implementation changes.
+3. **Do not turn the archived review into an active tracker.** Track live work in the roadmap, `.scratch/` tickets, or implementation changes.
 4. **Commit remediations separately** from the review itself. Each remediation should be its own commit with the appropriate type (`fix:`, `feat:`, `docs:`, etc.) and a message that references the review (e.g., `fix: correct STWD-009 false positive identified in release-readiness review`).
 
 **Definition of done:**
@@ -386,9 +386,9 @@ This workflow has two phases: the review itself and the remediation.
 
 ---
 
-### 9. Project Status, Roadmap, and Backlog Update
+### 9. Project Status, Roadmap, and Tracker Update
 
-**Objective:** Update one canonical owner: status for current facts, roadmap for committed scope, or backlog for unscheduled work.
+**Objective:** Update one canonical owner: status for current facts, roadmap for committed scope, or a `.scratch/` ticket for a work item.
 
 **When to use:** After scope changes, milestone completions, priority shifts, or when planning artifacts drift from reality.
 
@@ -398,7 +398,7 @@ This workflow has two phases: the review itself and the remediation.
 
 **Steps:**
 
-1. **Choose the owner.** Current facts go to status; current/next scope goes to roadmap; unscheduled work goes to backlog.
+1. **Choose the owner.** Current facts go to status; current/next scope goes to roadmap; a work item, scheduled or not, goes to a ticket under `.scratch/` as described in the [issue tracker guide](../agents/issue-tracker.md).
 2. **Edit one authority.** Avoid copying the same volatile fact into multiple project documents.
 3. **Archive displaced evidence** under `docs/history/plans/` when a substantive prior plan still has traceability value.
 4. **Run finalization checklist.**
@@ -481,7 +481,7 @@ ADRs and RFCs follow the [documentation update](#4-documentation-update) workflo
 
 | If your change involves... | Primary workflow | Also consider |
 |---------------------------|-----------------|---------------|
-| New CLI command or feature | [Feature Implementation](#1-feature-implementation) | [Project Update](#9-project-status-roadmap-and-backlog-update) |
+| New CLI command or feature | [Feature Implementation](#1-feature-implementation) | [Project Update](#9-project-status-roadmap-and-tracker-update) |
 | Fixing broken behavior | [Bug Fix](#2-bug-fix) | |
 | Code restructuring | [Refactoring](#3-refactoring-and-cleanup) | |
 | Updating or creating docs | [Documentation Update](#4-documentation-update) | [ADR/RFC Workflow](#adr-and-rfc-workflow) |
@@ -489,7 +489,7 @@ ADRs and RFCs follow the [documentation update](#4-documentation-update) workflo
 | Cutting a release | [Release Execution](#6-release-execution) | |
 | Changing `.steward/` config | [Governance Config](#7-governance-configuration-update) | |
 | Updating agent docs | [Agent Guidance](#8-agent-guidance-update) | |
-| Updating status, roadmap, or backlog | [Project Update](#9-project-status-roadmap-and-backlog-update) | |
+| Updating status, roadmap, or tickets | [Project Update](#9-project-status-roadmap-and-tracker-update) | |
 | Bumping dependencies | [Dependency Update](#10-dependency-update) | |
 | Changing CI/CD workflows | [CI/CD Pipeline](#11-cicd-pipeline-change) | [Release Execution](#6-release-execution) |
 

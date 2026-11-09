@@ -49,7 +49,6 @@
 │   │   ├── reviews
 │   │   └── stubs
 │   ├── project/
-│   │   ├── backlog.md
 │   │   ├── README.md
 │   │   ├── release-process.md
 │   │   ├── release-publication-checklist.md
