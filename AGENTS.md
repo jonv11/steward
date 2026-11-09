@@ -118,6 +118,7 @@ scripts/release/       Release asset scripts
 - Do not skip `steward check` before finishing any change.
 - Do not treat `search --role` as a complete family-aware search; in this repo it only finds explicit `artifacts[]` role entries, not family-matched docs.
 - Do not leave `.scratch/` ticket state uncommitted. Tickets are tracked repo content; commit `Status:` changes alongside the work they describe. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
+- Do not add a `Priority:` field or an `effort.md` file to `.scratch/`. Priority is derived from status and blocking, and an effort's state lives in its `spec.md` or `map.md`.
 - Do not commit to version bump, tag, or publish without following the release process.
 
 ## Agent skills
@@ -126,11 +127,11 @@ Configuration consumed by the installed engineering skills (`to-tickets`, `triag
 
 ### Issue tracker
 
-Issues and specs live as tracked markdown under `.scratch/<effort-slug>/`, one directory per effort, governed by the `ticket`, `effort`, `effort-spec` and `effort-map` families in `.steward/policy.yaml`; this repo does not use GitHub Issues for agent workflows. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
+Issues and specs live as local markdown under `.scratch/<effort-slug>/`, the same convention as the sibling `graphs-everywhere` and `jvcode` repositories: each directory is driven by exactly one `spec.md` or `map.md`, with one `issues/NN-<slug>.md` file per ticket whose header is `Status:`, `Type:`, `Category:`, `Blocked by:` and a `Spec:` or `Map:` pointer. Commit each cleanly sliced change. The `ticket`, `effort-spec` and `effort-map` families in `.steward/policy.yaml` validate what steward can see; this repo does not use GitHub Issues for agent workflows. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
 
 ### Triage labels
 
-Triage roles are used verbatim as `Status:` values on ticket files: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`, plus `done` when the work has landed. See [docs/agents/triage-labels.md](docs/agents/triage-labels.md).
+The five canonical roles, unchanged (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), written on a `Status:` line, plus `claimed` and `done`, which a markdown tracker has to spell for itself. `Category:` carries `bug` or `enhancement`. See [docs/agents/triage-labels.md](docs/agents/triage-labels.md).
 
 ### Domain docs
 
