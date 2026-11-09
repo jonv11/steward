@@ -104,7 +104,8 @@ public sealed class FamilySectionSchemaRule : IValidationRule
                             h2.Range.Start,
                             $"Section '{h2.Heading}' (line {h2.Range.Start}) in '{file.RelativePath}' is not defined in the section_schema for family '{matched.Family}'.",
                             $"Remove the section or add it to section_schema in policy.yaml.",
-                            "policy.yaml"));
+                            "policy.yaml",
+                            Selector: $"section:{h2.Heading}:undeclared"));
                     }
                 }
             }
@@ -139,7 +140,8 @@ public sealed class FamilySectionSchemaRule : IValidationRule
                             h2.Range.Start,
                             $"Section '{h2.Heading}' (line {h2.Range.Start}) appears out of order in '{file.RelativePath}'; schema requires it after '{lastMatchedEntry}' [family: {matched.Family}].",
                             $"Reorder the sections to match the sequence declared in section_schema in policy.yaml.",
-                            "policy.yaml"));
+                            "policy.yaml",
+                            Selector: $"section:{h2.Heading}:order"));
                     }
                     else
                     {

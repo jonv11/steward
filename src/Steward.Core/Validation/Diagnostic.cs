@@ -9,7 +9,8 @@ public sealed record Diagnostic(
     string Message,
     string? Remediation,
     string? Source,
-    IReadOnlyDictionary<string, object>? Details = null);
+    IReadOnlyDictionary<string, object>? Details = null,
+    string? Selector = null);
 
 public enum DiagnosticSeverity
 {

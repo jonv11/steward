@@ -62,7 +62,8 @@ public sealed class SectionSizeRule : IValidationRule
                     Message: $"Section '{section.Heading}' has {section.LineCount} lines at heading level {section.Level} (threshold: {threshold}).",
                     Remediation: $"Split the level-{section.Level} section '{section.Heading}' into smaller subsections " +
                                  $"of ~{threshold / 3}-{threshold / 2} lines each, or suppress with a path override in policy.yaml.",
-                    Source: "policy.yaml"));
+                    Source: "policy.yaml",
+                    Selector: $"section:{section.Heading}"));
             }
 
             CheckSections(section.Children, filePath, threshold, diagnostics);

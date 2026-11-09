@@ -50,7 +50,8 @@ public sealed class UniqueHeadingTextRule : IValidationRule
                         section.Range.Start,
                         $"Heading '{section.Heading}' duplicates heading text already used on line {original.Range.Start} in '{file.RelativePath}'. Normalized anchor slug: '{normalizedKey}'.",
                         $"Rename one of the headings so the normalized anchor slug is unique within the file. Current slug: '{normalizedKey}'.",
-                        "policy.yaml"));
+                        "policy.yaml",
+                        Selector: $"heading:{normalizedKey}"));
                 }
             }
         }

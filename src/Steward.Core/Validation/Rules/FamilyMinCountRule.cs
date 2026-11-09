@@ -71,7 +71,8 @@ public sealed class FamilyMinCountRule : IValidationRule
                     null,
                     $"Artifact family '{label}' has {actual} matched file(s) but requires at least {minCount}.{description}",
                     $"Add at least {minCount - actual} more file(s) matching the '{family.Family}' family pattern.",
-                    "policy.yaml"));
+                    "policy.yaml",
+                    Selector: $"family:{family.Family}"));
             }
         }
 

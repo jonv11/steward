@@ -80,7 +80,8 @@ public sealed class FamilySectionPatternRule : IValidationRule
                         section.Range.Start,
                         $"Family section_pattern regex '{rule.RawPattern}' timed out evaluating an H2 heading in '{file.RelativePath}'. This may indicate catastrophic backtracking.",
                         "Simplify the section_pattern regex in policy.yaml to avoid excessive backtracking.",
-                        "policy.yaml"));
+                        "policy.yaml",
+                        Selector: $"section-pattern-timeout:{matched.Family}"));
                     break;
                 }
 
@@ -95,7 +96,8 @@ public sealed class FamilySectionPatternRule : IValidationRule
                         $"H2 heading '{section.Heading}' (line {section.Range.Start}) does not match the section_pattern '{rule.RawPattern}' required for family '{matched.Family}'.",
                         $"Update the heading to match the pattern: {rule.RawPattern}",
                         "policy.yaml",
-                        new Dictionary<string, object> { ["expectedPattern"] = rule.RawPattern }));
+                        new Dictionary<string, object> { ["expectedPattern"] = rule.RawPattern },
+                        Selector: $"section:{section.Heading}"));
                 }
             }
         }

@@ -35,7 +35,8 @@ public sealed class StaleArtifactRule : IValidationRule, IFixableRule
                         $"Maintained artifact '{action.ArtifactId}' ({action.Type}) is stale in '{edit.FilePath}'. {edit.Description}",
                         "Run 'steward maintain --apply' or 'steward check --fix' to update.",
                         null,
-                        new Dictionary<string, object> { ["artifactId"] = action.ArtifactId }));
+                        new Dictionary<string, object> { ["artifactId"] = action.ArtifactId },
+                        Selector: $"artifact:{action.ArtifactId}"));
                 }
 
                 continue;
@@ -50,7 +51,8 @@ public sealed class StaleArtifactRule : IValidationRule, IFixableRule
                 $"Maintained artifact '{action.ArtifactId}' ({action.Type}) is stale. {action.Description}",
                 "Run 'steward maintain --apply' or 'steward check --fix' to update.",
                 null,
-                new Dictionary<string, object> { ["artifactId"] = action.ArtifactId }));
+                new Dictionary<string, object> { ["artifactId"] = action.ArtifactId },
+                Selector: $"artifact:{action.ArtifactId}"));
         }
 
         return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);

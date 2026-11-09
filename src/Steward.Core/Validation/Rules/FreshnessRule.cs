@@ -69,7 +69,8 @@ public sealed class FreshnessRule : IValidationRule, IFixableRule
                     $"Artifact '{artifact.Path}'{RoleLabel(artifact.Role)} has 'last_updated' set to a future date ({futureDateStr}). " +
                     $"This will prevent freshness checks from ever triggering.",
                     "Correct the 'last_updated' frontmatter field to the actual last-updated date (YYYY-MM-DD).",
-                    null));
+                    null,
+                    Selector: "last_updated:future"));
                 continue;
             }
 
@@ -85,7 +86,8 @@ public sealed class FreshnessRule : IValidationRule, IFixableRule
                     $"Review and update the document to reflect current state, then set " +
                     $"'last_updated: {now:yyyy-MM-dd}' in frontmatter. " +
                     $"To update the timestamp only, run 'steward check --fix'.",
-                    null));
+                    null,
+                    Selector: "last_updated:stale"));
             }
         }
 

@@ -1,6 +1,6 @@
 # 01 — Every diagnostic has a stable, line-independent identity
 
-Status: ready-for-agent
+Status: done
 Type: task
 Category: enhancement
 Blocked by: None — can start immediately
@@ -17,7 +17,16 @@ the effort sits on, and the main risk RFC-017 §9 names.
 
 ## Acceptance criteria
 
-- [ ] `Diagnostic` carries an optional `Selector`; existing constructors and JSON output are unchanged apart from the new field.
-- [ ] A single core type computes the identity; no other code builds identity strings.
-- [ ] Rules whose message embeds a volatile value supply explicit selectors free of line numbers, ages and counts: STWD-004 (section size), STWD-007 (stale artifact), STWD-012 (freshness), STWD-015 (family minimum count), STWD-017 (unique heading), STWD-020 (section pattern) and STWD-021 (section schema).
-- [ ] Tests prove the identity is unchanged when the violation moves to another line or the age or count changes, and differs when the violated heading, field or target differs.
+- [x] `Diagnostic` carries an optional `Selector`; existing constructors and JSON output are unchanged.
+- [x] A single core type computes the identity; no other code builds identity strings.
+- [x] Rules whose message embeds a volatile value supply explicit selectors free of line numbers, ages and counts: STWD-004 (section size), STWD-007 (stale artifact), STWD-012 (freshness), STWD-015 (family minimum count), STWD-017 (unique heading), STWD-020 (section pattern) and STWD-021 (section schema).
+- [x] Tests prove the identity is unchanged when the violation moves to another line or the age or count changes, and differs when the violated heading, field or target differs.
+
+## Answer
+
+Landed `Diagnostic.Selector` and `Steward.Core.Validation.DiagnosticIdentity` (`Of`, ordinal
+ordering by path, rule, selector). STWD-004, 007, 012, 015, 017, 020 and 021 supply explicit
+selectors such as `section:<heading>`, `heading:<slug>`, `family:<name>`,
+`artifact:<id>` and `last_updated:stale`. The selector is not yet part of the JSON
+diagnostic contract; ticket 04 decides whether `check` exposes it. Covered by
+`DiagnosticIdentityTests`.
