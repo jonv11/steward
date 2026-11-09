@@ -3,6 +3,7 @@ using DotNet.Globbing;
 using Steward.Cli.Formatting;
 using Steward.Core;
 using Steward.Core.Abstractions;
+using Steward.Core.Baseline;
 using Steward.Core.Configuration;
 using Steward.Core.Formatting;
 using Steward.Core.Maintenance;
@@ -60,11 +61,19 @@ public static class ConfigCommand
                 errorStrings.Add($"config.yaml: {ex.Message}");
             }
 
-            try { loader.LoadPolicy(configDir); }
+            RepositoryPolicy? loadedPolicy = null;
+            var policyLoaded = false;
+            try { loadedPolicy = loader.LoadPolicy(configDir); policyLoaded = true; }
             catch (Exception ex)
             {
                 errors.Add(new { file = "policy.yaml", message = ex.Message });
                 errorStrings.Add($"policy.yaml: {ex.Message}");
+            }
+
+            if (policyLoaded && ValidateBaseline(fileSystem, loadedPolicy, configDir) is { } baselineError)
+            {
+                errors.Add(new { file = baselineError.File, message = baselineError.Message });
+                errorStrings.Add($"{baselineError.File}: {baselineError.Message}");
             }
 
             try { loader.LoadPathPolicy(configDir); }
@@ -106,6 +115,36 @@ public static class ConfigCommand
         });
 
         return command;
+    }
+
+    /// <summary>
+    /// RFC-017: a baseline that is required (<c>baseline.enabled: true</c>) must exist, and any
+    /// baseline that would be applied must parse. Returns the problem, or null when there is none.
+    /// </summary>
+    private static (string File, string Message)? ValidateBaseline(
+        PhysicalFileSystem fileSystem, RepositoryPolicy? policy, string configDir)
+    {
+        var fullConfigDir = Path.GetFullPath(configDir);
+        var repoRoot = Path.GetDirectoryName(fullConfigDir) ?? fullConfigDir;
+        var settings = BaselineSettings.Resolve(policy, repoRoot, fullConfigDir);
+        var exists = fileSystem.FileExists(settings.FullPath);
+
+        if (settings.Enabled == true && !exists)
+            return (settings.DisplayPath,
+                "baseline.enabled is true but the baseline file does not exist. Run 'steward baseline generate'.");
+
+        if (settings.Enabled == false || !exists)
+            return null;
+
+        try
+        {
+            BaselineDocument.Parse(fileSystem.ReadAllText(settings.FullPath), settings.DisplayPath);
+            return null;
+        }
+        catch (StewardConfigException ex)
+        {
+            return (settings.DisplayPath, ex.Message);
+        }
     }
 
     private static Command CreateShowCommand()
@@ -530,7 +569,47 @@ public static class ConfigCommand
             }
         }
 
+        // 13. Dead baseline entries (RFC-017): unknown rules, and drifted entries whose file is gone
+        findings.AddRange(FindDeadBaselineEntries(ctx, existingPaths));
+
         return findings;
+    }
+
+    private static IEnumerable<DoctorFinding> FindDeadBaselineEntries(CommandContext ctx, HashSet<string> existingPaths)
+    {
+        var settings = BaselineSettings.Resolve(ctx.Policy, ctx.RootPath, ctx.ConfigDirectory);
+        if (!settings.IsActive(ctx.FileSystem))
+            yield break;
+
+        BaselineDocument baseline;
+        try
+        {
+            baseline = BaselineDocument.Parse(ctx.FileSystem.ReadAllText(settings.FullPath), settings.DisplayPath);
+        }
+        catch (StewardConfigException)
+        {
+            yield break; // config validate reports a malformed baseline
+        }
+
+        var knownRules = new HashSet<string>(CheckCommand.AllRules.Select(r => r.RuleId), StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in baseline.Entries.Where(e => !knownRules.Contains(e.Rule)))
+        {
+            yield return new DoctorFinding(
+                "dead-baseline-entry",
+                $"Baseline entry for unknown rule '{entry.Rule}' ({(entry.Path.Length > 0 ? entry.Path : "repository")}) in {settings.DisplayPath} can never match.",
+                "Run 'steward baseline generate' to rebuild the baseline.");
+        }
+
+        // A missing path alone is not dead: STWD-001 grandfathers a required file that does not
+        // exist. An entry is dead when its file is gone and nothing matches it any more.
+        var drift = BaselineMatcher.Match(CheckCommand.Validate(ctx, ctx.Files ?? [], out _).Diagnostics, baseline).Drift;
+        foreach (var entry in drift.Where(e => knownRules.Contains(e.Rule) && e.Path.Length > 0 && !existingPaths.Contains(e.Path)))
+        {
+            yield return new DoctorFinding(
+                "dead-baseline-entry",
+                $"Baseline entry {entry.Rule} for '{entry.Path}' in {settings.DisplayPath} refers to a file that no longer exists.",
+                "Run 'steward baseline generate' to drop entries for deleted or renamed files.");
+        }
     }
 
     /// <summary>

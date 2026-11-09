@@ -12,6 +12,7 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 - `steward check` applies an active baseline: diagnostics it records no longer count toward errors, warnings, info or pass/fail, and are reported as baseline debt instead (a text summary line and `data.summary.baseline` in JSON; omitted from SARIF). A baseline is active when its file exists, unless `baseline.enabled: false` is set in `policy.yaml`. Without a baseline, output is unchanged.
 - `steward check` reports baseline drift: entries whose violation has since been fixed, listed under a "Baseline drift" text section and in `data.baselineDrift` (count in `data.summary.baseline.drift`). Drift never fails `check` and does not count as info; scoped runs only report it for in-scope files. Run `steward baseline generate` to shrink the baseline.
 - `steward baseline status` reports baseline debt: entry counts by rule, the baseline's age, and how many entries still match or have drifted. It exits `0` and says so when no baseline is active.
+- `config validate` fails when `baseline.enabled: true` and the baseline file is missing, or when an applied baseline is malformed. `config doctor` reports `dead-baseline-entry` findings for entries naming an unknown rule, and for entries whose file no longer exists and that no current diagnostic matches.
 
 ### Fixed
 

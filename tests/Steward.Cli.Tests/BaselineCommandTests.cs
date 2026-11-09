@@ -309,4 +309,68 @@ public class BaselineCommandTests : IDisposable
         using var doc = JsonDocument.Parse(output);
         doc.RootElement.GetProperty("data").GetProperty("active").GetBoolean().Should().BeFalse();
     }
+
+    // ── config validate / doctor (ticket 07) ───────────────────────────────────
+
+    [Fact]
+    public void ConfigValidate_EnabledButMissingBaseline_IsUsageError()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"), Policy + "baseline:\n  enabled: true\n");
+
+        var (exitCode, _, error) = CliTestHelper.InvokeCapture("config", "validate");
+
+        exitCode.Should().Be(2);
+        error.Should().Contain("baseline.json").And.Contain("does not exist");
+    }
+
+    [Fact]
+    public void ConfigValidate_MalformedBaseline_IsUsageError()
+    {
+        File.WriteAllText(BaselinePath, "{\"entries\": 3}");
+
+        var (exitCode, _, error) = CliTestHelper.InvokeCapture("config", "validate");
+
+        exitCode.Should().Be(2);
+        error.Should().Contain("baseline.json");
+    }
+
+    [Fact]
+    public void ConfigValidate_ValidBaseline_Passes()
+    {
+        CliTestHelper.InvokeCapture("baseline", "generate");
+
+        var (exitCode, output, error) = CliTestHelper.InvokeCapture("config", "validate");
+
+        exitCode.Should().Be(0, because: output + error);
+    }
+
+    [Fact]
+    public void ConfigDoctor_ReportsUnknownRuleAndDeletedFileEntries()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "OLD.md"), "# Old\n\n[x](nope.md)\n");
+        CliTestHelper.InvokeCapture("baseline", "generate");
+        File.Delete(Path.Combine(_tempDir, "OLD.md"));
+        var json = File.ReadAllText(BaselinePath).Replace("\"entries\": [",
+            "\"entries\": [\n    { \"rule\": \"STWD-999\", \"path\": \"README.md\", \"selector\": \"x\" },");
+        File.WriteAllText(BaselinePath, json);
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("config", "doctor");
+
+        exitCode.Should().Be(1);
+        output.Should().Contain("[dead-baseline-entry]").And.Contain("STWD-999").And.Contain("'OLD.md'");
+        output.Should().NotContain("'README.md' in");
+    }
+
+    [Fact]
+    public void ConfigDoctor_GrandfatheredMissingRequiredFile_IsNotDead()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward", "policy.yaml"),
+            Policy + "artifacts:\n  - path: CONTRIBUTING.md\n    role: guide\n    required: true\n");
+        CliTestHelper.InvokeCapture("baseline", "generate");
+        File.ReadAllText(BaselinePath).Should().Contain("CONTRIBUTING.md");
+
+        var (_, output, _) = CliTestHelper.InvokeCapture("config", "doctor");
+
+        output.Should().NotContain("dead-baseline-entry");
+    }
 }
