@@ -2,8 +2,8 @@
 type: project
 status: Active
 summary: Current repository facts, implemented capability baseline, and known health gaps
-last_updated: 2026-08-27
-review_after: 2026-09-25
+last_updated: 2026-11-09
+review_after: 2026-12-09
 ---
 
 # Project Status
@@ -46,9 +46,17 @@ The project was also relicensed under Apache-2.0, and routine dependency bumps h
 
 Release publication moved to nuget.org trusted publishing: the release workflow exchanges a GitHub OIDC token for a one-hour API key instead of reading a stored `NUGET_ORG_API_KEY` secret.
 
+## Since v0.18.1
+
+No CLI or core code has changed since `v0.18.1`; `[Unreleased]` in the [CHANGELOG](../../CHANGELOG.md) is empty. Unreleased work is limited to agent guidance and backlog:
+
+- A user-invoked [setup-steward](../../.agents/skills/setup-steward/SKILL.md) skill guides first-time Steward setup in any repository. Because there is no baseline mode yet, it gates a rule in CI only when the repository has zero existing violations of it.
+- The domain glossary convention was renamed from `CONTEXT.md` to `GLOSSARY.md` to match the installed engineering skills.
+- Two `--config` defects found while building that skill were recorded in the [backlog](backlog.md).
+
 ## Current Health
 
-- Build and tests pass locally.
+- Build and tests pass locally (re-verified 2026-11-09).
 - Markdown lint passes.
 - Hosted build, release, and NuGet publication evidence is established through `v0.18.1`.
 - The repository remains pre-1.0; no stable-release authorization has been accepted.
@@ -60,6 +68,7 @@ Release publication moved to nuget.org trusted publishing: the release workflow 
 - The first typed-resource-address implementation slice from RFC-009 is not scheduled as delivered work.
 - `mixed` and `knowledge` profiles remain intentionally unavailable through `init`.
 - `search --role` still matches explicit artifact declarations, not all family-classified files.
+- A relative `--config` path crashes `check` and `config doctor`, and `init` ignores `--config` (see [backlog](backlog.md)).
 - Rule phase-in has no baseline/warn-on-existing mode, which the 2026-08-24 trial flagged as the highest-impact adoption blocker (see [backlog](backlog.md)).
 
 Delivered release details belong in [CHANGELOG.md](../../CHANGELOG.md). Current and next work belongs in the [roadmap](roadmap.md).

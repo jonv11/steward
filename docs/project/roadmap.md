@@ -2,8 +2,8 @@
 type: project
 status: Active
 summary: Rule phase-in and baseline is the committed next milestone after v0.18.1
-last_updated: 2026-08-27
-review_after: 2026-09-25
+last_updated: 2026-11-09
+review_after: 2026-12-24
 ---
 
 # Roadmap
@@ -18,7 +18,7 @@ Enabling a rule today applies it to all existing content at once. A repository t
 
 ### Scope
 
-Defined in [RFC-017](../decisions/rfcs/RFC-017-rule-phase-in-and-baseline.md) (Accepted): a generated `.steward/baseline.json` snapshots current violations at adoption time so `check` suppresses them while still catching new ones, with a drift signal to show when grandfathered debt gets fixed. Implementation is not yet started or scoped into slices.
+Defined in [RFC-017](../decisions/rfcs/RFC-017-rule-phase-in-and-baseline.md) (Accepted): a generated `.steward/baseline.json` snapshots current violations at adoption time so `check` suppresses them while still catching new ones, with a drift signal to show when grandfathered debt gets fixed. Implementation is not yet started or scoped into slices; as of 2026-11-09 there is no baseline code and no `.scratch/` effort for it. Until it ships, the [setup-steward](../../.agents/skills/setup-steward/SKILL.md) skill works around the gap by gating rules only where a repository has zero existing violations.
 
 ### Explicit Deferral (carried from v0.18.0)
 
