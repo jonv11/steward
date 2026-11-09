@@ -9,6 +9,8 @@ Configure a repository's `.steward/` contract as the maintainer: what must exist
 
 ## Setup sequence
 
+For a guided first setup (investigate the repo, interview the maintainer, dry-run the contract before writing it), run the `setup-steward` skill instead; it uses this skill as its field reference.
+
 ### 1. Initialize
 
 ```bash

@@ -3,6 +3,7 @@
 ```text
 ├── .agents/
 │   └── skills/
+│       ├── setup-steward
 │       ├── steward-cli
 │       ├── steward-cli-agent
 │       ├── steward-cli-contributor

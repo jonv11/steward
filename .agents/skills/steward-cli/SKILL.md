@@ -13,6 +13,7 @@ This skill is the entry point. It covers installation and the commands that work
 
 | You are... | Doing... | Use |
 |---|---|---|
+| A maintainer | First-time setup of a repo, guided by repo investigation and a maintainer interview | **setup-steward** (user-invoked: `/setup-steward`) |
 | A maintainer | Setting up `.steward/`, declaring required artifacts, defining rules, wiring CI | **steward-cli-maintainer** |
 | A contributor | Validating your own changes before committing, fixing a failed `steward check` | **steward-cli-contributor** |
 | An AI agent | Running an automated validate→diagnose→fix loop, parsing JSON/SARIF, gating a PR | **steward-cli-agent** |
