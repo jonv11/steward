@@ -21,6 +21,23 @@ public sealed class RepositoryPolicy
 
     [YamlMember(Alias = "maintenance")]
     public MaintenanceConfig? Maintenance { get; set; }
+
+    [YamlMember(Alias = "baseline")]
+    public BaselineConfig? Baseline { get; set; }
+}
+
+/// <summary>
+/// RFC-017 baseline settings. The baseline applies when its file exists unless
+/// <see cref="Enabled"/> is <c>false</c>.
+/// </summary>
+public sealed class BaselineConfig
+{
+    [YamlMember(Alias = "enabled")]
+    public bool? Enabled { get; set; }
+
+    /// <summary>Repository-relative path to the baseline file. Defaults to <c>baseline.json</c> in the config directory.</summary>
+    [YamlMember(Alias = "path")]
+    public string? Path { get; set; }
 }
 
 public sealed class RepositoryInfo

@@ -36,6 +36,9 @@ Decisions taken while slicing, where RFC-017 leaves a choice open:
   deleting the file; `baseline.enabled: true` with no file is a `config validate` error. This
   keeps RFC-017 §5 literal: deleting the file restores full enforcement, and a repository
   with neither file nor block behaves exactly as today.
+- **The default file sits beside the config.** Without `baseline.path` the file is
+  `baseline.json` in the configuration directory, so a draft passed with `--config` carries
+  its own baseline; an explicit `baseline.path` is relative to the repository root.
 - **Identity is rule, path and selector — never line.** A diagnostic's selector is the one the
   rule supplies, or, when it supplies none, the diagnostic message. Rules whose message carries
   a volatile value (a line number, an age, a count) must supply an explicit selector, so an

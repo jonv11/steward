@@ -1,6 +1,6 @@
 # 02 — Baseline file model and matcher in core
 
-Status: ready-for-agent
+Status: done
 Type: task
 Category: enhancement
 Blocked by: 01
@@ -17,7 +17,16 @@ no longer match anything) using multiset semantics. Add the `baseline:` policy b
 
 ## Acceptance criteria
 
-- [ ] Round-trip serialization is byte-stable and entries are sorted by path, rule, selector.
-- [ ] The matcher partitions diagnostics into new, baselined and drift, with multiset semantics for repeated identities.
-- [ ] A malformed baseline file raises a `StewardConfigException` naming the file.
-- [ ] The `baseline:` policy block is accepted by the loader and rejected with unknown fields, like other blocks.
+- [x] Round-trip serialization is byte-stable and entries are sorted by path, rule, selector.
+- [x] The matcher partitions diagnostics into new, baselined and drift, with multiset semantics for repeated identities.
+- [x] A malformed baseline file raises a `StewardConfigException` naming the file.
+- [x] The `baseline:` policy block is accepted by the loader and rejected with unknown fields, like other blocks.
+
+## Answer
+
+Landed `Steward.Core.Baseline`: `BaselineDocument` (sorted, LF-terminated, byte-stable
+serialization; `Parse` rejects malformed files and unknown fields with a
+`StewardConfigException` naming the file), `BaselineMatcher` (multiset partition into new,
+baselined and drift), and `BaselineSettings` (path resolution and the activation rule from the
+spec). `RepositoryPolicy.Baseline` holds the `baseline:` block and survives profile merging.
+Covered by `BaselineTests`.

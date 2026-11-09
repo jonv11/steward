@@ -24,7 +24,8 @@ public static class ProfileMerger
             ArtifactFamilies = repoPolicy.ArtifactFamilies ?? profilePolicy.ArtifactFamilies,
             Governance = MergeGovernance(repoPolicy.Governance, profilePolicy.Governance),
             Validation = repoPolicy.Validation ?? profilePolicy.Validation,
-            Maintenance = repoPolicy.Maintenance ?? profilePolicy.Maintenance
+            Maintenance = repoPolicy.Maintenance ?? profilePolicy.Maintenance,
+            Baseline = repoPolicy.Baseline ?? profilePolicy.Baseline
         };
     }
 
