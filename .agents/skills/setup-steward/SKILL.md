@@ -49,7 +49,7 @@ Summarise the repo and how its docs are organised in at most six bullets, then a
 
 Build the draft in `.steward-draft/` at the repo root: `cp -R .steward .steward-draft` on a re-run, otherwise `steward init --profile minimal && mv .steward .steward-draft`. Write the answers into its `policy.yaml`; add `path-policy.yaml` only for forbidden paths, or naming in directories no family covers (a family `naming_pattern` and a path-policy `must_match` on one directory report every bad file twice). Path patterns have no exclude: keep an index out of its family with a character class, `docs/adr/[0-9]*.md`.
 
-Pass `-c` as an absolute path: a relative path crashes, and the config directory's parent becomes the repo root.
+Pass `-c` as an absolute path: Steward `0.18.1` and earlier crash on a bare relative path, and ignore `-c` in `init`, while an absolute path works in every version. The config directory's parent becomes the repo root.
 
 ```bash
 steward config validate -c "$PWD/.steward-draft"

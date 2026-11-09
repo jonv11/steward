@@ -32,6 +32,18 @@ public static class GlobalOptionsSetup
         HelpName = "path"
     };
 
+    /// <summary>
+    /// Returns the <c>--config</c> directory as an absolute path, resolved against the current
+    /// directory, or <c>null</c> when the option is absent. Every command that honours
+    /// <c>--config</c> reads it through here so a bare relative name such as
+    /// <c>.steward-draft</c> resolves identically everywhere.
+    /// </summary>
+    public static string? GetConfigDirectoryOverride(ParseResult parseResult)
+    {
+        var value = parseResult.GetValue(ConfigOption);
+        return string.IsNullOrWhiteSpace(value) ? null : Path.GetFullPath(value);
+    }
+
     public static void AddGlobalOptions(RootCommand rootCommand)
     {
         OutputOption.Recursive = true;

@@ -15,7 +15,7 @@ Steward's latest published version is **`v0.18.1`**, tagged and released to GitH
 | Area | Current truth |
 |------|---------------|
 | Runtime | .NET 10 |
-| Tests | 838 passing: 585 core and 253 CLI |
+| Tests | 844 passing: 585 core and 259 CLI |
 | Validation rules | 21 (`STWD-001` through `STWD-021`) |
 | Auto-fix rules | 4 (`STWD-003`, `STWD-007`, `STWD-012`, `STWD-018`) |
 | Built-in init profiles | `software`, `docs`, `minimal` |
@@ -48,11 +48,13 @@ Release publication moved to nuget.org trusted publishing: the release workflow 
 
 ## Since v0.18.1
 
-No CLI or core code has changed since `v0.18.1`; `[Unreleased]` in the [CHANGELOG](../../CHANGELOG.md) is empty. Unreleased work is limited to agent guidance and issue tracking:
+Unreleased work is recorded under `[Unreleased]` in the [CHANGELOG](../../CHANGELOG.md):
+
+- A bare relative `--config` directory no longer crashes discovery, and `init` honours `--config`.
 
 - A user-invoked [setup-steward](../../.agents/skills/setup-steward/SKILL.md) skill guides first-time Steward setup in any repository. Because there is no baseline mode yet, it gates a rule in CI only when the repository has zero existing violations of it.
 - The domain glossary convention was renamed from `CONTEXT.md` to `GLOSSARY.md` to match the installed engineering skills.
-- Two `--config` defects found while building that skill were recorded as tickets in `.scratch/adoption-trial-defects/`.
+- Two `--config` defects found while building that skill were recorded as tickets in `.scratch/adoption-trial-defects/` and are now fixed.
 - Issue tracking moved from `docs/project/backlog.md` to the local-markdown [issue tracker](../agents/issue-tracker.md) under `.scratch/`, using the same convention as the sibling `graphs-everywhere` and `jvcode` repositories; every backlog item became a ticket, and the old file is kept as a [snapshot](../history/plans/backlog-2026-11-09.md).
 
 ## Current Health
@@ -69,7 +71,6 @@ No CLI or core code has changed since `v0.18.1`; `[Unreleased]` in the [CHANGELO
 - The first typed-resource-address implementation slice from RFC-009 is not scheduled as delivered work.
 - `mixed` and `knowledge` profiles remain intentionally unavailable through `init`.
 - `search --role` still matches explicit artifact declarations, not all family-classified files.
-- A relative `--config` path crashes `check` and `config doctor`, and `init` ignores `--config` (`.scratch/adoption-trial-defects/`).
 - Rule phase-in has no baseline/warn-on-existing mode, which the 2026-08-24 trial flagged as the highest-impact adoption blocker (see the [roadmap](roadmap.md)).
 
 Delivered release details belong in [CHANGELOG.md](../../CHANGELOG.md). Current and next work belongs in the [roadmap](roadmap.md); individual work items belong in the [issue tracker](../agents/issue-tracker.md).

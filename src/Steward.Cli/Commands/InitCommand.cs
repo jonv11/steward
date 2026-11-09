@@ -28,7 +28,8 @@ public static class InitCommand
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
             var rootPath = Directory.GetCurrentDirectory();
-            var stewardDir = Path.Combine(rootPath, ".steward");
+            var stewardDir = GlobalOptionsSetup.GetConfigDirectoryOverride(parseResult)
+                ?? Path.Combine(rootPath, ".steward");
             var configPath = Path.Combine(stewardDir, "config.yaml");
             var policyPath = Path.Combine(stewardDir, "policy.yaml");
             var filesWritten = new List<string>();
@@ -40,12 +41,12 @@ public static class InitCommand
                     "init",
                     ExitCodes.UsageError,
                     "already-initialized",
-                    $"A .steward/ configuration already exists in: {stewardDir}",
+                    $"A Steward configuration already exists in: {stewardDir}",
                     details: new Dictionary<string, object>
                     {
                         ["configDirectory"] = Path.GetRelativePath(rootPath, stewardDir)
                     },
-                    suggestedNextStep: "Edit the existing files or remove .steward/ to re-initialize.");
+                    suggestedNextStep: "Edit the existing files or remove that directory to re-initialize.");
                 return ExitCodes.UsageError;
             }
 
@@ -104,7 +105,7 @@ public static class InitCommand
                 return ExitCodes.Success;
             }
 
-            formatter.WriteMessage($"Initialized .steward/ with profile '{profile}'.");
+            formatter.WriteMessage($"Initialized {Path.GetRelativePath(rootPath, stewardDir)}/ with profile '{profile}'.");
             formatter.WriteMessage($"  {Path.GetRelativePath(rootPath, configPath)}");
             if (policy != null)
                 formatter.WriteMessage($"  {Path.GetRelativePath(rootPath, policyPath)}");

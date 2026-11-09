@@ -31,7 +31,7 @@ public static class ConfigCommand
         {
             var output = parseResult.GetValue(GlobalOptionsSetup.OutputOption);
             var noColor = parseResult.GetValue(GlobalOptionsSetup.NoColorOption);
-            var configPath = parseResult.GetValue(GlobalOptionsSetup.ConfigOption);
+            var configPath = GlobalOptionsSetup.GetConfigDirectoryOverride(parseResult);
 
             var formatter = CommandSetup.CreateFormatter(output, noColor);
             var fileSystem = new PhysicalFileSystem();

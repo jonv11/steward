@@ -140,7 +140,7 @@ public static class CommandSetup
     {
         var fileSystem = new PhysicalFileSystem();
         var rootPath = Directory.GetCurrentDirectory();
-        var configPath = parseResult.GetValue(GlobalOptionsSetup.ConfigOption);
+        var configPath = GlobalOptionsSetup.GetConfigDirectoryOverride(parseResult);
 
         var configLoader = new ConfigLoader(fileSystem);
         var configDir = configLoader.FindConfigDirectory(rootPath, configPath);

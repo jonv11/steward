@@ -109,6 +109,7 @@
     │   ├── CliSnapshotTests.cs
     │   ├── CliSnapshotTests.RootHelp_IsStable.verified.txt
     │   ├── ConfigCommandTests.cs
+    │   ├── ConfigPathResolutionTests.cs
     │   ├── ConfigSettingsTests.cs
     │   ├── ExitCodeTests.cs
     │   ├── ExplainCommandTests.cs

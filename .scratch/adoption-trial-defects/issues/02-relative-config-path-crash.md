@@ -1,6 +1,6 @@
 # 02 — A relative `--config` path crashes discovery
 
-Status: ready-for-agent
+Status: done
 Type: task
 Category: bug
 Blocked by: None — can start immediately
@@ -15,6 +15,6 @@ relative name. An absolute path works. `config validate` is unaffected; `check` 
 
 ## Acceptance criteria
 
-- [ ] `check` and `config doctor` resolve a bare relative `--config` directory against the current directory and run normally.
-- [ ] A regression test reproduces the original crash and passes after the fix.
-- [ ] The CHANGELOG `[Unreleased]` section records the fix.
+- [x] `check` and `config doctor` resolve a bare relative `--config` directory against the current directory and run normally.
+- [x] A regression test reproduces the original crash and passes after the fix.
+- [x] The CHANGELOG `[Unreleased]` section records the fix.
