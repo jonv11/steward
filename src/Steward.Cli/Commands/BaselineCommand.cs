@@ -20,6 +20,7 @@ public static class BaselineCommand
     {
         var command = new Command("baseline", "Grandfather existing violations so rules apply to new content only");
         command.Add(CreateGenerateCommand());
+        command.Add(CreateStatusCommand());
         return command;
     }
 
@@ -86,6 +87,91 @@ public static class BaselineCommand
             else if (generated.Entries.Count > 0)
                 ctx.Formatter.WriteMessage("'steward check' now reports these as baseline debt instead of failures. Commit the file.");
 
+            return ExitCodes.Success;
+        });
+
+        return command;
+    }
+
+    private static Command CreateStatusCommand()
+    {
+        var command = new Command("status", "Report baseline debt: entries by rule, age, and how many still match or have drifted");
+
+        command.SetAction(parseResult =>
+        {
+            const string commandName = "baseline status";
+            if (!CommandSetup.TryBuild(parseResult, out var ctx, commandName))
+                return ExitCodes.UsageError;
+
+            var settings = BaselineSettings.Resolve(ctx!.Policy, ctx.RootPath, ctx.ConfigDirectory);
+            var exists = ctx.FileSystem.FileExists(settings.FullPath);
+            if (!exists || settings.Enabled == false)
+            {
+                var reason = exists ? "disabled" : "missing";
+                if (ctx.OutputFormat == OutputFormat.Json)
+                {
+                    JsonEnvelopeWriter.Write(ctx.Formatter, commandName, true, ExitCodes.Success,
+                        new { active = false, path = settings.DisplayPath, reason });
+                    return ExitCodes.Success;
+                }
+                ctx.Formatter.WriteMessage(exists
+                    ? $"Baseline {settings.DisplayPath} exists but baseline.enabled is false; check enforces every rule in full."
+                    : $"No baseline active ({settings.DisplayPath} does not exist); check enforces every rule in full.");
+                return ExitCodes.Success;
+            }
+
+            BaselineDocument baseline;
+            try
+            {
+                baseline = BaselineDocument.Parse(ctx.FileSystem.ReadAllText(settings.FullPath), settings.DisplayPath);
+            }
+            catch (StewardConfigException ex)
+            {
+                CommandSetup.WriteCommandError(parseResult, commandName, ExitCodes.UsageError, "config-error", ex.Message,
+                    suggestedNextStep: "Regenerate it with 'steward baseline generate'.");
+                return ExitCodes.UsageError;
+            }
+
+            var match = BaselineMatcher.Match(CheckCommand.Validate(ctx, ctx.Files!, out _).Diagnostics, baseline);
+            int? ageDays = DateOnly.TryParseExact(baseline.GeneratedAt, "yyyy-MM-dd", out var generated)
+                ? DateOnly.FromDateTime(DateTime.Now).DayNumber - generated.DayNumber
+                : null;
+            var drifted = match.Drift.Select(e => e.Identity).ToList();
+            var byRule = baseline.Entries
+                .GroupBy(e => e.Rule.ToUpperInvariant())
+                .OrderBy(g => g.Key, StringComparer.Ordinal)
+                .Select(g => new
+                {
+                    rule = g.Key,
+                    entries = g.Count(),
+                    drifted = drifted.Count(d => d.RuleId == g.Key)
+                })
+                .ToList();
+
+            if (ctx.OutputFormat == OutputFormat.Json)
+            {
+                JsonEnvelopeWriter.Write(ctx.Formatter, commandName, true, ExitCodes.Success, new
+                {
+                    active = true,
+                    path = settings.DisplayPath,
+                    generatedAt = baseline.GeneratedAt,
+                    ageDays,
+                    entries = baseline.Entries.Count,
+                    matched = baseline.Entries.Count - match.Drift.Count,
+                    drifted = match.Drift.Count,
+                    byRule
+                });
+                return ExitCodes.Success;
+            }
+
+            var age = ageDays is { } days ? $", {days} day(s) old" : "";
+            ctx.Formatter.WriteMessage($"Baseline {settings.DisplayPath}: generated {baseline.GeneratedAt}{age}");
+            ctx.Formatter.WriteMessage(
+                $"  {baseline.Entries.Count} entries: {baseline.Entries.Count - match.Drift.Count} still grandfathered, {match.Drift.Count} drifted (fixed)");
+            foreach (var row in byRule)
+                ctx.Formatter.WriteMessage($"  {row.rule}  {row.entries}" + (row.drifted > 0 ? $"  ({row.drifted} drifted)" : ""));
+            if (match.Drift.Count > 0)
+                ctx.Formatter.WriteMessage("Run 'steward baseline generate' to drop drifted entries.");
             return ExitCodes.Success;
         });
 

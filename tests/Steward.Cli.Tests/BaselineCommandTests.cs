@@ -257,4 +257,56 @@ public class BaselineCommandTests : IDisposable
 
         output.Should().NotContain("Baseline drift");
     }
+
+    // ── baseline status (ticket 06) ────────────────────────────────────────────
+
+    [Fact]
+    public void Status_NoBaseline_ReportsInactiveAndSucceeds()
+    {
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("baseline", "status");
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("No baseline active");
+    }
+
+    [Fact]
+    public void Status_ReportsEntriesByRuleAndDrift()
+    {
+        CliTestHelper.InvokeCapture("baseline", "generate");
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Readme\n\n[also gone](other.md)\n");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("baseline", "status");
+
+        exitCode.Should().Be(0, because: output);
+        output.Should().Contain("2 entries: 1 still grandfathered, 1 drifted").And.Contain("STWD-008  2  (1 drifted)")
+            .And.Contain("0 day(s) old");
+    }
+
+    [Fact]
+    public void Status_Json_ReportsCounts()
+    {
+        CliTestHelper.InvokeCapture("baseline", "generate");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("baseline", "status", "--output", "json");
+
+        exitCode.Should().Be(0);
+        using var doc = JsonDocument.Parse(output);
+        var data = doc.RootElement.GetProperty("data");
+        data.GetProperty("active").GetBoolean().Should().BeTrue();
+        data.GetProperty("entries").GetInt32().Should().Be(2);
+        data.GetProperty("matched").GetInt32().Should().Be(2);
+        data.GetProperty("drifted").GetInt32().Should().Be(0);
+        data.GetProperty("ageDays").GetInt32().Should().Be(0);
+        data.GetProperty("byRule")[0].GetProperty("rule").GetString().Should().Be("STWD-008");
+    }
+
+    [Fact]
+    public void Status_Json_NoBaseline_IsInactive()
+    {
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("baseline", "status", "--output", "json");
+
+        exitCode.Should().Be(0);
+        using var doc = JsonDocument.Parse(output);
+        doc.RootElement.GetProperty("data").GetProperty("active").GetBoolean().Should().BeFalse();
+    }
 }
