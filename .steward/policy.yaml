@@ -287,12 +287,13 @@ artifact_families:
         type: [planning, documentation]
         status: [Completed, Superseded, Historical]
 
-  - family: effort
-    display_name: Effort Record
-    match:
-      path_pattern: ".scratch/*/effort.md"
-    role: workflow
-    importance: recommended
+  # Local-markdown issue tracker under .scratch/ (see docs/agents/issue-tracker.md).
+  # Same convention as the sibling graphs-everywhere and jvcode repositories:
+  # one directory per effort, driven by exactly one of spec.md or map.md, with
+  # one file per ticket under issues/. Ticket metadata (Status, Type, Category,
+  # Blocked by, Spec/Map) is plain body lines, not frontmatter, so steward can
+  # enforce the paths, filenames, H1 titles and H2 schemas below but not the
+  # header fields themselves.
 
   - family: effort-spec
     display_name: Effort Specification
@@ -300,6 +301,16 @@ artifact_families:
       path_pattern: ".scratch/*/spec.md"
     role: requirements
     importance: recommended
+    title_pattern: "^Spec — .+"
+    section_schema:
+      heading_match: exact
+      enforce_order: true
+      allow_extra: true
+      sections:
+        - heading: "Problem statement"
+          required: true
+        - heading: "Solution"
+          required: true
 
   - family: effort-map
     display_name: Effort Wayfinding Map
@@ -307,6 +318,18 @@ artifact_families:
       path_pattern: ".scratch/*/map.md"
     role: workflow
     importance: recommended
+    title_pattern: "^Map — .+"
+    section_schema:
+      heading_match: exact
+      enforce_order: true
+      allow_extra: true
+      sections:
+        - heading: "Notes"
+          required: true
+        - heading: "Decisions so far"
+          required: true
+        - heading: "Fog"
+          required: true
 
   - family: ticket
     display_name: Effort Ticket
@@ -314,8 +337,8 @@ artifact_families:
       path_pattern: ".scratch/*/issues/*.md"
     role: workflow
     importance: recommended
-    naming_pattern: "^[0-9]{2}-[a-z0-9-]+\\.md$"
-    title_pattern: "^[0-9]+ — .+"
+    naming_pattern: "^[0-9]{2}-[a-z0-9]+(?:-[a-z0-9]+)*\\.md$"
+    title_pattern: "^[0-9]{2} — .+"
 
   - family: skill
     display_name: Agent Skill
