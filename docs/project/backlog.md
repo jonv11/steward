@@ -2,7 +2,7 @@
 type: project
 status: Active
 summary: Validated enhancement ideas and deferred decisions that are not assigned to a milestone
-last_updated: 2026-08-24
+last_updated: 2026-11-09
 review_after: 2026-09-06
 ---
 
@@ -22,6 +22,8 @@ Items here are intentionally unscheduled. Moving an item into committed scope re
 | Item | Detail |
 |------|--------|
 | `config doctor` reports anticipatory artifact families and `path_overrides` as dead config | Same class as the preventive path-rule fix in the 2026-08-24 trial: a family declared before its first instance exists matches zero files, so doctor reports `unreachable-family-pattern` and exits `1`. Governance that is correct but not yet populated is indistinguishable from governance that is wrong. This repo's own `.scratch` ticket families are in exactly that state until the first effort lands. The preventive exemption currently covers `forbidden`/`reserved` path-policy categories only; extend the same reasoning to `artifact_families` and `validation.path_overrides` |
+| Relative `--config` path crashes discovery | `steward check -c .steward-draft` throws an unhandled `ArgumentException` (exit 1) because the repository root is derived as the config directory's parent, which is empty for a bare relative name. An absolute path works. `config validate` is unaffected; `check` and `config doctor` crash |
+| `init` ignores `--config` | `steward init -c <dir>` always writes `.steward/` in the current directory, so a draft configuration cannot be scaffolded beside an existing one |
 
 The remaining defects confirmed during the 2026-08-24 adoption trial on two external repositories (`jvcode`, `mdrule`) have all been fixed; see the CHANGELOG for what changed.
 
