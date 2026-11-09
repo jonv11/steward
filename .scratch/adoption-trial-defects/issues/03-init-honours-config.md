@@ -17,3 +17,7 @@ configuration cannot be scaffolded beside an existing one — the workflow the
 - [x] `steward init -c <dir>` writes its scaffold into `<dir>`.
 - [x] `init` without `--config` behaves exactly as before.
 - [x] A CLI test covers both paths, and the CHANGELOG `[Unreleased]` section records the fix.
+
+## Answer
+
+`init` chooses its scaffold directory through the same `GlobalOptionsSetup.GetConfigDirectoryOverride` helper, falling back to `.steward/`. Covered by `ConfigPathResolutionTests`.

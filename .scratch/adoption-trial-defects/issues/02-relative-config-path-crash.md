@@ -18,3 +18,7 @@ relative name. An absolute path works. `config validate` is unaffected; `check` 
 - [x] `check` and `config doctor` resolve a bare relative `--config` directory against the current directory and run normally.
 - [x] A regression test reproduces the original crash and passes after the fix.
 - [x] The CHANGELOG `[Unreleased]` section records the fix.
+
+## Answer
+
+Every command now reads `--config` through `GlobalOptionsSetup.GetConfigDirectoryOverride`, which resolves it to an absolute path against the current directory before the repository root is derived. Covered by `ConfigPathResolutionTests`.

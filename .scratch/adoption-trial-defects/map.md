@@ -10,7 +10,8 @@ for the evidence.
 
 ## Decisions so far
 
-- None yet. Migrated from the project backlog on 2026-11-09; see the [backlog snapshot](../../docs/history/plans/backlog-2026-11-09.md).
+- Migrated from the project backlog on 2026-11-09; see the [backlog snapshot](../../docs/history/plans/backlog-2026-11-09.md).
+- Relative `--config` paths resolve against the current directory everywhere, including `init` — tickets 02 and 03.
 
 ## Fog
 
