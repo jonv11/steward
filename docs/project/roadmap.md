@@ -19,7 +19,7 @@ Effort: `.scratch/rule-phase-in-baseline/spec.md`.
 
 Committed as the next milestone after `v0.18.1` (see [status](status.md) for the current release posture). Selected over the other candidates because it's the one item both external repositories in the 2026-08-24 adoption trial hit and both flagged as blocking, not just annoying — see the [maintainer configuration experience audit](../history/audits/maintainer-configuration-experience-audit-2026-08-24.md), which called it the "highest-impact adoption gap."
 
-The design authority is [RFC-017](../decisions/rfcs/RFC-017-rule-phase-in-and-baseline.md) (Accepted). As of 2026-11-09 the spec is sliced into tickets under `.scratch/rule-phase-in-baseline/issues/`. Until it ships, the [setup-steward](../../.agents/skills/setup-steward/SKILL.md) skill works around the gap by gating rules only where a repository has zero existing violations.
+The design authority is [RFC-017](../decisions/rfcs/RFC-017-rule-phase-in-and-baseline.md) (Accepted). As of 2026-11-09 the baseline is implemented on `dev` and unreleased: `baseline generate`, `baseline status`, `check` suppression and drift, and the `config validate`/`config doctor` checks. The opt-in `--fail-on-baseline-growth` gate (ticket 08) is the only open slice and needs triage on how it compares against git history. The [setup-steward](../../.agents/skills/setup-steward/SKILL.md) skill uses a baseline for rules with existing debt on releases newer than `0.18.1`.
 
 ### Explicit Deferral (carried from v0.18.0)
 

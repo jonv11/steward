@@ -157,7 +157,11 @@ validation:
 
 ## Adopting Steward on a large existing repo
 
-There is no baseline or phase-in mode — turning on a repo-wide rule (e.g. `governance.frontmatter.required_fields`) applies it to every existing non-conforming file immediately, all at once. To adopt incrementally:
+Turning on a repo-wide rule (e.g. `governance.frontmatter.required_fields`) applies it to every existing non-conforming file immediately, all at once.
+
+From the first release after `0.18.1`, grandfather the existing violations with a baseline: `steward baseline generate` writes `.steward/baseline.json`, and `check` then fails only on violations not in it, reporting the rest as baseline debt and fixed ones as drift. Commit the file and review its diffs. See the configuration reference's baseline section.
+
+On `0.18.1` and earlier there is no baseline. Adopt incrementally instead:
 
 - Scope a new requirement to one directory first, via `validation.frontmatter_requirements` (a glob) or an artifact family, instead of the repo-wide `governance.frontmatter` setting.
 - Keep repo-wide rules at `warning` until the existing backlog is cleared, then raise to `error`.

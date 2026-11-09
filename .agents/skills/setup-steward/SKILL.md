@@ -59,10 +59,12 @@ steward check           -c "$PWD/.steward-draft" -o json
 
 Count diagnostics per rule and severity; `steward explain path <file> -c "$PWD/.steward-draft"` shows which family a file landed in. A pattern that matches nothing, or a convention you misread, is a draft bug: fix it and re-run until every diagnostic is real repo **debt**. `doctor` reporting an unreachable family that simply has no files yet is a known false positive; keep the family if it is intended.
 
-Steward has no baseline mode: a rule applies to every existing file at once. Set **gate** severity from the debt:
+A rule applies to every existing file at once. Set **gate** severity from the debt:
 
 - Zero violations: `error`, so it fails CI from day one.
-- Some violations: fix the files now (`steward check --fix` for auto-fixable rules), narrow the glob, or downgrade to `warning`, per the maintainer's call. Prefer fixing: severity applies to a rule repo-wide, so one bad file downgrades the gate for every family.
+- Some violations: fix the files now (`steward check --fix` for auto-fixable rules) or narrow the glob. For the debt that remains, keep the rule at `error` and grandfather it with a **baseline**: `steward baseline generate -c "$PWD/.steward-draft"` writes `baseline.json` into the draft, and `check` then fails only on new violations. Baselines need a Steward release newer than `0.18.1`; on `0.18.1` or earlier, downgrade to `warning` instead. Prefer fixing either way: severity applies to a rule repo-wide, so one bad file downgrades the gate for every family.
+
+When a baseline is part of the draft, show its per-rule counts in step 4 and commit `baseline.json` in step 5.
 
 ## 4. Confirm
 

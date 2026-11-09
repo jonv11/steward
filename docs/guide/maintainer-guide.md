@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-08-24
+last_updated: 2026-11-09
 ---
 
 # Maintainer Guide
@@ -291,6 +291,22 @@ validation:
 
 Rules that default to `error` (STWD-001, STWD-002, STWD-003, STWD-005) gate CI without any override. `governance.completion_policy` is reporting-only and never affects the exit code.
 
+### Adopting rules on an existing repository
+
+Raising a rule to `error` applies it to every existing file at once. When existing content already violates it, grandfather that content with a [baseline](configuration-reference.md#baseline-section) instead of downgrading the rule:
+
+```bash
+steward check                 # see the existing debt
+steward check --fix --apply   # fix what is auto-fixable first
+steward baseline generate     # grandfather the rest into .steward/baseline.json
+steward check                 # passes, reporting "Baseline debt: N grandfathered diagnostic(s)"
+git add .steward/baseline.json
+```
+
+From then on CI fails only on violations that are not in the baseline — new files, and existing files whose violation changed. When someone fixes a grandfathered violation, `check` lists it under **Baseline drift**; regenerate the baseline to lock the improvement in. `steward baseline status` shows how much debt is left and how old the baseline is.
+
+Regenerate deliberately, not to make a red build green: a regenerated baseline also grandfathers whatever new violations exist at that moment. Review the diff of `baseline.json` like any other change.
+
 ## Example configurations
 
 ### Minimal software project
@@ -411,6 +427,6 @@ governance:
 - **Search is basic.** `steward search` supports substring and regex matching. No fuzzy or semantic search.
 - **`search --role` matches explicit artifact declarations only.** It does not find family-classified files. To find all files in a family, use glob patterns or `steward orient --full`.
 - **4 of 21 rules support auto-fix.** Most violations require manual remediation. The fixable rules are STWD-003 (frontmatter), STWD-007 (stale artifacts), STWD-012 (freshness dates), and STWD-018 (unambiguous fragment links).
-- **No baseline or phase-in mode.** Enabling a rule applies it to every existing file at once. On a large repository with existing content, turning on something like `governance.frontmatter.required_fields` produces a violation for every non-conforming file immediately. Adopt incrementally instead: scope new rules to a directory with `validation.frontmatter_requirements` or an artifact family, keep repository-wide rules at `warning` until the backlog is cleared, and use `steward check --since <ref>` so CI only judges what the branch touched.
+- **Baselines cannot yet gate their own growth.** Nothing stops a regenerated baseline from absorbing new debt; review changes to `baseline.json` in code review. An opt-in `--fail-on-baseline-growth` check is planned.
 - **Policy cannot be shared between repositories.** There is no `extends:` or import mechanism. Running the same governance across several repositories means copying `.steward/` and keeping the copies in sync yourself.
 - **`explain path` lists which rules apply, not why.** It does not report which config file or stanza activated each rule, or each rule's effective severity. When a rule fires or fails to fire unexpectedly, compare against `steward config show --effective`.

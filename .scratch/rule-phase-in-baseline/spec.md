@@ -52,4 +52,4 @@ Decisions taken while slicing, where RFC-017 leaves a choice open:
 
 ## Status of the work
 
-As of 2026-11-09 the spec is sliced into tickets under `issues/`; see their `Status:` lines.
+As of 2026-11-09 tickets 01–07 and 09 are done. Ticket 08 (`--fail-on-baseline-growth`) is `needs-triage`: it needs a decision on what "the committed version" means for a branch, a shallow clone, and a first-ever baseline.
