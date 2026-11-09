@@ -84,7 +84,7 @@ public static class BaselineCommand
             if (settings.Enabled == false)
                 ctx.Formatter.WriteMessage("Note: baseline.enabled is false in policy.yaml, so check does not apply it.");
             else if (generated.Entries.Count > 0)
-                ctx.Formatter.WriteMessage("Commit the file so every checkout shares the same baseline.");
+                ctx.Formatter.WriteMessage("'steward check' now reports these as baseline debt instead of failures. Commit the file.");
 
             return ExitCodes.Success;
         });

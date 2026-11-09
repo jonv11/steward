@@ -1,6 +1,8 @@
 using System.CommandLine;
 using Steward.Cli.Formatting;
 using Steward.Core;
+using Steward.Core.Baseline;
+using Steward.Core.Configuration;
 using Steward.Core.Formatting;
 using Steward.Core.Maintenance;
 using Steward.Core.Markdown;
@@ -103,6 +105,25 @@ public static class CheckCommand
             var rules = AllRules;
             var result = Validate(ctx, targetFiles, out var context);
 
+            // RFC-017: grandfathered violations leave pass/fail and are reported as baseline debt.
+            var baselineSettings = BaselineSettings.Resolve(ctx.Policy, ctx.RootPath, ctx.ConfigDirectory);
+            BaselineMatch? baselineMatch = null;
+            if (baselineSettings.IsActive(ctx.FileSystem))
+            {
+                BaselineDocument baseline;
+                try
+                {
+                    baseline = BaselineDocument.Parse(ctx.FileSystem.ReadAllText(baselineSettings.FullPath), baselineSettings.DisplayPath);
+                }
+                catch (StewardConfigException ex)
+                {
+                    CommandSetup.WriteCommandError(parseResult, "check", ExitCodes.UsageError, "config-error", ex.Message,
+                        suggestedNextStep: "Regenerate it with 'steward baseline generate', or delete it to restore full enforcement.");
+                    return ExitCodes.UsageError;
+                }
+                (result, baselineMatch) = BaselineMatcher.Apply(result, baseline);
+            }
+
             // Update the scope label in the result
             result = result with
             {
@@ -186,7 +207,12 @@ public static class CheckCommand
                         Errors = result.Summary.Errors,
                         Warnings = result.Summary.Warnings,
                         Infos = result.Summary.Infos,
-                        Pass = result.Summary.Pass
+                        Pass = result.Summary.Pass,
+                        Baseline = baselineMatch == null ? null : new CheckBaselineResponse
+                        {
+                            Path = baselineSettings.DisplayPath,
+                            Suppressed = baselineMatch.Baselined.Count
+                        }
                     },
                     Completion = completionData,
                     Diagnostics =
@@ -281,6 +307,9 @@ public static class CheckCommand
                     $"Errors: {result.Summary.Errors}  Warnings: {result.Summary.Warnings}  Info: {result.Summary.Infos}");
                 if (scopeLabel != "full")
                     ctx.Formatter.WriteMessage($"Scope: {scopeLabel}");
+                if (baselineMatch != null)
+                    ctx.Formatter.WriteMessage(
+                        $"Baseline debt: {baselineMatch.Baselined.Count} grandfathered diagnostic(s) suppressed by {baselineSettings.DisplayPath}");
                 if (!result.Summary.Pass)
                     ctx.Formatter.WriteDiagnostic("error", "Result: FAIL");
                 else if (result.Summary.Warnings > 0)
@@ -522,6 +551,15 @@ internal sealed class CheckSummaryResponse
     public required int Warnings { get; init; }
     public required int Infos { get; init; }
     public required bool Pass { get; init; }
+
+    /// <summary>Present only when a baseline is active (RFC-017).</summary>
+    public CheckBaselineResponse? Baseline { get; init; }
+}
+
+internal sealed class CheckBaselineResponse
+{
+    public required string Path { get; init; }
+    public required int Suppressed { get; init; }
 }
 
 internal sealed class CheckCompletionResponse

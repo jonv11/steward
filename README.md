@@ -105,7 +105,7 @@ If you run Steward via `dotnet run --project` from inside another repository, th
 | `steward outline [path]` | Show a tree view of a directory or, for `.md`, a heading outline (`--counts`, `--sizes`, `--lines`) |
 | `steward status [--coverage]` | Show current repository state at a glance |
 | `steward check` | Validate repository against policy (`--scope full\|changed\|staged`, `--since`, `--paths`, `--fix`, `--apply`, `--quiet`, SARIF output) |
-| `steward baseline generate` | Snapshot current diagnostics into `.steward/baseline.json` so a rule can be adopted for new content only ([RFC-017](docs/decisions/rfcs/RFC-017-rule-phase-in-and-baseline.md); `check` applies it in a later slice) |
+| `steward baseline generate` | Snapshot current diagnostics into `.steward/baseline.json` so a rule can be adopted for new content only ([RFC-017](docs/decisions/rfcs/RFC-017-rule-phase-in-and-baseline.md)); `check` then reports those as baseline debt instead of failures |
 | `steward maintain` | Preview or apply deterministic artifact maintenance (`--artifact <id>`, `--apply`, `--diff`) |
 | `steward search <query>` | Search repository content and headings (`--role`, `--mode all\|content\|headings`, `--regex`, `--max`) |
 | `steward explain [rule-id]` | Explain a validation rule, or list all rules |

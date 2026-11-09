@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-08-24
+last_updated: 2026-11-09
 ---
 
 # Using Steward with AI Agents
@@ -58,6 +58,8 @@ For pull-request automation, validate the branch diff against its merge base:
 ```bash
 steward check --since origin/main --output json
 ```
+
+When the repository has a baseline (`steward baseline generate`, RFC-017), `check` leaves grandfathered violations out of `data.diagnostics` and out of the error, warning and info counts, and adds `data.summary.baseline` with the baseline's `path` and the number of `suppressed` diagnostics. The field is absent when no baseline is active. Treat every diagnostic you still see as yours to fix.
 
 ### Step 4: Diagnose failures
 

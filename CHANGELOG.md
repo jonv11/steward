@@ -8,7 +8,8 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ### Added
 
-- `steward baseline generate` snapshots every current `check` diagnostic into `baseline.json` in the configuration directory (RFC-017). Entries are keyed by rule, path and a line-independent selector, sorted, and left untouched when nothing changed. `check` does not apply the baseline yet.
+- `steward baseline generate` snapshots every current `check` diagnostic into `baseline.json` in the configuration directory (RFC-017). Entries are keyed by rule, path and a line-independent selector, sorted, and left untouched when nothing changed.
+- `steward check` applies an active baseline: diagnostics it records no longer count toward errors, warnings, info or pass/fail, and are reported as baseline debt instead (a text summary line and `data.summary.baseline` in JSON; omitted from SARIF). A baseline is active when its file exists, unless `baseline.enabled: false` is set in `policy.yaml`. Without a baseline, output is unchanged.
 
 ### Fixed
 

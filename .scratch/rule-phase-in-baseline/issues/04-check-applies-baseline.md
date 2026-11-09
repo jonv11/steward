@@ -1,6 +1,6 @@
 # 04 — `check` suppresses baselined diagnostics and reports baseline debt
 
-Status: ready-for-agent
+Status: done
 Type: task
 Category: enhancement
 Blocked by: 02, 03
@@ -17,7 +17,17 @@ the baseline to the diagnostics they produce.
 
 ## Acceptance criteria
 
-- [ ] With a baseline generated from the current state, `check` passes and reports the suppressed count.
-- [ ] A new violation added afterwards fails `check` while the baselined ones stay suppressed.
-- [ ] Without a baseline file, or with `baseline.enabled: false`, output is identical to today (snapshot tests unchanged).
-- [ ] JSON and SARIF behaviour is covered by CLI tests, and the JSON contract docs describe the new summary field.
+- [x] With a baseline generated from the current state, `check` passes and reports the suppressed count.
+- [x] A new violation added afterwards fails `check` while the baselined ones stay suppressed.
+- [x] Without a baseline file, or with `baseline.enabled: false`, output is identical to today (snapshot tests unchanged).
+- [x] JSON and SARIF behaviour is covered by CLI tests, and the agent integration guide describes the new summary field.
+
+## Answer
+
+`check` resolves `BaselineSettings`, parses the file (a malformed baseline is a usage error,
+exit `2`) and calls `BaselineMatcher.Apply`, which drops baselined diagnostics and recomputes
+counts and pass/fail before any output, so text, JSON, SARIF, `--quiet` and the completion
+summary all see the same filtered list. JSON gains `data.summary.baseline` (`path`,
+`suppressed`) only when a baseline is active. Scoped runs filter what they produce. `--fix`
+is unchanged and still fixes baselined violations. Drift is not reported yet (ticket 05).
+Covered by `BaselineCommandTests`.
