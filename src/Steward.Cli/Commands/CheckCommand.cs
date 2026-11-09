@@ -100,23 +100,8 @@ public static class CheckCommand
             var scopeLabel = sinceValue != null ? $"since:{sinceValue}"
                 : scopeValue ?? (pathsValue is { Length: > 0 } ? "paths" : "full");
 
-            // Create validation context
-            var docCache = new DocumentCache(ctx.FileSystem, ctx.RootPath);
-            var context = new ValidationContext
-            {
-                Policy = ctx.Policy,
-                PathPolicy = ctx.PathPolicy,
-                TargetFiles = targetFiles,
-                AllDiscoveredFiles = ctx.Files,
-                FileSystem = ctx.FileSystem,
-                RepositoryRoot = ctx.RootPath,
-                DocumentCache = docCache
-            };
-
-            // Run validation
             var rules = AllRules;
-            var engine = new ValidationEngine(rules);
-            var result = engine.ValidateAsync(context).GetAwaiter().GetResult();
+            var result = Validate(ctx, targetFiles, out var context);
 
             // Update the scope label in the result
             result = result with
@@ -313,6 +298,30 @@ public static class CheckCommand
         });
 
         return command;
+    }
+
+    /// <summary>
+    /// Runs every rule against <paramref name="targetFiles"/> with the context's policy, exactly as
+    /// <c>check</c> does before any baseline filtering. <c>baseline generate</c> uses the same entry
+    /// point so a baseline always records what <c>check</c> would report.
+    /// </summary>
+    internal static ValidationResult Validate(
+        CommandContext ctx,
+        IReadOnlyList<Core.Discovery.DiscoveredFile> targetFiles,
+        out ValidationContext context)
+    {
+        context = new ValidationContext
+        {
+            Policy = ctx.Policy,
+            PathPolicy = ctx.PathPolicy,
+            TargetFiles = targetFiles,
+            AllDiscoveredFiles = ctx.Files,
+            FileSystem = ctx.FileSystem,
+            RepositoryRoot = ctx.RootPath,
+            DocumentCache = new DocumentCache(ctx.FileSystem, ctx.RootPath)
+        };
+
+        return new ValidationEngine(AllRules).ValidateAsync(context).GetAwaiter().GetResult();
     }
 
     internal static IScopeResolver ResolveScope(string? scopeValue, string[]? pathsValue, string? sinceRef = null)

@@ -31,6 +31,7 @@ public class BaselineTests
         first.IndexOf("docs/a.md", StringComparison.Ordinal).Should().BeLessThan(first.IndexOf("docs/b.md", StringComparison.Ordinal));
         first.IndexOf("STWD-001", StringComparison.Ordinal).Should().BeLessThan(first.IndexOf("STWD-014", StringComparison.Ordinal));
         first.Should().EndWith("}\n").And.Contain("\"generated_at\": \"2026-11-09\"").And.NotContain("\r");
+        first.Should().NotContain("Identity", because: "only rule, path and selector are persisted");
     }
 
     [Fact]

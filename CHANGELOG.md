@@ -6,6 +6,10 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ## [Unreleased]
 
+### Added
+
+- `steward baseline generate` snapshots every current `check` diagnostic into `baseline.json` in the configuration directory (RFC-017). Entries are keyed by rule, path and a line-independent selector, sorted, and left untouched when nothing changed. `check` does not apply the baseline yet.
+
 ### Fixed
 
 - A bare relative `--config` directory such as `-c .steward-draft` no longer crashes `check`, `config doctor` and the other discovery commands with an unhandled `ArgumentException`. Every command now resolves `--config` against the current directory before deriving the repository root.

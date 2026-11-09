@@ -15,6 +15,7 @@ public sealed record BaselineEntry(
     [property: JsonPropertyName("path")] string Path,
     [property: JsonPropertyName("selector")] string Selector)
 {
+    [JsonIgnore]
     public DiagnosticIdentity Identity => new(Rule.ToUpperInvariant(), PathHelper.NormalizeSeparators(Path), Selector);
 
     public static BaselineEntry From(DiagnosticIdentity identity) => new(identity.RuleId, identity.Path, identity.Selector);

@@ -81,6 +81,7 @@
 │   │   └── Steward.Cli.csproj
 │   └── Steward.Core/
 │       ├── Abstractions
+│       ├── Baseline
 │       ├── Configuration
 │       ├── Discovery
 │       ├── ExitCodes.cs
@@ -99,6 +100,7 @@
 └── tests/
     ├── Steward.Cli.Tests/
     │   ├── ArtifactFamiliesCommandTests.cs
+    │   ├── BaselineCommandTests.cs
     │   ├── ChangeImpactTests.cs
     │   ├── CheckCommandTests.cs
     │   ├── CheckFixTests.cs
@@ -139,6 +141,7 @@
     ├── Steward.Core.Tests/
     │   ├── ArtifactFamilyClassifierTests.cs
     │   ├── ArtifactFamilyValidationTests.cs
+    │   ├── BaselineTests.cs
     │   ├── BootstrapAnalyzerTests.cs
     │   ├── BrokenArtifactReferenceRuleTests.cs
     │   ├── BrokenFragmentAnchorRuleTests.cs
@@ -146,6 +149,7 @@
     │   ├── ConfigIntegrityTests.cs
     │   ├── ConfigLoaderFamilyValidationTests.cs
     │   ├── ConfigLoaderTests.cs
+    │   ├── DiagnosticIdentityTests.cs
     │   ├── DiagnosticTests.cs
     │   ├── DirectoryIndexMaintainerTests.cs
     │   ├── ExitCodeConstantsTests.cs

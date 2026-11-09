@@ -25,6 +25,7 @@ public static class Program
         rootCommand.Add(InitCommand.Create());
         rootCommand.Add(ConfigCommand.Create());
         rootCommand.Add(CheckCommand.Create());
+        rootCommand.Add(BaselineCommand.Create());
         rootCommand.Add(MdCommand.Create());
         rootCommand.Add(SearchCommand.Create());
         rootCommand.Add(MaintainCommand.Create());
