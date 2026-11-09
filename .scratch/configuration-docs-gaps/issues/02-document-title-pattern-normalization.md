@@ -1,6 +1,6 @@
 # 02 — Document that `title_pattern` matches normalized text
 
-Status: ready-for-agent
+Status: done
 Type: task
 Category: enhancement
 Blocked by: None — can start immediately
@@ -13,4 +13,8 @@ matches as `jvcode issues` and a pattern anchored on the backtick never matches.
 
 ## Acceptance criteria
 
-- [ ] The `title_pattern` entry in the configuration reference states that inline formatting is stripped before matching, with an example.
+- [x] The `title_pattern` entry in the configuration reference states that inline formatting is stripped before matching, with an example.
+
+## Answer
+
+The configuration reference has a "Title pattern matching" section with two examples, verified against the CLI: inline code, emphasis and links are stripped before `title_pattern` and `section_pattern` match.

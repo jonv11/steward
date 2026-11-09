@@ -207,7 +207,7 @@ artifact_families:
 |-------|------|---------|-------------|
 | `family` | string | _(required)_ | Unique identifier (e.g., `adr`, `rfc`, `runbook`) |
 | `display_name` | string | _(none)_ | Human-readable name shown in status output |
-| `match.path_pattern` | string | _(required)_ | Glob pattern for files belonging to this family |
+| `match.path_pattern` | string | _(required)_ | Glob pattern for files belonging to this family (see [Glob pattern syntax](#glob-pattern-syntax)) |
 | `match.frontmatter` | map | _(none)_ | Field→value conditions (AND, case-insensitive) for frontmatter-based matching |
 | `role` | string | _(none)_ | Role assigned to all matched files |
 | `importance` | string | `optional` | `required`, `recommended`, or `optional` |
@@ -217,7 +217,7 @@ artifact_families:
 | `frontmatter_schema.deprecated_fields` | map | `{}` | Deprecated field→replacement mapping, or `null` for removal. STWD-003 reports and can auto-fix migrations |
 | `required_sections` | list | `[]` | Heading text that must appear in matched files (STWD-014) |
 | `naming_pattern` | string | _(none)_ | Regex that matched filenames must satisfy (STWD-016) |
-| `title_pattern` | string | _(none)_ | Case-sensitive regex that the H1 heading must satisfy (STWD-019) |
+| `title_pattern` | string | _(none)_ | Case-sensitive regex that the H1 heading's plain text must satisfy (STWD-019); see [Title pattern matching](#title-pattern-matching) |
 | `section_pattern` | string | _(none)_ | Case-sensitive regex that every H2 heading must satisfy (STWD-020) |
 | `section_schema` | object | _(none)_ | H2 document schema for required/optional sections, ordering, and extra-section policy (STWD-021) |
 | `directory_expectations.min_count` | int | _(none)_ | Minimum number of files matching this family (STWD-015) |
@@ -233,6 +233,17 @@ artifact_families:
 | `section_schema.heading_match` | string | `contains` | `contains` for case-insensitive substring matching or `exact` for case-insensitive equality |
 | `section_schema.enforce_order` | bool | `false` | Require present sections to follow schema order |
 | `section_schema.allow_extra` | bool | `true` | Allow H2 headings not declared in the schema |
+
+#### Title pattern matching
+
+`title_pattern` (and `section_pattern` for H2 headings) is matched against the heading's **plain text**, not its raw Markdown. Inline formatting — code spans, emphasis, links — is stripped first:
+
+| H1 as written | Text the pattern sees |
+|---------------|-----------------------|
+| ``# `jvcode issues` `` | `jvcode issues` |
+| `# **ADR 1**: *Use* [Postgres](x.md)` | `ADR 1: Use Postgres` |
+
+So `title_pattern: "^ADR [0-9]+: .+"` matches the second heading, and a pattern anchored on a backtick, such as ``"^`"``, never matches anything. The STWD-019 message quotes the plain text it tested.
 
 `config validate` rejects invalid title/section regexes, blank closed-schema fields, required fields omitted from `allowed_fields`, deprecated replacements omitted from `allowed_fields`, and unsupported `heading_match` values.
 
@@ -391,7 +402,7 @@ maintenance:
 | `path` | string | Output file path |
 | `type` | string | Maintenance type (see below) |
 | `source` | string | Glob pattern for input files |
-| `managed_section` | string | Heading name for the managed section (for `index` and `managed-section` types) |
+| `managed_section` | string | The `id` of the managed region the content is written into (for `index`, `directory-index` and `managed-section` types); see [Managed region markers](#managed-region-markers) |
 | `sort` | string | Sort order: `filename` (default) or `path` |
 | `targets` | string | Glob pattern for target files (for `frontmatter-auto`) |
 | `fields` | map | Field→source mapping (for `frontmatter-auto`) |
@@ -409,6 +420,27 @@ maintenance:
 | `managed-section` | Manages a specific section within an existing file |
 | `frontmatter-auto` | Updates frontmatter fields automatically |
 | `manifest` | Generates a manifest file |
+
+#### Managed region markers
+
+The `index`, `directory-index` and `managed-section` types write between a pair of HTML comment markers in the target file. Add them once by hand; Steward replaces everything between them on `maintain --apply`:
+
+```markdown
+## Decisions
+
+<!-- steward:begin id="adr-index" owner="steward" -->
+- [ADR-001: Use Postgres](adr/0001-use-postgres.md)
+<!-- steward:end -->
+```
+
+The `id` must equal the artifact's `managed_section`, here `managed_section: adr-index`. Start with the two markers on consecutive lines; the list between them is what Steward generates.
+
+The markers are **asymmetric**:
+
+- The begin marker carries the attributes: `<!-- steward:begin id="..." owner="..." -->`. `id` must be the first attribute, written as `id="..."` directly after `steward:begin` and a single space. `owner` is optional; use `steward` for Steward-maintained regions.
+- The end marker is bare: exactly `<!-- steward:end -->`. It closes the most recent open begin marker.
+
+Do not put an `id` on the end marker. STWD-005 accepts `<!-- steward:end id="..." -->` as a valid closing marker, but the maintainer looks for the bare form, does not find it, and writes nothing. No diagnostic explains why. If a region silently stays stale, check its end marker first.
 
 ### baseline section
 
@@ -512,6 +544,20 @@ At runtime, profile defaults merge in shallowly: your `policy.yaml` scalar/objec
 
 > **Note:** `mixed` and `knowledge` profiles are defined internally but not yet offered via `steward init`. Only `software`, `docs`, and `minimal` are available for scaffolding.
 > **Importance resolution:** The `minimal` profile sets `importance: optional` explicitly on README.md. Without this explicit override, the `authoritative` role default would make the artifact required. If your repo `policy.yaml` declares the same artifact without an explicit `importance:` field, role defaults apply. See [importance precedence](#artifact-fields) for the full resolution chain.
+
+## Glob pattern syntax
+
+Every field this reference describes as a glob pattern — `discovery.exclude`, `coverage.exclude`, `match.path_pattern`, `validation.path_overrides[].pattern`, `frontmatter_requirements[].pattern`, maintenance `source` and `targets`, and path-policy rule patterns — uses the same syntax, matched against repository-relative paths with `/` separators:
+
+| Syntax | Matches | Example |
+|--------|---------|---------|
+| `*` | Any characters within one path segment | `docs/*.md` |
+| `**` | Any number of segments, including none | `docs/**/*.md` |
+| `?` | Exactly one character | `docs/adr/000?-*.md` |
+| `[abc]`, `[0-9]` | One character from the set or range | `docs/adr/[0-9]*.md` |
+| `[!abc]` | One character not in the set | `docs/adr/[!R]*.md` |
+
+Path patterns have no exclude or negation form, so a character class is the practical way to keep an index out of a family. With ADRs named `0001-use-postgres.md` and an index at `docs/adr/README.md`, the pattern `docs/adr/*.md` matches the index too, but `docs/adr/[0-9]*.md` matches only the numbered records.
 
 ## Configuration precedence
 
