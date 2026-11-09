@@ -124,6 +124,17 @@ public static class CheckCommand
                 (result, baselineMatch) = BaselineMatcher.Apply(result, baseline);
             }
 
+            // Drift: entries whose violation is gone. A scoped run only evaluated some files, so
+            // only entries for those files can be judged fixed.
+            IReadOnlyList<BaselineEntry> baselineDrift = baselineMatch?.Drift ?? [];
+            if (baselineMatch != null && !string.Equals(scopeLabel, "full", StringComparison.OrdinalIgnoreCase))
+            {
+                var inScope = new HashSet<string>(
+                    targetFiles.Select(f => PathHelper.NormalizeSeparators(f.RelativePath)),
+                    StringComparer.OrdinalIgnoreCase);
+                baselineDrift = [.. baselineDrift.Where(e => e.Path.Length > 0 && inScope.Contains(e.Path))];
+            }
+
             // Update the scope label in the result
             result = result with
             {
@@ -211,9 +222,17 @@ public static class CheckCommand
                         Baseline = baselineMatch == null ? null : new CheckBaselineResponse
                         {
                             Path = baselineSettings.DisplayPath,
-                            Suppressed = baselineMatch.Baselined.Count
+                            Suppressed = baselineMatch.Baselined.Count,
+                            Drift = baselineDrift.Count
                         }
                     },
+                    BaselineDrift = baselineMatch == null ? null
+                        : [.. baselineDrift.Select(e => new CheckBaselineDriftResponse
+                        {
+                            RuleId = e.Rule,
+                            Path = e.Path.Length > 0 ? e.Path : null,
+                            Selector = SecretFilter.Redact(e.Selector)
+                        })],
                     Completion = completionData,
                     Diagnostics =
                     [
@@ -299,6 +318,19 @@ public static class CheckCommand
                     {
                         ctx.Formatter.WriteMessage($"  [info] Maintained artifact '{artifactId}' ({artifactPath}) has staged sources but is not itself staged.");
                     }
+                }
+
+                // Baseline drift (RFC-017 shrink signal): informational, never fails check
+                if (baselineDrift.Count > 0)
+                {
+                    ctx.Formatter.WriteMessage("");
+                    ctx.Formatter.WriteMessage("Baseline drift (fixed since the baseline was generated):");
+                    foreach (var entry in baselineDrift)
+                    {
+                        var where = entry.Path.Length > 0 ? $" {entry.Path}:" : ":";
+                        ctx.Formatter.WriteMessage($"  [info] baseline-drift {entry.Rule}{where} {SecretFilter.Redact(entry.Selector)}");
+                    }
+                    ctx.Formatter.WriteMessage($"  Run 'steward baseline generate' to shrink {baselineSettings.DisplayPath}.");
                 }
 
                 // Completion summary
@@ -541,6 +573,9 @@ internal sealed class CheckResponse
     public required List<CheckDiagnosticResponse> Diagnostics { get; init; }
     public List<CheckImpactSignalResponse>? ImpactSignals { get; init; }
     public List<CheckStagedCompletenessResponse>? StagedCompleteness { get; init; }
+
+    /// <summary>Baseline entries that no longer match a diagnostic; present only when a baseline is active.</summary>
+    public List<CheckBaselineDriftResponse>? BaselineDrift { get; init; }
 }
 
 internal sealed class CheckSummaryResponse
@@ -560,6 +595,14 @@ internal sealed class CheckBaselineResponse
 {
     public required string Path { get; init; }
     public required int Suppressed { get; init; }
+    public required int Drift { get; init; }
+}
+
+internal sealed class CheckBaselineDriftResponse
+{
+    public required string RuleId { get; init; }
+    public string? Path { get; init; }
+    public required string Selector { get; init; }
 }
 
 internal sealed class CheckCompletionResponse

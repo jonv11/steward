@@ -201,4 +201,60 @@ public class BaselineCommandTests : IDisposable
 
         exitCode.Should().Be(0, because: output);
     }
+
+    // ── drift (ticket 05) ──────────────────────────────────────────────────────
+
+    [Fact]
+    public void Check_FixedBaselinedViolation_ReportsDriftAndStillPasses()
+    {
+        CliTestHelper.InvokeCapture("baseline", "generate");
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Readme\n\n[also gone](other.md)\n");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check");
+
+        exitCode.Should().Be(0, because: output);
+        output.Should().Contain("Baseline drift").And.Contain("baseline-drift STWD-008 README.md:")
+            .And.Contain("missing.md").And.Contain("steward baseline generate");
+        output.Should().Contain("Info: 0");
+    }
+
+    [Fact]
+    public void Check_FixedBaselinedViolation_JsonListsDrift()
+    {
+        CliTestHelper.InvokeCapture("baseline", "generate");
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Readme\n");
+
+        var (exitCode, output, _) = CliTestHelper.InvokeCapture("check", "--output", "json");
+
+        exitCode.Should().Be(0);
+        using var doc = JsonDocument.Parse(output);
+        var data = doc.RootElement.GetProperty("data");
+        data.GetProperty("summary").GetProperty("baseline").GetProperty("drift").GetInt32().Should().Be(2);
+        data.GetProperty("baselineDrift").EnumerateArray().Should().HaveCount(2)
+            .And.AllSatisfy(e => e.GetProperty("ruleId").GetString().Should().Be("STWD-008"));
+    }
+
+    [Fact]
+    public void Check_ScopedRun_ReportsDriftOnlyForInScopeFiles()
+    {
+        CliTestHelper.InvokeCapture("baseline", "generate");
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Readme\n");
+        File.WriteAllText(Path.Combine(_tempDir, "OTHER.md"), "# Other\n");
+
+        var outOfScope = CliTestHelper.InvokeCapture("check", "--paths", "OTHER.md");
+        var inScope = CliTestHelper.InvokeCapture("check", "--paths", "README.md");
+
+        outOfScope.Output.Should().NotContain("Baseline drift");
+        inScope.Output.Should().Contain("Baseline drift");
+    }
+
+    [Fact]
+    public void Check_NoDrift_OmitsDriftSection()
+    {
+        CliTestHelper.InvokeCapture("baseline", "generate");
+
+        var (_, output, _) = CliTestHelper.InvokeCapture("check");
+
+        output.Should().NotContain("Baseline drift");
+    }
 }
