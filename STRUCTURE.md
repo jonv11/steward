@@ -20,6 +20,7 @@
 │       └── release.yml
 ├── .gitignore
 ├── .markdownlint-cli2.jsonc
+├── .scratch
 ├── .steward
 ├── AGENTS.md
 ├── CHANGELOG.md
