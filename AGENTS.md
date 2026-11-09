@@ -133,4 +133,4 @@ Triage roles are used verbatim as `Status:` values on ticket files: `needs-triag
 
 ### Domain docs
 
-Single-context: one `CONTEXT.md` at the repo root, with decisions in `docs/decisions/`. See [docs/agents/domain.md](docs/agents/domain.md).
+Single-context: one `GLOSSARY.md` at the repo root, with decisions in `docs/decisions/`. See [docs/agents/domain.md](docs/agents/domain.md).
