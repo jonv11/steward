@@ -20,3 +20,13 @@ validate its ticket header fields or require `## Acceptance criteria` of `task` 
 - [ ] The allowed values of such a line can be constrained, so a ticket's `Status:`, `Type:` and `Category:` vocabularies are enforceable.
 - [ ] This repository's `ticket` family uses the feature for its header fields and `Type:`-specific section schemas.
 - [ ] The configuration reference documents the feature, and tests cover it.
+
+## Comments
+
+- 2026-11-12: Scope note from the cross-tool review. Under `tracker-cli` ADR 0008, steward
+  governs files and `tracker validate` governs ticket meaning. For `.scratch/` that puts the
+  second criterion (constraining `Status:`, `Type:` and `Category:` vocabularies) on
+  `tracker`, so building it here would give the same rule two validators that can disagree.
+  Body-line family matching stays a steward gap: other repositories need it, and it would let
+  this repository require `## Acceptance criteria` of `task` tickets only. Triage should
+  narrow the criteria accordingly.
