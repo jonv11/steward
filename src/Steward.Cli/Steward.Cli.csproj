@@ -27,6 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Schemas\v1\*.schema.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>

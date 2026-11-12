@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://steward.invalid/schemas/v1/version.schema.json",
+  "title": "steward version --output json",
+  "description": "The tool and runtime version.",
+  "$ref": "common.schema.json#/$defs/envelope",
+  "properties": {
+    "command": { "const": "version" },
+    "data": {
+      "type": "object",
+      "required": ["version", "runtimeVersion", "osPlatform", "architecture"],
+      "properties": {
+        "version": { "type": "string" },
+        "runtimeVersion": { "type": "string" },
+        "osPlatform": { "type": "string" },
+        "architecture": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

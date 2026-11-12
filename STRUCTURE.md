@@ -78,6 +78,7 @@
 │   │   ├── Formatting
 │   │   ├── GlobalOptionsSetup.cs
 │   │   ├── Program.cs
+│   │   ├── Schemas
 │   │   └── Steward.Cli.csproj
 │   └── Steward.Core/
 │       ├── Abstractions
@@ -131,6 +132,7 @@
     │   ├── ProgramErrorHandlingTests.cs
     │   ├── RefsCommandTests.cs
     │   ├── SarifOutputTests.cs
+    │   ├── SchemaCommandTests.cs
     │   ├── SearchCommandTests.cs
     │   ├── StableSurfaceContractTests.cs
     │   ├── StagedCompletenessTests.cs

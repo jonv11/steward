@@ -13,6 +13,7 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="JsonSchema.Net" />
   </ItemGroup>
 
   <ItemGroup>

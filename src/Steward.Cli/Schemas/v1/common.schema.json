@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://steward.invalid/schemas/v1/common.schema.json",
+  "title": "steward: shared definitions",
+  "description": "The envelope every `steward --output json` output shares (RFC-010), the structured error carried in `data.error` when a command fails, and the diagnostic shape. schemaVersion steward-json/v1.",
+  "$defs": {
+    "envelope": {
+      "type": "object",
+      "required": ["schemaVersion", "command", "toolVersion", "success", "exitCode", "data"],
+      "properties": {
+        "schemaVersion": { "const": "steward-json/v1" },
+        "command": {
+          "description": "The command that ran, without the `steward` prefix (`check`, `config show`); `steward` for a usage error before any command was recognised.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$"
+        },
+        "toolVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "success": {
+          "description": "Whether the command executed. A domain failure such as a failing `check` is `true` with a non-zero `exitCode`; read the command's own pass/valid field.",
+          "type": "boolean"
+        },
+        "exitCode": { "enum": [0, 1, 2, 3] },
+        "data": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "errorData": {
+      "description": "`data` of a failed command (`success: false`).",
+      "type": "object",
+      "required": ["error"],
+      "properties": { "error": { "$ref": "#/$defs/error" } },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": ["kind", "message", "retryable"],
+      "properties": {
+        "kind": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "code": { "type": "string" },
+        "message": { "type": "string" },
+        "details": { "type": "object" },
+        "retryable": { "type": "boolean" },
+        "suggestedNextStep": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "diagnostic": {
+      "type": "object",
+      "required": ["ruleId", "severity", "category", "message"],
+      "properties": {
+        "ruleId": { "type": "string", "pattern": "^STWD-[0-9]{3}$" },
+        "severity": { "enum": ["error", "warn", "info"] },
+        "category": { "type": "string" },
+        "path": { "type": "string" },
+        "line": { "type": "integer", "minimum": 1 },
+        "message": { "type": "string" },
+        "remediation": { "type": "string" },
+        "source": { "type": "string" },
+        "details": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

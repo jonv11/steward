@@ -33,6 +33,7 @@ public static class Program
         rootCommand.Add(ExplainCommand.Create());
         rootCommand.Add(RefsCommand.Create());
         rootCommand.Add(RefactorCommand.Create());
+        rootCommand.Add(SchemaCommand.Create());
 
         return rootCommand;
     }

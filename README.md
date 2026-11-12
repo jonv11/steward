@@ -113,6 +113,7 @@ If you run Steward via `dotnet run --project` from inside another repository, th
 | `steward explain path <file>` | Show the effective governance rules that apply to a specific file |
 | `steward refs <path>` | Show inbound and outbound Markdown references for a file (`--to`, `--from`) |
 | `steward refactor move <old> <new>` | Move/rename a file and update all Markdown references (`--preview`, `--apply`) |
+| `steward schema [command]` | List the JSON Schemas (draft 2020-12) for `--output json`, or print one (`check`, `version`, `schema`, `common` for the shared envelope, error and diagnostic shapes) |
 | `steward md outline <file>` | Show Markdown heading hierarchy with line counts |
 | `steward md query <file> <selector>` | Extract content using an MdPath selector or Markdown anchor slug such as `#who-is-steward-for` (`--pattern` for batch) |
 | `steward md edit <operation> <file>` | Structural Markdown editing with preview/apply safety: `ensure-section`, `set-section`, `insert-section`, `append-block`, `prepend-block`, `extract-section`, `fm-set`, `fm-merge`, `fm-validate` |

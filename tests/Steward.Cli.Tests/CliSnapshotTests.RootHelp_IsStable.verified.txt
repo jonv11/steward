@@ -27,3 +27,4 @@ Commands:
   explain <rule-id>  Explain a validation rule, or use 'explain path <file>' to show effective governance for a file. Run without arguments to list all rules.
   refs <path>        Show inbound and outbound references for a file
   refactor           Refactoring operations for governed files
+  schema <command>   List the JSON Schemas for '--output json', or print one (e.g. 'steward schema check')

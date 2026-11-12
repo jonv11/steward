@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://steward.invalid/schemas/v1/schema.schema.json",
+  "title": "steward schema --output json",
+  "description": "The list of published schemas. `steward schema <command>` prints one schema document itself, not an envelope.",
+  "$ref": "common.schema.json#/$defs/envelope",
+  "properties": {
+    "command": { "const": "schema" },
+    "data": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["schemas"],
+          "properties": {
+            "schemas": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["command", "file"],
+                "properties": {
+                  "command": { "type": "string" },
+                  "file": { "type": "string", "pattern": "^[a-z-]+\\.schema\\.json$" }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        { "$ref": "common.schema.json#/$defs/errorData" }
+      ]
+    }
+  }
+}

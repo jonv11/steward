@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://steward.invalid/schemas/v1/check.schema.json",
+  "title": "steward check --output json",
+  "description": "Validation results. Branch on `data.summary.pass` or the exit code (0 pass, 1 an error-severity diagnostic), not on `success`.",
+  "$ref": "common.schema.json#/$defs/envelope",
+  "properties": {
+    "command": { "const": "check" },
+    "data": {
+      "oneOf": [
+        { "$ref": "#/$defs/checkData" },
+        { "$ref": "common.schema.json#/$defs/errorData" }
+      ]
+    }
+  },
+  "$defs": {
+    "checkData": {
+      "type": "object",
+      "required": ["summary", "diagnostics"],
+      "properties": {
+        "summary": { "$ref": "#/$defs/summary" },
+        "completion": { "$ref": "#/$defs/completion" },
+        "diagnostics": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/diagnostic" } },
+        "impactSignals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["artifactId", "artifactPath", "sourcePath"],
+            "properties": {
+              "artifactId": { "type": "string" },
+              "artifactPath": { "type": "string" },
+              "sourcePath": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "stagedCompleteness": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["artifactId", "artifactPath"],
+            "properties": {
+              "artifactId": { "type": "string" },
+              "artifactPath": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "baselineDrift": {
+          "description": "Baseline entries whose violation has been fixed; present only when a baseline is active (RFC-017).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "selector"],
+            "properties": {
+              "ruleId": { "type": "string" },
+              "path": { "type": "string" },
+              "selector": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": ["scope", "filesChecked", "errors", "warnings", "infos", "pass"],
+      "properties": {
+        "scope": { "type": "string" },
+        "filesChecked": { "type": "integer", "minimum": 0 },
+        "errors": { "type": "integer", "minimum": 0 },
+        "warnings": { "type": "integer", "minimum": 0 },
+        "infos": { "type": "integer", "minimum": 0 },
+        "pass": { "type": "boolean" },
+        "baseline": {
+          "description": "Present only when a baseline is active.",
+          "type": "object",
+          "required": ["path", "suppressed", "drift"],
+          "properties": {
+            "path": { "type": "string" },
+            "suppressed": { "type": "integer", "minimum": 0 },
+            "drift": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "completion": {
+      "type": "object",
+      "required": ["requiredArtifactsMissing", "staleArtifacts", "brokenLinks", "brokenReferences", "rules"],
+      "properties": {
+        "requiredArtifactsMissing": { "type": "integer", "minimum": 0 },
+        "staleArtifacts": { "type": "integer", "minimum": 0 },
+        "brokenLinks": { "type": "integer", "minimum": 0 },
+        "brokenReferences": { "type": "integer", "minimum": 0 },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "description", "count"],
+            "properties": {
+              "ruleId": { "type": "string" },
+              "description": { "type": "string" },
+              "count": { "type": "integer", "minimum": 0 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -88,6 +88,16 @@ The JSON envelope carries structured diagnostics under `data.diagnostics`. Branc
 }
 ```
 
+The envelope, the error shape and `check`'s data are published as JSON Schemas (draft 2020-12) embedded in the tool, so the contract always matches the binary you run. Validate against them instead of hard-coding field names:
+
+```bash
+steward schema              # list the schemas
+steward schema check        # print check's schema
+steward schema common       # the envelope, data.error and diagnostic shapes
+```
+
+Diagnostic `severity` is one of `error`, `warn` or `info`.
+
 For more detail on any rule:
 
 ```bash
