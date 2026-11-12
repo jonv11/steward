@@ -127,7 +127,7 @@ Configuration consumed by the installed engineering skills (`to-tickets`, `triag
 
 ### Issue tracker
 
-Issues and specs live as local markdown under `.scratch/<effort-slug>/`, the same convention as the sibling `graphs-everywhere` and `jvcode` repositories: each directory is driven by exactly one `spec.md` or `map.md`, with one `issues/NN-<slug>.md` file per ticket whose header is `Status:`, `Type:`, `Category:`, `Blocked by:` and a `Spec:` or `Map:` pointer. Commit each cleanly sliced change. The `ticket`, `effort-spec` and `effort-map` families in `.steward/policy.yaml` validate what steward can see; this repo does not use GitHub Issues for agent workflows. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
+Issues and specs live as local markdown under `.scratch/<effort-slug>/`, the same convention as the sibling `graphs-everywhere`, `jvcode` and `tracker-cli` repositories: each directory is driven by exactly one `spec.md` or `map.md`, with one `issues/NN-<slug>.md` file per ticket whose header is `Status:`, `Type:`, `Category:`, `Blocked by:` and a `Spec:` or `Map:` pointer. Commit each cleanly sliced change. The `ticket`, `effort-spec` and `effort-map` families in `.steward/policy.yaml` validate what steward can see; this repo does not use GitHub Issues for agent workflows. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
 
 ### Triage labels
 

@@ -7,9 +7,13 @@ external tracker; `.scratch/` is committed with the repo. Ticket state is repo s
 the `Status:` line in a ticket file is how the project records what is done, claimed or
 waiting, and it travels with the branch that changes it.
 
-This is the same convention the sibling repositories (`graphs-everywhere`, `jvcode`) use,
-so the engineering skills (`to-tickets`, `triage`, `to-spec`, `wayfinder`) behave the
-same way in all of them.
+This is the same convention the sibling repositories (`graphs-everywhere`, `jvcode`,
+`tracker-cli`) use, so the engineering skills (`to-tickets`, `triage`, `to-spec`, `wayfinder`)
+behave the same way in all of them. The sibling `tracker` CLI is the shared reader and writer
+of this format. Under its ADR 0008, steward governs the files (names, headings, links,
+required sections) and `tracker validate` governs their meaning (the `Status:` vocabulary,
+blockers, completion). This repository does not run `tracker` yet; adopting it is
+`tracker-extraction/25` in `tracker-cli`, which waits on a decision about Effort records.
 
 ## Conventions
 
@@ -161,7 +165,8 @@ and `match.frontmatter` is steward's only content-based discriminator. So a fami
 condition on `Type:`, which means no section schema can require `## Acceptance criteria` of
 a `task` ticket while forbidding it on a `grilling` one, and neither the field vocabulary nor
 the field order is checked. Nor can steward tell that a directory has both a `spec.md` and a
-`map.md`. Those rules are held by review and by the skills that write the files. The gap is
+`map.md`. Those rules are held by review and by the skills that write the files, and are the ones
+`tracker validate` enforces where `tracker` is adopted. Family matching on body lines is
 tracked as `.scratch/policy-expressiveness/issues/02-family-matching-on-body-metadata.md`;
 it is a product gap to close in steward, not a reason to change the ticket format.
 
