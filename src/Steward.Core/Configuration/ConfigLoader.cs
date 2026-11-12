@@ -42,9 +42,10 @@ public sealed class ConfigLoader
             if (_fileSystem.DirectoryExists(stewardDir))
                 return stewardDir;
 
-            // Stop at repository root
-            var gitDir = Path.Combine(current, ".git");
-            if (_fileSystem.DirectoryExists(gitDir))
+            // Stop at repository root. `.git` is a directory in a main checkout and a file in a
+            // linked worktree or submodule; both mark the root.
+            var gitMarker = Path.Combine(current, ".git");
+            if (_fileSystem.DirectoryExists(gitMarker) || _fileSystem.FileExists(gitMarker))
                 return null;
 
             var parent = Path.GetDirectoryName(current);

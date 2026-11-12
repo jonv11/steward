@@ -118,6 +118,23 @@ public class ConfigLoaderTests
     }
 
     [Fact]
+    public void FindConfigDirectory_GitFileMarksRoot_DoesNotEscapeWorktree()
+    {
+        // A linked worktree or submodule has a `.git` file, not a directory. The walk must stop
+        // there instead of climbing into the enclosing repository and adopting its `.steward/`.
+        var fs = new InMemoryFileSystem()
+            .AddDirectory("main/.steward")
+            .AddDirectory("main/.git")
+            .AddFile("main/.claude/worktrees/feature/.git", "gitdir: ../../../.git/worktrees/feature")
+            .AddDirectory("main/.claude/worktrees/feature/src");
+
+        var loader = new ConfigLoader(fs);
+        var dir = loader.FindConfigDirectory("main/.claude/worktrees/feature/src");
+
+        dir.Should().BeNull();
+    }
+
+    [Fact]
     public void FindConfigDirectory_Override_UsesOverride()
     {
         var fs = new InMemoryFileSystem()
