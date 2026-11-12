@@ -34,6 +34,7 @@ public static class Program
         rootCommand.Add(RefsCommand.Create());
         rootCommand.Add(RefactorCommand.Create());
         rootCommand.Add(SchemaCommand.Create());
+        rootCommand.Add(CompletionsCommand.Create());
 
         return rootCommand;
     }

@@ -156,6 +156,14 @@ public class SchemaCommandTests : IDisposable
     }
 
     [Fact]
+    public void Completions_MatchesTheCompletionsSchema()
+    {
+        var (_, output, _) = CliTestHelper.InvokeCapture("completions", "zsh", "--output", "json");
+
+        Problems("completions.schema.json", output).Should().BeEmpty();
+    }
+
+    [Fact]
     public void Version_MatchesTheVersionSchema()
     {
         var (_, output, _) = CliTestHelper.InvokeCapture("version", "--output", "json");

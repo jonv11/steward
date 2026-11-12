@@ -113,6 +113,7 @@ If you run Steward via `dotnet run --project` from inside another repository, th
 | `steward explain path <file>` | Show the effective governance rules that apply to a specific file |
 | `steward refs <path>` | Show inbound and outbound Markdown references for a file (`--to`, `--from`) |
 | `steward refactor move <old> <new>` | Move/rename a file and update all Markdown references (`--preview`, `--apply`) |
+| `steward completions <bash\|zsh\|pwsh>` | Print a shell completion script that completes commands, options and option values from the parser itself; see [Shell completion](#shell-completion) |
 | `steward schema [command]` | List the JSON Schemas (draft 2020-12) for `--output json`, or print one (`check`, `version`, `schema`, `common` for the shared envelope, error and diagnostic shapes) |
 | `steward md outline <file>` | Show Markdown heading hierarchy with line counts |
 | `steward md query <file> <selector>` | Extract content using an MdPath selector or Markdown anchor slug such as `#who-is-steward-for` (`--pattern` for batch) |
@@ -131,6 +132,21 @@ If you run Steward via `dotnet run --project` from inside another repository, th
 | `--verbosity quiet\|normal\|verbose\|debug` | Verbosity level (default: normal) |
 | `--no-color` | Disable colored output (overrides config.yaml) |
 | `--config <path>` | Override config directory path |
+
+### Shell completion
+
+Load completion in your shell profile:
+
+```bash
+eval "$(steward completions bash)"   # ~/.bashrc
+eval "$(steward completions zsh)"    # ~/.zshrc, after compinit
+```
+
+```powershell
+steward completions pwsh | Out-String | Invoke-Expression   # $PROFILE
+```
+
+The scripts ask `steward` itself through System.CommandLine's `[suggest]` directive, so they stay current as commands and options change.
 
 ## Validation Rules
 

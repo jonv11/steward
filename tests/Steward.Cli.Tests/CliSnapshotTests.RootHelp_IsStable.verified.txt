@@ -13,18 +13,19 @@ Options:
   --version                                     Show version information
 
 Commands:
-  version            Print version and runtime information
-  orient             Show repository structure classified by artifact role (readme, governance, planning, etc.)
-  outline <path>     Show the repository file tree [default: .]
-  init               Initialize .steward configuration
-  config             Inspect and validate .steward configuration
-  check              Validate repository against policy: required artifacts, frontmatter, links, naming, freshness
-  baseline           Grandfather existing violations so rules apply to new content only
-  md                 Markdown structural operations: query headings/frontmatter, inspect outlines, and edit documents safely
-  search <query>     Search repository content and headings
-  maintain           Deterministic maintenance of governed artifacts
-  status             Show current repository state at a glance
-  explain <rule-id>  Explain a validation rule, or use 'explain path <file>' to show effective governance for a file. Run without arguments to list all rules.
-  refs <path>        Show inbound and outbound references for a file
-  refactor           Refactoring operations for governed files
-  schema <command>   List the JSON Schemas for '--output json', or print one (e.g. 'steward schema check')
+  version                      Print version and runtime information
+  orient                       Show repository structure classified by artifact role (readme, governance, planning, etc.)
+  outline <path>               Show the repository file tree [default: .]
+  init                         Initialize .steward configuration
+  config                       Inspect and validate .steward configuration
+  check                        Validate repository against policy: required artifacts, frontmatter, links, naming, freshness
+  baseline                     Grandfather existing violations so rules apply to new content only
+  md                           Markdown structural operations: query headings/frontmatter, inspect outlines, and edit documents safely
+  search <query>               Search repository content and headings
+  maintain                     Deterministic maintenance of governed artifacts
+  status                       Show current repository state at a glance
+  explain <rule-id>            Explain a validation rule, or use 'explain path <file>' to show effective governance for a file. Run without arguments to list all rules.
+  refs <path>                  Show inbound and outbound references for a file
+  refactor                     Refactoring operations for governed files
+  schema <command>             List the JSON Schemas for '--output json', or print one (e.g. 'steward schema check')
+  completions <bash|pwsh|zsh>  Print a shell completion script (bash, zsh or pwsh); see the README for how to load it

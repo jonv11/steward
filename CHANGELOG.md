@@ -8,6 +8,7 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ### Added
 
+- `steward completions <bash|zsh|pwsh>` prints a shell completion script. The scripts call back into System.CommandLine's `[suggest]` directive, so commands, subcommands, options and option values such as `--scope` complete from the parser and never drift from the CLI. `--output json` wraps the script in the envelope.
 - `steward schema [command]` lists the JSON Schemas (draft 2020-12) that describe `--output json`, or prints one: `check`, `version`, `schema`, and `common` for the shared envelope, the `data.error` shape and the diagnostic shape. The schemas are embedded in the tool, and tests validate real `check` output (failing, passing, with baseline drift, and a configuration error) against them.
 - `steward baseline generate` snapshots every current `check` diagnostic into `baseline.json` in the configuration directory (RFC-017). Entries are keyed by rule, path and a line-independent selector, sorted, and left untouched when nothing changed.
 - `steward check` applies an active baseline: diagnostics it records no longer count toward errors, warnings, info or pass/fail, and are reported as baseline debt instead (a text summary line and `data.summary.baseline` in JSON; omitted from SARIF). A baseline is active when its file exists, unless `baseline.enabled: false` is set in `policy.yaml`. Without a baseline, output is unchanged.

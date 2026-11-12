@@ -111,6 +111,7 @@
     │   ├── CliSnapshotTests.CheckJson_IsStable.verified.txt
     │   ├── CliSnapshotTests.cs
     │   ├── CliSnapshotTests.RootHelp_IsStable.verified.txt
+    │   ├── CompletionsCommandTests.cs
     │   ├── ConfigCommandTests.cs
     │   ├── ConfigPathResolutionTests.cs
     │   ├── ConfigSettingsTests.cs

@@ -19,6 +19,7 @@ public static class SchemaCommand
     [
         ("check", "check.schema.json"),
         ("common", "common.schema.json"),
+        ("completions", "completions.schema.json"),
         ("schema", "schema.schema.json"),
         ("version", "version.schema.json"),
     ];

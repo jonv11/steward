@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://steward.invalid/schemas/v1/completions.schema.json",
+  "title": "steward completions --output json",
+  "description": "A shell completion script. Text output prints the script alone.",
+  "$ref": "common.schema.json#/$defs/envelope",
+  "properties": {
+    "command": { "const": "completions" },
+    "data": {
+      "type": "object",
+      "required": ["shell", "script"],
+      "properties": {
+        "shell": { "enum": ["bash", "zsh", "pwsh"] },
+        "script": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
