@@ -14,3 +14,4 @@ single impact view, and staged adoption. Ticket 01 is the explicit deferral carr
 
 - Whether an indexed mode is ever needed — no performance evidence yet (ticket 05).
 - Which host integration, if any, earns a place outside the offline-first core (ticket 06).
+- Whether steward adopts the sibling CLIs' envelope and exit codes, and in which `0.x` release (ticket 07).
