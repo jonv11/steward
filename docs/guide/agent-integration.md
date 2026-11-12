@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-11-09
+last_updated: 2026-11-12
 ---
 
 # Using Steward with AI Agents
@@ -63,19 +63,28 @@ When the repository has a baseline (`steward baseline generate`, RFC-017), `chec
 
 ### Step 4: Diagnose failures
 
-The JSON output includes structured diagnostics:
+The JSON envelope carries structured diagnostics under `data.diagnostics`. Branch on `data.summary.pass` (or the exit code), not on the top-level `success`, which only says the command ran:
 
 ```json
 {
-  "diagnostics": [
-    {
-      "ruleId": "STWD-003",
-      "severity": "error",
-      "filePath": "docs/my-doc.md",
-      "message": "Required frontmatter field 'status' is missing.",
-      "remediation": "Add 'status' to the YAML frontmatter block at the top of the file."
-    }
-  ]
+  "schemaVersion": "steward-json/v1",
+  "command": "check",
+  "success": true,
+  "exitCode": 1,
+  "data": {
+    "summary": { "errors": 1, "warnings": 0, "infos": 0, "pass": false },
+    "diagnostics": [
+      {
+        "ruleId": "STWD-003",
+        "severity": "error",
+        "category": "frontmatter",
+        "path": "docs/my-doc.md",
+        "message": "Required frontmatter field 'status' is missing.",
+        "remediation": "Add 'status' to the YAML frontmatter block at the top of the file.",
+        "source": "policy.yaml"
+      }
+    ]
+  }
 }
 ```
 
@@ -109,7 +118,7 @@ SARIF 2.1.0 is available only from `steward check`. Use JSON for structured outp
 |------|---------|-------------|
 | 0 | Clean | Proceed — note this includes runs with `warning`/`info` diagnostics |
 | 1 | Validation failures | At least one `error` diagnostic. Parse diagnostics, fix issues, re-check |
-| 2 | Usage error | Fix command invocation |
+| 2 | Usage, configuration or I/O error | Fix the command invocation or `.steward/` configuration |
 | 3 | Internal error | Report to user |
 
 Exit code 0 does **not** mean there were no diagnostics — only that none were `error` severity. Agents that must act on warnings should parse the `diagnostics` array from `--output json` rather than branching on the exit code alone.
