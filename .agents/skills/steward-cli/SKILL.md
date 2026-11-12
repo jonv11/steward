@@ -1,91 +1,86 @@
 ---
 name: steward-cli
-description: Install and orient with the Steward CLI (`steward`) in any repository — a configurable stewardship tool that validates documentation structure, governance policy, and generated artifacts against a `.steward/` contract. Use when a repo has (or should have) a `.steward/` directory, when asked to install/set up Steward, or to decide which Steward persona skill applies. Routes to steward-cli-maintainer (configure governance), steward-cli-contributor (validate changes), or steward-cli-agent (automate validation loops, CI, JSON/SARIF output). Not for the Steward source repo itself — that's steward-self-cli.
+description: Use the Steward CLI (`steward`) in any repository — validate documentation structure and governance policy against a `.steward/` contract, fix diagnostics, keep generated artifacts current, edit Markdown structurally, and drive it from an agent loop or CI with JSON/SARIF output. Use when a repo has (or should have) a `.steward/` directory, when `steward check` fails, when asked what an STWD-* rule means, when changing `.steward/` rules, or when wiring Steward into CI or automation. For a guided first-time setup use setup-steward; for the Steward source repository itself use steward-self-cli.
 ---
 
 # Steward CLI
 
-Steward is a stewardship CLI: it validates a repository's documentation structure, naming conventions, and artifact policy against a declarative `.steward/` contract, and can maintain generated artifacts (structure trees, indexes) deterministically. No network calls, no non-determinism — same input, same output.
+Steward validates a repository's documentation structure, naming and artifact policy against a
+declarative `.steward/` contract, and regenerates structure trees, indexes and managed sections
+deterministically. It never makes network calls: same input, same output.
 
-This skill is the entry point. It covers installation and the commands that work with zero configuration. For task-specific work, it routes to one of three persona skills.
-
-## Which skill do you actually need?
-
-| You are... | Doing... | Use |
-|---|---|---|
-| A maintainer | First-time setup of a repo, guided by repo investigation and a maintainer interview | **setup-steward** (user-invoked: `/setup-steward`) |
-| A maintainer | Setting up `.steward/`, declaring required artifacts, defining rules, wiring CI | **steward-cli-maintainer** |
-| A contributor | Validating your own changes before committing, fixing a failed `steward check` | **steward-cli-contributor** |
-| An AI agent | Running an automated validate→diagnose→fix loop, parsing JSON/SARIF, gating a PR | **steward-cli-agent** |
-| Anyone, in the Steward source repo | Working on Steward's own code/docs | **steward-self-cli** (repo-specific, not this skill) |
-
-The three persona skills assume the CLI is already installed and cover their workflow end-to-end — read this skill first only for install and orientation, then load the persona skill.
+This skill tells you when to reach for which command and what not to do. The tool documents
+itself; read its help and the guides below rather than trusting a memorised table.
 
 ## Install
 
-Requires the **.NET 10 SDK** (10.0+). Verify with `dotnet --version`; earlier SDKs will not run Steward.
+Requires the **.NET 10 SDK** (`dotnet --version`).
 
 ```bash
-# From a published NuGet package (latest release)
-dotnet tool install --global Steward
-
-# From source, tool-path install (to test unreleased work, or pin a specific checkout)
-git clone https://github.com/jonv11/steward.git
-cd steward
-dotnet build steward.sln -c Release
-dotnet pack src/Steward.Cli -c Release --no-build
-dotnet tool install --tool-path ./.tools/steward --add-source ./src/Steward.Cli/bin/Release Steward
-export PATH="$PWD/.tools/steward:$PATH"
+dotnet tool install --global Steward        # latest release from NuGet
 ```
 
-Self-contained release bundles (`win-x64`, `linux-x64`, `osx-arm64`) and checksums are also on the [GitHub Releases page](https://github.com/jonv11/steward/releases).
+Self-contained bundles are on the [releases page](https://github.com/jonv11/steward/releases).
+Never run Steward with `dotnet run --project <steward-checkout>` from inside another repository:
+that repository's `global.json` can pin a different SDK and break the run. Use the installed tool.
 
-**The `global.json` trap:** never invoke Steward via `dotnet run --project <path-to-steward-checkout>` from inside a *different* repository you're validating — that repository's own `global.json` can pin a different SDK and silently break the run. Always use a tool-path or global install (or the built executable directly) when operating on a repo other than Steward's own source checkout.
-
-## Works with zero configuration
-
-These commands run immediately on any repository, `.steward/` or not:
+## Read the contract live
 
 ```bash
-steward version
-steward orient              # curated repo-start orientation
-steward orient --full --tree
-steward outline [path]      # directory tree, or heading outline for a .md file
-steward status              # required/recommended artifact state at a glance
+steward --help                               # every command; `steward <command> --help` for its options
+steward explain                              # every rule; `explain <rule-id>` for one
+steward explain path <file>                  # the rules, frontmatter and naming that apply to one file
+steward config show --effective              # the resolved config and merged policy
+steward schema [check|common|...]            # JSON Schemas for --output json
 ```
 
-A `.steward/` directory unlocks policy-driven validation (`steward check`), frontmatter enforcement, artifact families, and maintenance — that's what the persona skills configure and use.
-
-## The three config files
-
-| File | Purpose | Required |
-|---|---|---|
-| `.steward/config.yaml` | Runtime: output format, discovery/coverage exclusions | No |
-| `.steward/policy.yaml` | The contract: artifacts, artifact families, governance, validation, maintenance | No, but needed for meaningful validation |
-| `.steward/path-policy.yaml` | Naming conventions, forbidden/required paths | No |
-
-All three are optional and independently useful; `steward init --profile <software\|docs\|minimal>` scaffolds the first two as a starting point.
-
-## Exit codes (every persona needs these)
-
-| Code | Meaning |
-|---|---|
-| 0 | Clean — this includes runs with `warning`/`info` diagnostics, only `error` severity fails |
-| 1 | At least one `error`-severity diagnostic |
-| 2 | Usage error — bad arguments or config |
-| 3 | Internal error |
-
-Most validation rules default to `warning` severity, which reports but does not fail the exit code. Only STWD-001, STWD-002, STWD-003, and STWD-005 default to `error`. This is the single most common source of "why didn't CI catch that" surprises — see steward-cli-maintainer for how to raise a rule's severity.
-
-## Discover the rest live, don't memorize it
-
-Steward documents itself; treat these as the source of truth over any cached table, since exact field names, rule sets, and defaults shift between versions:
+## The loop: orient → inspect → change → check → fix → re-check
 
 ```bash
-steward --help
-steward <command> --help
-steward explain                      # list all validation rules
-steward explain <rule-id>            # one rule's meaning, severity, remediation
-steward explain path <file>          # rules that apply to a specific file
-steward config show --effective      # resolved runtime config + merged policy
+steward orient [--signals]                   # what the repo holds and where to start (no config needed)
+steward explain path docs/x.md               # before editing a governed file
+steward check --scope staged                 # before a commit: exactly what you are committing
+steward check --since origin/main            # a branch, merge-base aware (PR gates)
+steward check --fix --apply                  # auto-fix STWD-003, -007, -012, -018; the rest need an edit
+steward maintain --apply                     # after adding, moving or renaming files
 ```
+
+For automation add `--output json` and parse `data.diagnostics` (each has `ruleId`, `severity`
+`error|warn|info`, `path`, `message`, `remediation`); validate against `steward schema check`.
+`check --output sarif` feeds code-scanning annotations. Exit codes: `0` no error-severity
+diagnostic (warnings may remain), `1` at least one error, `2` usage, configuration or I/O error,
+`3` internal error — surface it, don't retry.
+
+Edit Markdown with `steward md query|outline|edit|split` instead of regex: every `md edit`
+operation previews until you pass `--apply`, and heading selectors match exactly, so run
+`steward md outline <file>` first. Before moving a file, `steward refs <path>`; to move it with
+its links, `steward refactor move <old> <new> --apply`.
+
+## Guardrails
+
+- **Exit `0` is not "no diagnostics".** Most rules default to `warning`. To make one fail CI, raise
+  it under `validation.severity_overrides` in `policy.yaml`; branching on the exit code alone
+  ignores warnings.
+- **Never hand-edit generated output** (`STRUCTURE.md`, managed sections). It is flagged stale
+  (STWD-007) and overwritten by the next `maintain --apply`.
+- **Change rules, not files, only when you own the policy.** A contributor satisfies `.steward/`;
+  a maintainer changes it. After any `.steward/` edit run `steward config validate` (what is
+  wrong) and `steward config doctor` (what silently matches nothing).
+- **`config suggest` is a heuristic** starting point, never a finished policy.
+- **Profile list sections replace, not append**: `artifacts:` in `policy.yaml` replaces the profile's list.
+- **`search --role` finds only explicit `artifacts[]` roles**, not family-matched files; use
+  `orient --full --output json` or globs to enumerate a family.
+- **Adopting a rule on an existing repo:** `steward baseline generate` grandfathers today's
+  violations so `check` fails only on new ones; commit `.steward/baseline.json`.
+
+## Go deeper
+
+- First-time setup, guided by a repository investigation and a maintainer interview: the
+  **setup-steward** skill (`/setup-steward`).
+- Configuring governance (artifacts, families, severity, exclusions, maintenance, CI):
+  [maintainer guide](https://github.com/jonv11/steward/blob/dev/docs/guide/maintainer-guide.md)
+  and [configuration reference](https://github.com/jonv11/steward/blob/dev/docs/guide/configuration-reference.md).
+- Validating your changes and the frequent diagnostics:
+  [contributor guide](https://github.com/jonv11/steward/blob/dev/docs/guide/contributor-guide.md).
+- Agent loops, JSON, SARIF and MdPath selectors:
+  [agent integration guide](https://github.com/jonv11/steward/blob/dev/docs/guide/agent-integration.md).

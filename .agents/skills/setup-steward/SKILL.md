@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Build a `.steward/` contract that is **necessary** (each rule guards a convention the repo already follows or the maintainer asks for) and **sufficient** (every convention worth guarding is covered). Every rule rests on **evidence**: files you read, or an answer the maintainer gave.
 
-Field syntax: the `steward-cli-maintainer` skill if installed, else the [configuration reference](https://github.com/jonv11/steward/blob/dev/docs/guide/configuration-reference.md). Rule meanings and the setting that turns each on: [rules.md](rules.md).
+Field syntax: the [configuration reference](https://github.com/jonv11/steward/blob/dev/docs/guide/configuration-reference.md). Rule meanings and the setting that turns each on: [rules.md](rules.md).
 
 Investigate → ask → dry run → confirm → write.
 

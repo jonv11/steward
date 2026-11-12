@@ -1,6 +1,6 @@
 ---
 name: steward-self-cli
-description: Orient, validate, and maintain artifacts in the Steward source repository itself using the Steward CLI, built from source. Use when navigating this repo, checking its own governance, inspecting a file's rules, refreshing generated artifacts, or extracting Markdown content here. Not for using Steward in a different repository — for that, use steward-cli-maintainer, steward-cli-contributor, or steward-cli-agent.
+description: Orient, validate, and maintain artifacts in the Steward source repository itself using the Steward CLI, built from source. Use when navigating this repo, checking its own governance, inspecting a file's rules, refreshing generated artifacts, or extracting Markdown content here. Not for using Steward in a different repository — for that, use steward-cli.
 ---
 
 # SKILL: Using the Steward CLI in This Repository
@@ -9,7 +9,7 @@ description: Orient, validate, and maintain artifacts in the Steward source repo
 
 Use `steward` to orient, inspect governance, validate, and maintain artifacts in this repository using its own `.steward/` contract. This skill covers operating on the repo as a governed repository — not implementing Steward internals.
 
-This skill is specific to the Steward source repo: it assumes a source checkout, `dotnet run --project`, and this repo's own `.steward/policy.yaml`. If you are using Steward as a tool in *another* repository, this skill does not apply — use [steward-cli-maintainer](../steward-cli-maintainer/SKILL.md), [steward-cli-contributor](../steward-cli-contributor/SKILL.md), or [steward-cli-agent](../steward-cli-agent/SKILL.md) instead.
+This skill is specific to the Steward source repo: it assumes a source checkout, `dotnet run --project`, and this repo's own `.steward/policy.yaml`. If you are using Steward as a tool in *another* repository, this skill does not apply — use [steward-cli](../steward-cli/SKILL.md) instead.
 
 ## When to Use This Skill
 

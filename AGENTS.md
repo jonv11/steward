@@ -90,11 +90,8 @@ See [.agents/skills/steward-self-cli/SKILL.md](.agents/skills/steward-self-cli/S
 
 This repo also authors the general-purpose skills that teach *any* repository's agents how to use `steward` as a product — not specific to this repo, and usable once copied into another repo's `.agents/skills/`:
 
-- [.agents/skills/steward-cli/SKILL.md](.agents/skills/steward-cli/SKILL.md) — install and orientation entry point
+- [.agents/skills/steward-cli/SKILL.md](.agents/skills/steward-cli/SKILL.md) — install, the validation loop, JSON/SARIF automation, structural Markdown editing and guardrails, routing to the guides in `docs/guide/` for depth
 - [.agents/skills/setup-steward/SKILL.md](.agents/skills/setup-steward/SKILL.md) — guided first-time setup: investigate, interview, dry-run, then write `.steward/` (user-invoked)
-- [.agents/skills/steward-cli-maintainer/SKILL.md](.agents/skills/steward-cli-maintainer/SKILL.md) — configuring `.steward/` governance
-- [.agents/skills/steward-cli-contributor/SKILL.md](.agents/skills/steward-cli-contributor/SKILL.md) — validating changes against an existing policy
-- [.agents/skills/steward-cli-agent/SKILL.md](.agents/skills/steward-cli-agent/SKILL.md) — automated validation loops, JSON/SARIF, structural Markdown editing
 
 Do not confuse these with `steward-self-cli` above, which is specific to working in this source repo.
 

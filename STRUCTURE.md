@@ -5,9 +5,6 @@
 │   └── skills/
 │       ├── setup-steward
 │       ├── steward-cli
-│       ├── steward-cli-agent
-│       ├── steward-cli-contributor
-│       ├── steward-cli-maintainer
 │       └── steward-self-cli
 ├── .editorconfig
 ├── .github/
