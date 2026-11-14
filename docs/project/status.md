@@ -2,7 +2,7 @@
 type: project
 status: Active
 summary: Current repository facts, implemented capability baseline, and known health gaps
-last_updated: 2026-11-09
+last_updated: 2026-11-14
 review_after: 2026-12-09
 ---
 
@@ -15,7 +15,7 @@ Steward's latest published version is **`v0.18.1`**, tagged and released to GitH
 | Area | Current truth |
 |------|---------------|
 | Runtime | .NET 10 |
-| Tests | 892 passing: 606 core and 286 CLI |
+| Tests | 924 passing: 613 core and 311 CLI |
 | Validation rules | 21 (`STWD-001` through `STWD-021`) |
 | Auto-fix rules | 4 (`STWD-003`, `STWD-007`, `STWD-012`, `STWD-018`) |
 | Built-in init profiles | `software`, `docs`, `minimal` |
@@ -62,8 +62,10 @@ Agent guidance and issue tracking:
 
 ## Current Health
 
-- Build and tests pass locally (re-verified 2026-11-09).
+- Build and all 924 tests pass locally (Release configuration, re-verified 2026-11-14).
 - Markdown lint passes.
+- The [test quality assessment](../history/audits/unit-test-quality-audit-2026-11-14.md) strengthened redaction and Git-scoping oracles and removed silent successful Git-test exits. Remaining risks include UTC-midnight date assertions and untested search I/O-failure handling.
+- Latest inspected default-branch CI (2026-11-12, `88f36e5`) passes Linux/macOS but fails six Windows schema/completion tests at upstream commit `88f36e5`; local macOS results do not verify those Windows failures.
 - Hosted build, release, and NuGet publication evidence is established through `v0.18.1`.
 - The repository remains pre-1.0; no stable-release authorization has been accepted.
 - The current milestone, rule phase-in and baseline, is implemented apart from the baseline-growth gate — see the [roadmap](roadmap.md).
