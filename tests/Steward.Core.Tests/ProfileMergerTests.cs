@@ -7,15 +7,19 @@ namespace Steward.Core.Tests;
 public class ProfileMergerTests
 {
     [Theory]
-    [InlineData("software")]
-    [InlineData("docs")]
-    [InlineData("mixed")]
-    [InlineData("knowledge")]
-    [InlineData("minimal")]
-    public void GetProfilePolicy_ValidProfile_ReturnsPolicy(string profile)
+    [InlineData("software", "software", true)]
+    [InlineData("docs", "documentation", true)]
+    [InlineData("mixed", "mixed", true)]
+    [InlineData("knowledge", "knowledge", true)]
+    [InlineData("minimal", "general", false)]
+    public void GetProfilePolicy_ValidProfile_ReturnsRepositoryContract(
+        string profile, string repositoryType, bool readmeRequired)
     {
         var policy = ProfileDefaults.GetProfilePolicy(profile);
         policy.Should().NotBeNull();
+        policy!.Repository!.Type.Should().Be(repositoryType);
+        policy.Artifacts.Should().ContainSingle(a => a.Path == "README.md")
+            .Which.Required.Should().Be(readmeRequired);
     }
 
     [Fact]
@@ -37,7 +41,7 @@ public class ProfileMergerTests
     {
         var config = ProfileDefaults.CreateDefaultConfig("docs");
         config.Profile.Should().Be("docs");
-        config.Discovery!.Exclude.Should().NotBeEmpty();
+        config.Discovery!.Exclude.Should().Contain(["node_modules/", ".vs/", "*.user", ".tools/"]);
     }
 
     [Fact]

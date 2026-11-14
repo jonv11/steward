@@ -76,14 +76,15 @@ public class SearchEngineTests
     [Fact]
     public void Search_MaxResults_LimitsOutput()
     {
-        var lines = string.Concat(Enumerable.Range(1, 200).Select(i => $"match line {i}\n"));
+        var lines = string.Concat(Enumerable.Range(1, 6).Select(i => $"match line {i}\n"));
         _fs.AddFile("root/big.txt", lines);
         var files = new[] { new DiscoveredFile("big.txt", 5000, false) };
 
         var result = CreateEngine().Search("match", files, SearchMode.Content, maxResults: 5);
 
         result.Matches.Should().HaveCount(5);
-        result.TotalMatches.Should().BeGreaterThan(5);
+        result.TotalMatches.Should().Be(6);
+        result.Matches.Select(m => m.Line).Should().Equal(1, 2, 3, 4, 5);
         result.Truncated.Should().BeTrue();
     }
 
@@ -109,7 +110,22 @@ public class SearchEngineTests
         var result = CreateEngine().Search("Hello", files, SearchMode.Content,
             scopeRole: "authoritative", policy: policy);
 
-        result.Matches.Should().OnlyContain(m => m.Path == "README.md");
+        result.Matches.Should().ContainSingle()
+            .Which.Path.Should().Be("README.md");
+        result.TotalMatches.Should().Be(1);
+    }
+
+    [Fact]
+    public void Search_ExactlyAtLimit_DoesNotReportTruncation()
+    {
+        _fs.AddFile("root/doc.txt", "match first\nmatch second\n");
+        var files = new[] { new DiscoveredFile("doc.txt", 25, false) };
+
+        var result = CreateEngine().Search("match", files, SearchMode.Content, maxResults: 2);
+
+        result.Matches.Select(m => m.Snippet).Should().Equal("match first", "match second");
+        result.TotalMatches.Should().Be(2);
+        result.Truncated.Should().BeFalse();
     }
 
     [Fact]

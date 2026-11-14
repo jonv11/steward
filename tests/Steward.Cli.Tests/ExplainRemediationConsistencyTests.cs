@@ -12,28 +12,17 @@ namespace Steward.Cli.Tests;
 public class ExplainRemediationConsistencyTests
 {
     [Fact]
-    public void GetRemediation_AllRules_ReturnNonGenericText()
+    public void GetRemediation_AllRegisteredRules_HaveSpecificNonEmptyGuidance()
     {
         var rules = RuleRegistry.CreateAllRules();
+        rules.Should().NotBeEmpty("the registry must contain rules to check");
 
         foreach (var rule in rules)
         {
             var remediation = ExplainCommand.GetRemediation(rule.RuleId);
+            remediation.Should().NotBeNullOrWhiteSpace($"rule {rule.RuleId} needs remediation guidance");
             remediation.Should().NotBe("No specific remediation guidance available.",
-                because: $"rule {rule.RuleId} should have specific remediation guidance in ExplainCommand.GetRemediation");
-        }
-    }
-
-    [Fact]
-    public void GetRemediation_AllRules_ReturnNonNullNonEmpty()
-    {
-        var rules = RuleRegistry.CreateAllRules();
-
-        foreach (var rule in rules)
-        {
-            var remediation = ExplainCommand.GetRemediation(rule.RuleId);
-            remediation.Should().NotBeNullOrWhiteSpace(
-                because: $"rule {rule.RuleId} must have non-empty remediation in ExplainCommand.GetRemediation");
+                $"rule {rule.RuleId} needs specific remediation guidance");
         }
     }
 
@@ -66,21 +55,5 @@ public class ExplainRemediationConsistencyTests
         var remediation = ExplainCommand.GetRemediation("STWD-018");
         remediation.Should().NotBe("No specific remediation guidance available.",
             because: "STWD-018 is a new rule and must have specific remediation text");
-    }
-
-    [Fact]
-    public void AllRulesInRegistry_HaveRemediationInExplainCommand()
-    {
-        var rules = RuleRegistry.CreateAllRules();
-
-        // Every rule in the registry should have an entry in GetRemediation that is
-        // distinct from the fallback.
-        var undocumentedRules = rules
-            .Where(r => ExplainCommand.GetRemediation(r.RuleId) == "No specific remediation guidance available.")
-            .Select(r => r.RuleId)
-            .ToList();
-
-        undocumentedRules.Should().BeEmpty(
-            because: $"all rules should have specific remediation in ExplainCommand. Missing: [{string.Join(", ", undocumentedRules)}]");
     }
 }

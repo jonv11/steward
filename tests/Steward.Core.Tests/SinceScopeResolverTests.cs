@@ -29,9 +29,6 @@ public class SinceScopeResolverTests
     {
         // Use a real git repo so git can start, then pass an invalid ref.
         // git will run but return exit code != 0, and the resolver must throw.
-        if (!IsGitAvailable())
-            return; // Skip if git not installed
-
         var tempDir = Path.Combine(Path.GetTempPath(), "steward-since-invalid-" + Guid.NewGuid().ToString("N")[..8]);
         try
         {
@@ -110,35 +107,10 @@ public class SinceScopeResolverTests
         }
     }
 
-    private static bool IsGitAvailable()
-    {
-        try
-        {
-            var psi = new System.Diagnostics.ProcessStartInfo("git", "--version")
-            {
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            using var p = System.Diagnostics.Process.Start(psi)!;
-            return p.WaitForExit(5_000) && p.ExitCode == 0;
-        }
-        catch { return false; }
-    }
 
     private static void RunGit(string workingDir, string args)
     {
-        var psi = new System.Diagnostics.ProcessStartInfo("git", args)
-        {
-            WorkingDirectory = workingDir,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-        using var p = System.Diagnostics.Process.Start(psi)!;
-        p.WaitForExit(10_000);
+        _ = GetGitOutput(workingDir, args);
     }
 
     private static string GetGitOutput(string workingDir, string args)
@@ -152,8 +124,14 @@ public class SinceScopeResolverTests
             RedirectStandardError = true
         };
         using var p = System.Diagnostics.Process.Start(psi)!;
-        var output = p.StandardOutput.ReadToEnd();
-        p.WaitForExit(10_000);
-        return output;
+        var output = p.StandardOutput.ReadToEndAsync();
+        var error = p.StandardError.ReadToEndAsync();
+        if (!p.WaitForExit(10_000))
+        {
+            p.Kill(entireProcessTree: true);
+            throw new TimeoutException($"git {args} did not finish within 10 seconds.");
+        }
+        p.ExitCode.Should().Be(0, $"git {args} must succeed: {error.GetAwaiter().GetResult()}");
+        return output.GetAwaiter().GetResult();
     }
 }
