@@ -560,7 +560,7 @@ public static class ConfigCommand
                                 $"declare conflicting allowed_values for field '{field}'. " +
                                 $"Family allows: [{string.Join(", ", familyValues)}]. " +
                                 $"Requirement allows: [{string.Join(", ", reqValues)}]. " +
-                                $"For files matched by both, STWD-003 will use the family's allowed_values.",
+                                $"For files matched by both, STWD-003 uses the family's allowed_values_mode (union by default).",
                                 $"Align the allowed_values for '{field}' between the family '{family.Family}' " +
                                 $"and the frontmatter requirement pattern '{req.Pattern}', or remove the overlap."));
                         }

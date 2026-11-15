@@ -563,6 +563,41 @@ public class ConfigCommandTests : IDisposable
         findings.Any(f => f.Category == "conflicting-allowed-values").Should().Be(conflict);
     }
 
+    [Theory]
+    [InlineData(null, "living", 0)]
+    [InlineData("union", "living", 0)]
+    [InlineData("replace", "living", 1)]
+    [InlineData("replace", "historical", 0)]
+    public void FamilyVocabularyMode_ValidationAndExplainAgree(string? mode, string status, int expectedExit)
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward/config.yaml"), "profile: minimal\n");
+        Directory.CreateDirectory(Path.Combine(_tempDir, "docs"));
+        File.WriteAllText(Path.Combine(_tempDir, "README.md"), "# Home\n\n[Record](docs/record.md)\n");
+        File.WriteAllText(Path.Combine(_tempDir, "docs/record.md"), "---\nstatus: " + status + "\n---\n# Record\n");
+        var modeField = mode == null ? "" : "      allowed_values_mode: " + mode + "\n";
+        var policy = "artifact_families:\n  - family: record\n    match: {path_pattern: 'docs/*.md'}\n    frontmatter_schema:\n" + modeField +
+            "      allowed_values: {status: [historical]}\nvalidation:\n  frontmatter_requirements:\n    - pattern: 'docs/**/*.md'\n      allowed_values: {status: [living, historical]}\n";
+        File.WriteAllText(Path.Combine(_tempDir, ".steward/policy.yaml"), policy);
+
+        var validation = CliTestHelper.InvokeCapture("check", "--output", "json");
+        validation.ExitCode.Should().Be(expectedExit, validation.Output + validation.Error);
+        var explanation = CliTestHelper.InvokeCapture("explain", "path", "docs/record.md", "--output", "json");
+        explanation.ExitCode.Should().Be(0, explanation.Output + explanation.Error);
+        using var json = System.Text.Json.JsonDocument.Parse(explanation.Output);
+        var values = json.RootElement.GetProperty("data").GetProperty("allowedValues")
+            .GetProperty("status").EnumerateArray().Select(v => v.GetString()).ToArray();
+        values.Should().BeEquivalentTo(mode == "replace" ? new[] { "historical" } : new[] { "living", "historical" });
+    }
+
+    [Fact]
+    public void ConfigValidate_RejectsUnknownFamilyVocabularyMode()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, ".steward/policy.yaml"),
+            "artifact_families:\n  - family: record\n    match: {path_pattern: 'docs/*.md'}\n    frontmatter_schema: {allowed_values_mode: unexpected}\n");
+        var result = CliTestHelper.InvokeCapture("config", "validate");
+        result.ExitCode.Should().Be(2);
+    }
+
     private static CommandContext CreateDoctorContext(
         RepositoryPolicy? policy,
         PathPolicyDocument? pathPolicy,

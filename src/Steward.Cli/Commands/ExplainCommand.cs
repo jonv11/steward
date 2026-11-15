@@ -443,11 +443,7 @@ public static class ExplainCommand
                     if (!requiredFields.Contains(field, StringComparer.OrdinalIgnoreCase))
                         requiredFields.Add(field);
                 }
-                if (family.FrontmatterSchema?.AllowedValues != null)
-                {
-                    foreach (var (field, values) in family.FrontmatterSchema.AllowedValues)
-                        allowedValues[field] = values;
-                }
+                family.FrontmatterSchema?.ApplyAllowedValuesTo(allowedValues);
             }
         }
 

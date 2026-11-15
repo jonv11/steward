@@ -100,13 +100,8 @@ public sealed class RequiredFrontmatterFieldRule : IValidationRule, IFixableRule
                             effectiveFields = [.. effectiveFields, field];
                     }
 
-                    // Merge family allowed_values with any scoped overrides so explicit
-                    // path-specific requirements can broaden or specialize a family schema.
-                    if (matchedFamily.FrontmatterSchema?.AllowedValues != null)
-                    {
-                        foreach (var (field, values) in matchedFamily.FrontmatterSchema.AllowedValues)
-                            MergeAllowedValues(effectiveAllowedValues, field, values);
-                    }
+                    // Legacy union retains scoped exceptions; replace makes family fields strict.
+                    matchedFamily.FrontmatterSchema?.ApplyAllowedValuesTo(effectiveAllowedValues);
                 }
             }
 
