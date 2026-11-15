@@ -1,6 +1,6 @@
 # 03 — Accept narrower family vocabularies in doctor
 
-Status: claimed
+Status: done
 Type: task
 Category: bug
 Blocked by: None — can start immediately
@@ -14,10 +14,10 @@ retaining warnings for family values outside the scoped general vocabulary.
 
 ## Acceptance criteria
 
-- [ ] A real doctor test rejects the false warning before the fix.
-- [ ] Narrower and equal vocabularies pass; incompatible or expanding vocabularies still warn.
-- [ ] Tests, Markdown lint and Steward check pass.
+- [x] A real doctor test rejects the false warning before the fix.
+- [x] Narrower and equal vocabularies pass; incompatible or expanding vocabularies still warn.
+- [x] Tests, Markdown lint and Steward check pass.
 
 ## Answer
 
-Pending.
+Observed the two narrower-vocabulary cases fail before the fix. Doctor now uses case-insensitive subset compatibility; equal, narrower, incompatible and expanding cases are covered. Full Release tests: 645 core + 329 CLI passed, no skips. Markdown lint and Steward check passed.
