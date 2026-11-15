@@ -1,6 +1,6 @@
 # Spec — Bounded documentation contracts
 
-Status: active
+Status: done
 
 ## Problem statement
 
