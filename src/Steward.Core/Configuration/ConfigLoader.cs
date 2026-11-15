@@ -410,6 +410,11 @@ public sealed class ConfigLoader
                 }
             }
 
+            if (family.FrontmatterSchema?.AllowedValuesMode is { } mode &&
+                !string.Equals(mode, "union", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(mode, "replace", StringComparison.OrdinalIgnoreCase))
+                throw new StewardConfigException("Family allowed_values_mode must be union or replace.", path);
+
             if (family.RequiredSections != null)
             {
                 foreach (var section in family.RequiredSections)

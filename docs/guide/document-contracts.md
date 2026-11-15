@@ -108,6 +108,10 @@ Several maintained regions may share an index page. Maintenance evaluates them i
 previous planned content, including metadata updates, and applies that same order. One apply
 updates all regions; preview does not modify the checkout.
 
+For strict lifecycle vocabularies, declare `frontmatter_schema.allowed_values_mode: replace`
+on the family. The default union keeps scoped exceptions and cannot narrow a broader general
+vocabulary by itself.
+
 ## Adoption and diagnosis
 
 Run `config validate`, `config doctor` and `check` after declaring contracts. Doctor identifies

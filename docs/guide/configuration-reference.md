@@ -213,6 +213,7 @@ artifact_families:
 | `role` | string | _(none)_ | Role assigned to all matched files |
 | `importance` | string | `optional` | `required`, `recommended`, or `optional` |
 | `frontmatter_schema.required` | list | `[]` | Frontmatter field names that must be present (STWD-003) |
+| `frontmatter_schema.allowed_values_mode` | string | `union` | `union` combines scoped and family vocabularies; `replace` uses the family values for its declared fields |
 | `frontmatter_schema.allowed_values` | map | `{}` | Field→allowed values for validation (case-insensitive) |
 | `frontmatter_schema.allowed_fields` | list | _(none)_ | Complete allowed field set for a closed schema. Unexpected fields produce STWD-003 warnings; global auto-fields are implicitly allowed |
 | `frontmatter_schema.deprecated_fields` | map | `{}` | Deprecated field→replacement mapping, or `null` for removal. STWD-003 reports and can auto-fix migrations |
@@ -443,9 +444,12 @@ The markers are **asymmetric**:
 
 Do not put an `id` on the end marker. STWD-005 accepts `<!-- steward:end id="..." -->` as a valid closing marker, but the maintainer looks for the bare form, does not find it, and writes nothing. No diagnostic explains why. If a region silently stays stale, check its end marker first.
 
-A family may narrow a general frontmatter vocabulary: for example, a report family may require
-`status: historical` within a repository allowing `living` or `historical`. Doctor warns if the
-family admits values outside the overlapping general requirement.
+Family vocabularies use `allowed_values_mode: union` by default, retaining scoped exceptions.
+Set `frontmatter_schema.allowed_values_mode: replace` when a family must narrow the general
+vocabulary, such as requiring report `status: historical` within a repository allowing `living`
+or `historical`. Replacement applies only to fields declared by that family. Validation and
+`explain path` use the same calculation. Doctor warns if the family admits values outside the
+overlapping general requirement; a compatible subset alone does not change the default union.
 
 ### document_contracts section
 

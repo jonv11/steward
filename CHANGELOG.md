@@ -8,6 +8,8 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ### Added
 
+- Artifact-family `frontmatter_schema.allowed_values_mode: replace` enforces a strict family vocabulary while the default `union` preserves scoped exceptions. Validation and `explain path` share the effective-value calculation.
+
 - Opt-in bounded document contracts: STWD-022 content and index budgets, STWD-023 unique identities and metadata relationships, and STWD-024 ordered source collection SHA-256 verification. Artifact `index_pattern` supports bounded topic-index coverage.
 
 - `steward completions <bash|zsh|pwsh>` prints a shell completion script. The scripts call back into System.CommandLine's `[suggest]` directive, so commands, subcommands, options and option values such as `--scope` complete from the parser and never drift from the CLI. `--output json` wraps the script in the envelope.

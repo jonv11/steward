@@ -354,6 +354,24 @@ public sealed class ArtifactFamilyMatch
 
 public sealed class ArtifactFamilyFrontmatterSchema
 {
+    /// <summary>union (default) retains scoped exceptions; replace makes family values authoritative.</summary>
+    [YamlMember(Alias = "allowed_values_mode")]
+    public string? AllowedValuesMode { get; set; }
+
+    /// <summary>Shared effective-vocabulary calculation for validation and explanation.</summary>
+    public void ApplyAllowedValuesTo(Dictionary<string, List<string>> target)
+    {
+        foreach (var (field, values) in AllowedValues ?? [])
+        {
+            var declared = values.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            if (string.Equals(AllowedValuesMode, "replace", StringComparison.OrdinalIgnoreCase) ||
+                !target.TryGetValue(field, out var existing))
+                target[field] = declared;
+            else
+                target[field] = existing.Union(declared, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+    }
+
     /// <summary>Field names that must be present in matched files' frontmatter.</summary>
     [YamlMember(Alias = "required")]
     public List<string>? Required { get; set; }
