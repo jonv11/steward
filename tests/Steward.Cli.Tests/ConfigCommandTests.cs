@@ -535,6 +535,34 @@ public class ConfigCommandTests : IDisposable
         findings.Should().Contain(f => f.Category == "conflicting-allowed-values");
     }
 
+    [Theory]
+    [InlineData("historical", false)]
+    [InlineData("HISTORICAL", false)]
+    [InlineData("living,historical", false)]
+    [InlineData("active,historical", true)]
+    [InlineData("living,historical,active", true)]
+    public void ConfigDoctor_FamilyMayNarrowGeneralVocabulary(string values, bool conflict)
+    {
+        var policy = new RepositoryPolicy
+        {
+            ArtifactFamilies = [new()
+            {
+                Family = "decision", Match = new() { PathPattern = "docs/decisions/*.md" },
+                FrontmatterSchema = new() { AllowedValues = new() { ["status"] = values.Split(',').ToList() } }
+            }],
+            Validation = new()
+            {
+                FrontmatterRequirements = [new()
+                {
+                    Pattern = "docs/**/*.md", AllowedValues = new() { ["status"] = ["living", "historical"] }
+                }]
+            }
+        };
+        var context = CreateDoctorContext(policy, null, [new DiscoveredFile("docs/decisions/ADR-01.md", 100, false)]);
+        var findings = ConfigCommand.RunDoctor(context);
+        findings.Any(f => f.Category == "conflicting-allowed-values").Should().Be(conflict);
+    }
+
     private static CommandContext CreateDoctorContext(
         RepositoryPolicy? policy,
         PathPolicyDocument? pathPolicy,

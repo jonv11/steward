@@ -443,6 +443,10 @@ The markers are **asymmetric**:
 
 Do not put an `id` on the end marker. STWD-005 accepts `<!-- steward:end id="..." -->` as a valid closing marker, but the maintainer looks for the bare form, does not find it, and writes nothing. No diagnostic explains why. If a region silently stays stale, check its end marker first.
 
+A family may narrow a general frontmatter vocabulary: for example, a report family may require
+`status: historical` within a repository allowing `living` or `historical`. Doctor warns if the
+family admits values outside the overlapping general requirement.
+
 ### document_contracts section
 
 Opt-in document, section, table-cell and index budgets (STWD-022), unique metadata identities

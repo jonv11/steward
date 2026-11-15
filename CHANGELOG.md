@@ -24,6 +24,8 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ### Fixed
 
+- `config doctor` accepts a family vocabulary that narrows the general frontmatter vocabulary, while still reporting family values outside it.
+
 - Maintenance composes generated regions and metadata edits in plan order when they share a file. Preview stays read-only, and one apply preserves every region instead of overwriting earlier updates.
 
 - A bare relative `--config` directory such as `-c .steward-draft` no longer crashes `check`, `config doctor` and the other discovery commands with an unhandled `ArgumentException`. Every command now resolves `--config` against the current directory before deriving the repository root.
