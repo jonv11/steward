@@ -549,10 +549,10 @@ public static class ConfigCommand
                         if (!req.AllowedValues.TryGetValue(field, out var reqValues))
                             continue;
 
-                        // If both declare allowed_values for the same field but with different sets, warn
+                        // A family may narrow the general vocabulary; warn only if it admits values outside it.
                         var familySet = new HashSet<string>(familyValues, StringComparer.OrdinalIgnoreCase);
                         var reqSet = new HashSet<string>(reqValues, StringComparer.OrdinalIgnoreCase);
-                        if (!familySet.SetEquals(reqSet))
+                        if (!familySet.IsSubsetOf(reqSet))
                         {
                             findings.Add(new DoctorFinding(
                                 "conflicting-allowed-values",
