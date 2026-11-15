@@ -295,4 +295,34 @@ maintenance:
         // --diff should display lines with + or - prefix for changes
         output.Should().Contain("+");
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Apply_ComposesMultipleRegionsAndMetadataInEitherOrder(bool metadataFirst)
+    {
+        WriteFile(".steward/config.yaml", "profile: minimal\n");
+        WriteFile("a/one.md", "---\ndescription: First source\n---\n# First source\n");
+        WriteFile("b/two.md", "---\ndescription: Second source\n---\n# Second source\n");
+        WriteFile("README.md", "---\nstamp: old\n---\n# Home\n\n<!-- steward:begin id=\"a\" -->\n<!-- steward:end -->\n\n<!-- steward:begin id=\"b\" -->\n<!-- steward:end -->\n");
+        const string metadata = "    - id: metadata\n      path: README.md\n      type: frontmatter-auto\n      targets: README.md\n      fields: {stamp: composed}\n";
+        const string regions = "    - id: a\n      path: README.md\n      type: index\n      source: a/*.md\n      managed_section: a\n    - id: b\n      path: README.md\n      type: directory-index\n      source: b/*.md\n      managed_section: b\n";
+        WritePolicyYaml("maintenance:\n  artifacts:\n" + (metadataFirst ? metadata + regions : regions + metadata));
+        var original = File.ReadAllText(Path.Combine(_tempDir, "README.md"));
+        original.Should().Contain("stamp: old");
+
+        var preview = InvokeMaintain("maintain");
+        preview.ExitCode.Should().Be(0, preview.Output + preview.Error);
+        File.ReadAllText(Path.Combine(_tempDir, "README.md")).Should().Be(original, "preview is read-only");
+        var applied = InvokeMaintain("maintain", "--apply");
+        applied.ExitCode.Should().Be(0, applied.Output + applied.Error);
+        var content = File.ReadAllText(Path.Combine(_tempDir, "README.md"));
+        content.Should().Contain("a/one.md").And.Contain("b/two.md").And.Contain("stamp: composed");
+
+        var again = InvokeMaintain("maintain", "--apply");
+        again.ExitCode.Should().Be(0, again.Output + again.Error);
+        again.Output.Should().NotContain("MAINTAIN");
+        File.ReadAllText(Path.Combine(_tempDir, "README.md")).Should().Be(content);
+    }
+
 }

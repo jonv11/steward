@@ -75,35 +75,22 @@ public static class MaintainCommand
             var appliedChanges = new List<(string path, int added, int removed)>();
             if (apply && plan.HasChanges)
             {
-                foreach (var action in plan.Actions.Where(a => a.HasChanges && a.ExpectedContent != null))
+                foreach (var action in plan.Actions.Where(a => a.HasChanges && !a.IsBlocked))
                 {
-                    var fullPath = Path.Combine(ctx.RootPath, action.ArtifactPath);
-                    var dir = Path.GetDirectoryName(fullPath);
-                    if (dir != null && !Directory.Exists(dir))
-                        Directory.CreateDirectory(dir);
-
-                    var oldContent = File.Exists(fullPath) ? File.ReadAllText(fullPath) : "";
-                    File.WriteAllText(fullPath, action.ExpectedContent);
-
-                    var (added, removed) = CountDiffLines(oldContent, action.ExpectedContent!);
-                    appliedChanges.Add((action.ArtifactPath, added, removed));
+                    if (action.ExpectedContent != null) Write(action.ArtifactPath, action.ExpectedContent);
+                    foreach (var edit in action.FileEdits)
+                        Write(edit.FilePath, edit.ExpectedContent);
                 }
 
-                foreach (var action in plan.Actions.Where(a => a.HasChanges && a.FileEdits.Count > 0))
+                void Write(string path, string content)
                 {
-                    foreach (var edit in action.FileEdits)
-                    {
-                        var fullPath = Path.Combine(ctx.RootPath, edit.FilePath);
-                        var dir = Path.GetDirectoryName(fullPath);
-                        if (dir != null && !Directory.Exists(dir))
-                            Directory.CreateDirectory(dir);
-
-                        var oldContent = File.Exists(fullPath) ? File.ReadAllText(fullPath) : "";
-                        File.WriteAllText(fullPath, edit.ExpectedContent);
-
-                        var (added, removed) = CountDiffLines(oldContent, edit.ExpectedContent);
-                        appliedChanges.Add((edit.FilePath, added, removed));
-                    }
+                    var fullPath = Path.Combine(ctx.RootPath, path);
+                    var dir = Path.GetDirectoryName(fullPath);
+                    if (dir != null && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                    var oldContent = File.Exists(fullPath) ? File.ReadAllText(fullPath) : "";
+                    File.WriteAllText(fullPath, content);
+                    var (added, removed) = CountDiffLines(oldContent, content);
+                    appliedChanges.Add((path, added, removed));
                 }
             }
 

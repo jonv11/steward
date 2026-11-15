@@ -1,5 +1,7 @@
 using Steward.Core.Configuration;
 using Steward.Core.Validation;
+using Steward.Core.Discovery;
+using Steward.Core.Markdown;
 
 namespace Steward.Core.Maintenance;
 
@@ -95,15 +97,38 @@ public sealed class MaintenanceEngine
             });
         }
 
+        var plannedFiles = new PlannedFileSystem(evaluationContext.FileSystem);
+        var files = evaluationContext.Files.ToList();
         foreach (var config in ordered)
         {
             if (_maintainers.TryGetValue(config.Type, out var maintainer))
             {
-                actions.Add(maintainer.Evaluate(config, evaluationContext));
+                // Each maintainer sees prior planned content, including metadata and generated
+                // source files, without leaking a stale document cache or changing the checkout.
+                var snapshot = new MaintenanceContext
+                {
+                    RepositoryRoot = evaluationContext.RepositoryRoot,
+                    FileSystem = plannedFiles,
+                    Files = files,
+                    ChangedFiles = evaluationContext.ChangedFiles,
+                    DocumentCache = new DocumentCache(plannedFiles, evaluationContext.RepositoryRoot)
+                };
+                var action = maintainer.Evaluate(config, snapshot);
+                actions.Add(action);
+                if (!action.HasChanges || action.IsBlocked) continue;
+                if (action.ExpectedContent != null) PlanWrite(action.ArtifactPath, action.ExpectedContent);
+                foreach (var edit in action.FileEdits) PlanWrite(edit.FilePath, edit.ExpectedContent);
             }
         }
 
         return new MaintenancePlan { Actions = actions };
+
+        void PlanWrite(string path, string content)
+        {
+            plannedFiles.SetContent(Path.Combine(evaluationContext.RepositoryRoot, path), content);
+            if (!files.Any(f => string.Equals(f.RelativePath, path, StringComparison.OrdinalIgnoreCase)))
+                files.Add(new DiscoveredFile(path, System.Text.Encoding.UTF8.GetByteCount(content), false));
+        }
     }
 
     private static IArtifactMaintainer[] DefaultMaintainers() =>
