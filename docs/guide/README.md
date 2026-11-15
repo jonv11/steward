@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-04-19
+last_updated: 2026-11-15
 standalone: true
 ---
 
@@ -21,6 +21,8 @@ User documentation for the Steward CLI — a configurable repository stewardship
 | Document | What it covers |
 |----------|---------------|
 | [Configuration Reference](configuration-reference.md) | All config fields, valid values, defaults, and interactions for config.yaml, policy.yaml, and path-policy.yaml |
+
+- [Bounded document contracts](document-contracts.md): size, identity, relationship and frozen-source checks.
 
 ## Integration
 

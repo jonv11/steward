@@ -24,6 +24,9 @@ public sealed class RepositoryPolicy
 
     [YamlMember(Alias = "baseline")]
     public BaselineConfig? Baseline { get; set; }
+
+    [YamlMember(Alias = "document_contracts")]
+    public DocumentContractsConfig? DocumentContracts { get; set; }
 }
 
 /// <summary>
@@ -74,6 +77,10 @@ public sealed class ArtifactDefinition
 
     [YamlMember(Alias = "index_of")]
     public string? IndexOf { get; set; }
+
+    /// <summary>Explicit index coverage glob for bounded topic indexes; alternative to index_of.</summary>
+    [YamlMember(Alias = "index_pattern")]
+    public string? IndexPattern { get; set; }
 
     [YamlMember(Alias = "freshness")]
     public FreshnessConfig? Freshness { get; set; }

@@ -25,7 +25,8 @@ public static class ProfileMerger
             Governance = MergeGovernance(repoPolicy.Governance, profilePolicy.Governance),
             Validation = repoPolicy.Validation ?? profilePolicy.Validation,
             Maintenance = repoPolicy.Maintenance ?? profilePolicy.Maintenance,
-            Baseline = repoPolicy.Baseline ?? profilePolicy.Baseline
+            Baseline = repoPolicy.Baseline ?? profilePolicy.Baseline,
+            DocumentContracts = repoPolicy.DocumentContracts ?? profilePolicy.DocumentContracts
         };
     }
 

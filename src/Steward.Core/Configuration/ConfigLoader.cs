@@ -147,6 +147,10 @@ public sealed class ConfigLoader
         var seenArtifactPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var artifact in policy.Artifacts ?? [])
         {
+            if (artifact.IndexPattern != null)
+                EnsureValidGlob(artifact.IndexPattern, path, "artifacts.index_pattern");
+            if (artifact.IndexPattern != null && artifact.IndexOf != null)
+                throw new StewardConfigException("Declare index_pattern or index_of, not both, for an index artifact.", path);
             if (!string.IsNullOrWhiteSpace(artifact.Path))
             {
                 var normalizedPath = artifact.Path.TrimEnd('/').Replace('\\', '/');
@@ -282,6 +286,50 @@ public sealed class ConfigLoader
         }
 
         ValidateArtifactFamilies(policy, path);
+        ValidateDocumentContracts(policy.DocumentContracts, path);
+    }
+
+    private static void ValidateDocumentContracts(DocumentContractsConfig? contracts, string path)
+    {
+        if (contracts == null) return;
+        foreach (var budget in contracts.Budgets ?? [])
+        {
+            EnsureValidGlob(budget.Pattern, path, "document_contracts.budgets.pattern");
+            int?[] limits = [budget.MaxWords, budget.MaxSectionWords, budget.MaxTableCellWords, budget.MaxIndexEntries];
+            if (limits.All(v => v == null) || limits.Any(v => v is <= 0))
+                throw new StewardConfigException("Document budgets require at least one positive limit; every supplied limit must be positive.", path);
+        }
+        foreach (var identity in contracts.Identities ?? [])
+        {
+            EnsureValidGlob(identity.Pattern, path, "document_contracts.identities.pattern");
+            if (string.IsNullOrWhiteSpace(identity.Field))
+                throw new StewardConfigException("Document identity field must not be blank.", path);
+        }
+        foreach (var relation in contracts.Relations ?? [])
+        {
+            EnsureValidGlob(relation.Pattern, path, "document_contracts.relations.pattern");
+            EnsureValidGlob(relation.TargetPattern, path, "document_contracts.relations.target_pattern");
+            if (string.IsNullOrWhiteSpace(relation.Field))
+                throw new StewardConfigException("Document relationship field must not be blank.", path);
+        }
+        var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var parts = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var source in contracts.SourceCollections ?? [])
+        {
+            EnsureValidGlob(source.PartsPattern, path, "document_contracts.source_collections.parts_pattern");
+            if (string.IsNullOrWhiteSpace(source.Id) || !ids.Add(source.Id))
+                throw new StewardConfigException("Source collection ids must be non-blank and unique.", path);
+            if (source.Sha256 == null || !Regex.IsMatch(source.Sha256, "^[a-fA-F0-9]{64}$", RegexOptions.CultureInvariant))
+                throw new StewardConfigException("Source collection sha256 must contain 64 hexadecimal characters.", path);
+            if (source.Parts is not { Count: > 0 })
+                throw new StewardConfigException("Source collection must declare an ordered, non-empty parts list.", path);
+            foreach (var part in source.Parts)
+            {
+                if (!Steward.Core.Validation.Rules.DocumentContractSupport.IsRepositoryPath(part) ||
+                    !Glob.Parse(source.PartsPattern!).IsMatch(part) || !parts.Add(part))
+                    throw new StewardConfigException("Source parts must be unique repository-relative paths matching parts_pattern.", path);
+            }
+        }
     }
 
     private static void ValidateArtifactFamilies(RepositoryPolicy policy, string path)

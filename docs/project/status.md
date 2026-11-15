@@ -2,7 +2,7 @@
 type: project
 status: Active
 summary: Current repository facts, implemented capability baseline, and known health gaps
-last_updated: 2026-11-14
+last_updated: 2026-11-15
 review_after: 2026-12-09
 ---
 
@@ -16,7 +16,7 @@ Steward's latest published version is **`v0.18.1`**, tagged and released to GitH
 |------|---------------|
 | Runtime | .NET 10 |
 | Tests | 924 passing: 613 core and 311 CLI |
-| Validation rules | 21 (`STWD-001` through `STWD-021`) |
+| Validation rules | 24 (`STWD-001` through `STWD-024`) |
 | Auto-fix rules | 4 (`STWD-003`, `STWD-007`, `STWD-012`, `STWD-018`) |
 | Built-in init profiles | `software`, `docs`, `minimal` |
 | Release posture | `v0.18.1` published; public `0.x` releases allowed; `1.0.0` requires explicit authorization under ADR-013 |
@@ -60,9 +60,15 @@ Agent guidance and issue tracking:
 - Two `--config` defects found while building that skill were recorded as tickets in `.scratch/adoption-trial-defects/` and are now fixed.
 - Issue tracking moved from `docs/project/backlog.md` to the local-markdown [issue tracker](../agents/issue-tracker.md) under `.scratch/`, using the same convention as the sibling `graphs-everywhere` and `jvcode` repositories; every backlog item became a ticket, and the old file is kept as a [snapshot](../history/plans/backlog-2026-11-09.md).
 
+## Unreleased adoption capability
+
+Owner-authorized MPES adoption adds opt-in [document contracts](../guide/document-contracts.md):
+budgets, identities/relationships, frozen source collections and bounded topic-index coverage.
+This work does not authorize a release or change the published version.
+
 ## Current Health
 
-- Build and all 924 tests pass locally (Release configuration, re-verified 2026-11-14).
+- Build and all 967 tests pass locally (Release configuration, re-verified 2026-11-15).
 - Markdown lint passes.
 - The [test quality assessment](../history/audits/unit-test-quality-audit-2026-11-14.md) strengthened redaction and Git-scoping oracles and removed silent successful Git-test exits. Remaining risks include UTC-midnight date assertions and untested search I/O-failure handling.
 - Latest inspected default-branch CI (2026-11-12, `88f36e5`) passes Linux/macOS but fails six Windows schema/completion tests at upstream commit `88f36e5`; local macOS results do not verify those Windows failures.

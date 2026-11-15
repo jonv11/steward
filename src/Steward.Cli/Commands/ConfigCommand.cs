@@ -572,6 +572,20 @@ public static class ConfigCommand
         // 13. Dead baseline entries (RFC-017): unknown rules, and drifted entries whose file is gone
         findings.AddRange(FindDeadBaselineEntries(ctx, existingPaths));
 
+        var contracts = ctx.Policy?.DocumentContracts;
+        var contractPatterns = (contracts?.Budgets ?? []).Select(b => b.Pattern!)
+            .Concat((contracts?.Identities ?? []).Select(i => i.Pattern!))
+            .Concat((contracts?.Relations ?? []).SelectMany(r => new[] { r.Pattern!, r.TargetPattern! }))
+            .Concat((contracts?.SourceCollections ?? []).Select(s => s.PartsPattern!))
+            .Concat((ctx.Policy?.Artifacts ?? []).Where(a => a.IndexPattern != null).Select(a => a.IndexPattern!));
+        foreach (var pattern in contractPatterns.Distinct(StringComparer.Ordinal))
+        {
+            if (!existingPaths.Any(DotNet.Globbing.Glob.Parse(pattern).IsMatch))
+                findings.Add(new DoctorFinding("dead-document-contract",
+                    $"Document contract pattern '{pattern}' matches no discovered files.",
+                    "Correct the pattern or remove an unused contract."));
+        }
+
         return findings;
     }
 

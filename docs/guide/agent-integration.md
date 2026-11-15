@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-11-12
+last_updated: 2026-11-15
 ---
 
 # Using Steward with AI Agents
@@ -205,7 +205,7 @@ Heading matching is exact — there is no fuzzy or partial mode. When a heading'
 ## Limitations agents should know
 
 - **`search --role` only matches explicit artifact declarations**, not family-classified files. To find all files in a family, use glob patterns or `steward orient --full --output json`.
-- **4 of 21 rules support auto-fix.** Most violations require the agent to make manual edits.
+- **4 of 24 rules support auto-fix.** Most violations require the agent to make manual edits.
 - **Text-mode output** includes remediation guidance but not structured next-step hints. Use `--output json` for richer machine-readable diagnostics.
 - **No network calls.** Steward cannot fetch remote content or interact with hosting platforms.
 
