@@ -2,12 +2,17 @@
 
 Status: active
 
-## Scope
+## Problem statement
 
 Owner-authorized adoption work for MPES needs declarative content budgets, bounded index pages,
 unique document identities, validated metadata relationships and lossless source collections.
 Keep existing policies unchanged unless they opt in. Add registered validation rules with
 explainable diagnostics, scoped-check behavior, configuration validation and real CLI tests.
+
+## Solution
+
+Three opt-in rules extend the existing validation registry; explicit index globs extend STWD-011.
+All contracts are absent by default and preserve existing policies.
 
 ## Acceptance criteria
 

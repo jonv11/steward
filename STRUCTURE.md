@@ -37,6 +37,7 @@
 │   │   ├── agent-integration.md
 │   │   ├── configuration-reference.md
 │   │   ├── contributor-guide.md
+│   │   ├── document-contracts.md
 │   │   ├── maintainer-guide.md
 │   │   └── README.md
 │   ├── history/
@@ -112,6 +113,7 @@
     │   ├── ConfigCommandTests.cs
     │   ├── ConfigPathResolutionTests.cs
     │   ├── ConfigSettingsTests.cs
+    │   ├── DocumentContractCommandTests.cs
     │   ├── ExitCodeTests.cs
     │   ├── ExplainCommandTests.cs
     │   ├── ExplainRemediationConsistencyTests.cs
@@ -152,6 +154,7 @@
     │   ├── DiagnosticIdentityTests.cs
     │   ├── DiagnosticTests.cs
     │   ├── DirectoryIndexMaintainerTests.cs
+    │   ├── DocumentContractTests.cs
     │   ├── ExitCodeConstantsTests.cs
     │   ├── FamilyAllowedAndDeprecatedFieldTests.cs
     │   ├── FamilyMinCountRuleTests.cs

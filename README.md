@@ -35,7 +35,7 @@ steward check                        # validate against policy
 ## Features
 
 - **Repository orientation** — auto-classify and outline repository structure
-- **Policy-driven validation** — enforce required artifacts, frontmatter fields, section sizes, naming conventions, and path policies via 21 rules
+- **Policy-driven validation** — enforce required artifacts, frontmatter fields, section sizes, naming conventions, and path policies via 24 rules
 - **Artifact families** — group recurring document types (ADRs, RFCs, etc.) with convention-based discovery and type-aware validation
 - **Markdown structural editing** — query, edit, and manage Markdown documents with section and frontmatter operations
 - **Deterministic maintenance** — auto-generate structure documents, indexes, and managed sections
@@ -173,8 +173,13 @@ The scripts ask `steward` itself through System.CommandLine's `[suggest]` direct
 | STWD-019 | warning | Artifact-family H1 titles should match the declared title pattern |
 | STWD-020 | warning | Artifact-family H2 headings should match the declared section pattern |
 | STWD-021 | warning | Artifact-family H2 sections should satisfy the declared document schema |
+| STWD-022 | error | Documents, sections, cells and indexes must fit declared budgets |
+| STWD-023 | error | Metadata identities must be unique and relationships resolve |
+| STWD-024 | error | Source collections must reconstruct their recorded SHA-256 |
 
 Use `steward explain <rule-id>` for detailed guidance on any rule. Severities can be overridden via `validation.severity_overrides` in policy.yaml. Rules can be suppressed globally or per-path.
+
+- Opt-in [bounded document contracts](docs/guide/document-contracts.md) enforce content budgets, metadata identities and relationships, and frozen source collections (STWD-022–024).
 
 ## Configuration
 
@@ -202,9 +207,9 @@ For complete field documentation, valid values, defaults, and configuration exam
 
 Steward's latest published release is `v0.18.1` on a pre-`1.0.0` release line. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
-**What works today:** All 21 validation rules, all commands listed above, three built-in profiles (`software`, `docs`, `minimal`), artifact family classification, deterministic maintenance, Markdown structural editing, JSON and SARIF output, and scoped validation.
+**What works today:** All 24 validation rules, all commands listed above, three built-in profiles (`software`, `docs`, `minimal`), artifact family classification, deterministic maintenance, Markdown structural editing, JSON and SARIF output, and scoped validation.
 
-**Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 4 of 21 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
+**Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 4 of 24 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
 
 **Current release state:** `v0.18.1` is published to nuget.org and GitHub Releases. Stable `v1.0.0` remains unauthorized. See [project status](docs/project/status.md) and the [roadmap](docs/project/roadmap.md).
 

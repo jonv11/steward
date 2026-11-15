@@ -30,6 +30,9 @@ public static class RuleRegistry
         new FamilySectionPatternRule(),
         new UniqueHeadingTextRule(),
         new BrokenFragmentAnchorRule(),
-        new FamilySectionSchemaRule()
+        new FamilySectionSchemaRule(),
+        new DocumentBudgetRule(),
+        new DocumentIdentityRule(),
+        new SourceCollectionRule()
     ];
 }

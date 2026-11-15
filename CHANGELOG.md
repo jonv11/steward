@@ -8,6 +8,8 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ### Added
 
+- Opt-in bounded document contracts: STWD-022 content and index budgets, STWD-023 unique identities and metadata relationships, and STWD-024 ordered source collection SHA-256 verification. Artifact `index_pattern` supports bounded topic-index coverage.
+
 - `steward completions <bash|zsh|pwsh>` prints a shell completion script. The scripts call back into System.CommandLine's `[suggest]` directive, so commands, subcommands, options and option values such as `--scope` complete from the parser and never drift from the CLI. `--output json` wraps the script in the envelope.
 - `steward schema [command]` lists the JSON Schemas (draft 2020-12) that describe `--output json`, or prints one: `check`, `version`, `schema`, and `common` for the shared envelope, the `data.error` shape and the diagnostic shape. The schemas are embedded in the tool, and tests validate real `check` output (failing, passing, with baseline drift, and a configuration error) against them.
 - `steward baseline generate` snapshots every current `check` diagnostic into `baseline.json` in the configuration directory (RFC-017). Entries are keyed by rule, path and a line-independent selector, sorted, and left untouched when nothing changed.

@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-11-09
+last_updated: 2026-11-15
 ---
 
 # Configuration Reference
@@ -127,7 +127,8 @@ artifacts:
 | `description` | string | _(none)_ | Human-readable description shown in orient/status |
 | `required` | bool | `false` | Shorthand for `importance: required` — file must exist (STWD-001) |
 | `importance` | string | _(resolved)_ | `required`, `recommended`, or `optional` |
-| `index_of` | string | _(none)_ | Directory this artifact indexes (enables STWD-011) |
+| `index_of` | string | _(none)_ | Directory this artifact indexes recursively (enables STWD-011) |
+| `index_pattern` | string | _(none)_ | Explicit coverage glob for a bounded topic index; alternative to `index_of` |
 | `freshness.max_age_days` | int | _(none)_ | Days before the file is considered stale (enables STWD-012) |
 
 #### Importance resolution
@@ -442,6 +443,12 @@ The markers are **asymmetric**:
 
 Do not put an `id` on the end marker. STWD-005 accepts `<!-- steward:end id="..." -->` as a valid closing marker, but the maintainer looks for the bare form, does not find it, and writes nothing. No diagnostic explains why. If a region silently stays stale, check its end marker first.
 
+### document_contracts section
+
+Opt-in document, section, table-cell and index budgets (STWD-022), unique metadata identities
+and relationships (STWD-023), and lossless source collections (STWD-024). See the complete
+[document contracts reference](document-contracts.md) for fields, counting and scoped-check behavior.
+
 ### baseline section
 
 A baseline ([RFC-017](../decisions/rfcs/RFC-017-rule-phase-in-and-baseline.md)) lets a rule apply to new content only. `steward baseline generate` snapshots every current diagnostic into a generated JSON file; `steward check` then leaves those violations out of its counts and pass/fail, reports them as baseline debt, and reports **drift** when a grandfathered violation is fixed. Everything not in the file is enforced at full severity.
@@ -606,6 +613,10 @@ Run `config validate` after every policy change. Run `config doctor` periodicall
 | STWD-019 | warning | family-title-pattern | Artifact-family H1 titles should match the declared title pattern | No |
 | STWD-020 | warning | family-section-pattern | Artifact-family H2 headings should match the declared section pattern | No |
 | STWD-021 | warning | family-section-schema | Artifact-family H2 sections should satisfy the declared document schema | No |
+
+| STWD-022 | error | document-budget | Documents and indexes must fit declared budgets | No |
+| STWD-023 | error | document-identity | Identities are unique and metadata relationships resolve | No |
+| STWD-024 | error | source-collection | Ordered source bodies reconstruct the recorded SHA-256 | No |
 
 Four rules support auto-fix via `steward check --fix --apply`:
 

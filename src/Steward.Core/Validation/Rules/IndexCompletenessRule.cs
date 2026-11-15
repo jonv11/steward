@@ -1,3 +1,4 @@
+using DotNet.Globbing;
 using Steward.Core;
 using Steward.Core.Abstractions;
 
@@ -22,7 +23,7 @@ public sealed class IndexCompletenessRule : IValidationRule
             return Task.FromResult<IReadOnlyList<Diagnostic>>(diagnostics);
 
         var indexArtifacts = context.Policy.Artifacts
-            .Where(a => !string.IsNullOrWhiteSpace(a.IndexOf) && !string.IsNullOrWhiteSpace(a.Path))
+            .Where(a => (!string.IsNullOrWhiteSpace(a.IndexOf) || !string.IsNullOrWhiteSpace(a.IndexPattern)) && !string.IsNullOrWhiteSpace(a.Path))
             .ToList();
 
         if (indexArtifacts.Count == 0)
@@ -31,7 +32,8 @@ public sealed class IndexCompletenessRule : IValidationRule
         foreach (var artifact in indexArtifacts)
         {
             var indexPath = PathHelper.NormalizeSeparators(artifact.Path!);
-            var sourceDir = PathHelper.NormalizeAndTrim(artifact.IndexOf!) + "/";
+            var sourceDir = PathHelper.NormalizeAndTrim(artifact.IndexOf ?? "") + "/";
+            var sourceGlob = artifact.IndexPattern == null ? null : Glob.Parse(artifact.IndexPattern);
 
             var fullIndexPath = Path.Combine(context.RepositoryRoot, indexPath);
             if (!context.FileSystem.FileExists(fullIndexPath))
@@ -52,7 +54,8 @@ public sealed class IndexCompletenessRule : IValidationRule
             // miss files outside the scope when checking index completeness.
             var allFiles = context.AllDiscoveredFiles ?? context.TargetFiles;
             var filesInScope = allFiles
-                .Where(f => PathHelper.NormalizeSeparators(f.RelativePath).StartsWith(sourceDir, StringComparison.OrdinalIgnoreCase))
+                .Where(f => sourceGlob?.IsMatch(PathHelper.NormalizeSeparators(f.RelativePath)) ??
+                    PathHelper.NormalizeSeparators(f.RelativePath).StartsWith(sourceDir, StringComparison.OrdinalIgnoreCase))
                 .Where(f => f.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
                 .Where(f => !PathHelper.NormalizeSeparators(f.RelativePath).Equals(indexPath, StringComparison.OrdinalIgnoreCase))
                 .ToList();

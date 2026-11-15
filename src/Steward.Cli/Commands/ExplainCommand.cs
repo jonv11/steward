@@ -180,6 +180,9 @@ public static class ExplainCommand
             "STWD-019" => "Update the H1 heading to match the title_pattern regex declared for its artifact family. Pattern matching is case-sensitive. If a regex is invalid, fix it in policy.yaml — invalid patterns produce a warning diagnostic.",
             "STWD-020" => "Update the H2 heading to match the section_pattern regex declared for its artifact family. Pattern matching is case-sensitive. If a regex is invalid, fix it in policy.yaml — invalid patterns produce a warning diagnostic.",
             "STWD-021" => "Add any missing required H2 sections to the document, remove or rename unlisted sections (if allow_extra: false), or reorder sections to match the sequence in section_schema. The schema is declared in policy.yaml under the artifact family.",
+            "STWD-022" => "Remove duplication or split by question or task, linking to focused documents. Budgets count source words including code and tables; index entries count non-image Markdown links.",
+            "STWD-023" => "Keep one document per declared identity. Metadata relationships use repository-relative discovered file paths matching the declared target pattern.",
+            "STWD-024" => "Restore the exact source bodies and ordered parts recorded in document_contracts.source_collections. Front matter is excluded from the reconstructed UTF-8 SHA-256.",
             _ => "No specific remediation guidance available."
         };
     }
@@ -268,6 +271,8 @@ public static class ExplainCommand
                     formatter.WriteMessage($"  Required: {info.Artifact.Required}");
                     if (info.Artifact.IndexOf != null)
                         formatter.WriteMessage($"  Index of: {info.Artifact.IndexOf}");
+                    if (info.Artifact.IndexPattern != null)
+                        formatter.WriteMessage($"  Index pattern: {info.Artifact.IndexPattern}");
                 }
 
                 if (info.SuppressedRules.Count > 0)
@@ -337,7 +342,8 @@ public static class ExplainCommand
                     Role = matched.Role,
                     Description = matched.Description,
                     Required = matched.Required,
-                    IndexOf = matched.IndexOf
+                    IndexOf = matched.IndexOf,
+                    IndexPattern = matched.IndexPattern
                 };
             }
         }
@@ -449,7 +455,7 @@ public static class ExplainCommand
         var suppressedSet = new HashSet<string>(suppressedRules, StringComparer.OrdinalIgnoreCase);
         var isMarkdown = relativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase);
         var isArtifact = artifactSummary != null;
-        var isIndex = artifactSummary?.IndexOf != null;
+        var isIndex = artifactSummary?.IndexOf != null || artifactSummary?.IndexPattern != null;
         var hasFreshness = isArtifact && ctx.Policy?.Artifacts?.FirstOrDefault(a =>
             string.Equals(a.Path != null ? PathHelper.NormalizeAndTrim(a.Path) : null, relativePath, StringComparison.OrdinalIgnoreCase))
             ?.Freshness?.MaxAgeDays > 0;
@@ -484,6 +490,13 @@ public static class ExplainCommand
                 "STWD-019" => matchedFamily != null,            // family-title-pattern: family members only
                 "STWD-020" => matchedFamily != null,            // family-section-pattern: family members only
                 "STWD-021" => matchedFamily != null,            // family-section-schema: family members only
+                "STWD-022" => isMarkdown && (ctx.Policy?.DocumentContracts?.Budgets ?? [])
+                    .Any(b => DotNet.Globbing.Glob.Parse(b.Pattern!).IsMatch(relativePath)),
+                "STWD-023" => isMarkdown && ((ctx.Policy?.DocumentContracts?.Identities ?? [])
+                    .Any(b => DotNet.Globbing.Glob.Parse(b.Pattern!).IsMatch(relativePath)) ||
+                    (ctx.Policy?.DocumentContracts?.Relations ?? []).Any(b => DotNet.Globbing.Glob.Parse(b.Pattern!).IsMatch(relativePath))),
+                "STWD-024" => isMarkdown && (ctx.Policy?.DocumentContracts?.SourceCollections ?? [])
+                    .Any(b => DotNet.Globbing.Glob.Parse(b.PartsPattern!).IsMatch(relativePath)),
                 _ => true
             })
             .Select(r => r.RuleId)
@@ -545,6 +558,7 @@ public static class ExplainCommand
         public string? Description { get; set; }
         public bool Required { get; set; }
         public string? IndexOf { get; set; }
+        public string? IndexPattern { get; set; }
     }
 
     internal sealed class GovernanceSourcesSummary
