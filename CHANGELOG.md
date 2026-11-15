@@ -24,6 +24,8 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ### Fixed
 
+- Maintenance composes generated regions and metadata edits in plan order when they share a file. Preview stays read-only, and one apply preserves every region instead of overwriting earlier updates.
+
 - A bare relative `--config` directory such as `-c .steward-draft` no longer crashes `check`, `config doctor` and the other discovery commands with an unhandled `ArgumentException`. Every command now resolves `--config` against the current directory before deriving the repository root.
 - Configuration discovery stops at a `.git` file as well as a `.git` directory, so `steward` run inside a linked worktree or submodule no longer climbs into the enclosing repository and adopts its `.steward/`.
 - `steward init -c <dir>` now writes its scaffold into `<dir>` instead of always writing `.steward/`, so a draft configuration can be scaffolded beside an existing one. `init` without `--config` is unchanged.

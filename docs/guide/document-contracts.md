@@ -104,6 +104,10 @@ maintenance `source` using the same glob, STWD-007 as error, and an index-entry 
 files then require regenerated indexes, while new branches of documentation must remain reachable
 through the navigation checks.
 
+Several maintained regions may share an index page. Maintenance evaluates them in order against
+previous planned content, including metadata updates, and applies that same order. One apply
+updates all regions; preview does not modify the checkout.
+
 ## Adoption and diagnosis
 
 Run `config validate`, `config doctor` and `check` after declaring contracts. Doctor identifies
