@@ -6,7 +6,9 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ## [Unreleased]
 
-### Added
+## [0.19.0] - 2026-11-17
+
+### Added In 0.19.0
 
 - Artifact-family `frontmatter_schema.allowed_values_mode: replace` enforces a strict family vocabulary while the default `union` preserves scoped exceptions. Validation and `explain path` share the effective-value calculation.
 
@@ -20,11 +22,11 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 - `steward baseline status` reports baseline debt: entry counts by rule, the baseline's age, and how many entries still match or have drifted. It exits `0` and says so when no baseline is active.
 - `config validate` fails when `baseline.enabled: true` and the baseline file is missing, or when an applied baseline is malformed. `config doctor` reports `dead-baseline-entry` findings for entries naming an unknown rule, and for entries whose file no longer exists and that no current diagnostic matches.
 
-### Changed
+### Changed In 0.19.0
 
 - The portable agent skills are one `steward-cli` skill instead of four (`steward-cli`, `steward-cli-maintainer`, `steward-cli-contributor`, `steward-cli-agent`). It covers install, the validation loop, JSON/SARIF automation, structural Markdown editing and the guardrails, and routes to the guides for depth instead of copying them. Repositories that copied the persona skills should replace them with `steward-cli`. `setup-steward` and `steward-self-cli` are unchanged apart from their links.
 
-### Fixed
+### Fixed In 0.19.0
 
 - `config doctor` accepts a family vocabulary that narrows the general frontmatter vocabulary, while still reporting family values outside it.
 

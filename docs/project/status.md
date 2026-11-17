@@ -2,7 +2,7 @@
 type: project
 status: Active
 summary: Current repository facts, implemented capability baseline, and known health gaps
-last_updated: 2026-11-15
+last_updated: 2026-11-17
 review_after: 2026-12-09
 ---
 
@@ -10,16 +10,16 @@ review_after: 2026-12-09
 
 ## Current Baseline
 
-Steward's latest published version is **`v0.18.1`**, tagged and released to GitHub Releases and nuget.org. It was the first release published through nuget.org trusted publishing.
+Steward's latest published version is **`v0.18.1`**, tagged and released to GitHub Releases and nuget.org. It was the first release published through nuget.org trusted publishing. **`v0.19.0`** is prepared and pending release; it is not published until its GitHub Release and nuget.org package are verified.
 
 | Area | Current truth |
 |------|---------------|
 | Runtime | .NET 10 |
-| Tests | 924 passing: 613 core and 311 CLI |
+| Tests | 979 passing: 645 core and 334 CLI |
 | Validation rules | 24 (`STWD-001` through `STWD-024`) |
 | Auto-fix rules | 4 (`STWD-003`, `STWD-007`, `STWD-012`, `STWD-018`) |
 | Built-in init profiles | `software`, `docs`, `minimal` |
-| Release posture | `v0.18.1` published; public `0.x` releases allowed; `1.0.0` requires explicit authorization under ADR-013 |
+| Release posture | `v0.18.1` published; `v0.19.0` pending release; public `0.x` releases allowed; `1.0.0` requires explicit authorization under ADR-013 |
 | Generated repo artifacts | `STRUCTURE.md` and `docs/decisions/README.md` |
 
 ## Delivered In v0.18.0
@@ -46,12 +46,12 @@ The project was also relicensed under Apache-2.0, and routine dependency bumps h
 
 Release publication moved to nuget.org trusted publishing: the release workflow exchanges a GitHub OIDC token for a one-hour API key instead of reading a stored `NUGET_ORG_API_KEY` secret.
 
-## Since v0.18.1
+## Delivered In v0.19.0 (pending release)
 
-Unreleased work is recorded under `[Unreleased]` in the [CHANGELOG](../../CHANGELOG.md):
+The release notes are the `[0.19.0]` section of the [CHANGELOG](../../CHANGELOG.md):
 
 - A bare relative `--config` directory no longer crashes discovery, and `init` honours `--config`.
-- Rule phase-in through a baseline (RFC-017): `steward baseline generate` and `baseline status`, `check` suppressing grandfathered violations and reporting drift, and baseline checks in `config validate` and `config doctor`. Only the opt-in `--fail-on-baseline-growth` gate is outstanding.
+- Rule phase-in through a baseline (RFC-017): `steward baseline generate` and `baseline status`, `check` suppressing grandfathered violations and reporting drift, and baseline checks in `config validate` and `config doctor`. The opt-in `--fail-on-baseline-growth` gate is deferred past this release.
 
 Agent guidance and issue tracking:
 
@@ -60,11 +60,11 @@ Agent guidance and issue tracking:
 - Two `--config` defects found while building that skill were recorded as tickets in `.scratch/adoption-trial-defects/` and are now fixed.
 - Issue tracking moved from `docs/project/backlog.md` to the local-markdown [issue tracker](../agents/issue-tracker.md) under `.scratch/`, using the same convention as the sibling `graphs-everywhere` and `jvcode` repositories; every backlog item became a ticket, and the old file is kept as a [snapshot](../history/plans/backlog-2026-11-09.md).
 
-## Unreleased adoption capability
+### Document contracts
 
 Owner-authorized MPES adoption adds opt-in [document contracts](../guide/document-contracts.md):
 budgets, identities/relationships, frozen source collections and bounded topic-index coverage.
-This work does not authorize a release or change the published version.
+Strict family vocabularies and plan-ordered shared-file maintenance ship with them.
 
 ## Current Health
 
@@ -74,7 +74,7 @@ This work does not authorize a release or change the published version.
 - Latest inspected default-branch CI (2026-11-12, `88f36e5`) passes Linux/macOS but fails six Windows schema/completion tests at upstream commit `88f36e5`; local macOS results do not verify those Windows failures.
 - Hosted build, release, and NuGet publication evidence is established through `v0.18.1`.
 - The repository remains pre-1.0; no stable-release authorization has been accepted.
-- The current milestone, rule phase-in and baseline, is implemented apart from the baseline-growth gate — see the [roadmap](roadmap.md).
+- The current milestone, rule phase-in and baseline, ships in `v0.19.0`; the baseline-growth gate is deferred — see the [roadmap](roadmap.md).
 
 ## Known Gaps
 
