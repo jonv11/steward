@@ -23,6 +23,6 @@ a build from any commit reports the last release's version. mpes ran Steward bui
 
 ## Answer
 
-Done in 740a92b. An AssemblyMetadata StewardReleaseBuild item carries -p:StewardReleaseBuild=true, which Build-ReleaseAssets.ps1 now passes to pack and publish. Any other build prints 'steward X+<short sha> (source build, not a release)', taking the commit the SDK appends to the informational version. JSON keeps version as x.y.z, so existing parsers such as mpes's still work, and adds commit and releaseBuild (schema updated). Checked a release-flagged build prints 'steward 0.19.0'; VersionCommandTests covers both forms.
+Done in 740a92b. An AssemblyMetadata StewardReleaseBuild item carries -p:StewardReleaseBuild=true, which Build-ReleaseAssets.ps1 now passes to pack and publish. Any other build prints 'steward X+SHA (the short commit) (source build, not a release)', taking the commit the SDK appends to the informational version. JSON keeps version as x.y.z, so existing parsers such as mpes's still work, and adds commit and releaseBuild (schema updated). Checked a release-flagged build prints 'steward 0.19.0'; VersionCommandTests covers both forms.
 
 ## Comments
