@@ -53,6 +53,6 @@ public class CompletionsCommandTests
         var (exitCode, output, _) = CliTestHelper.InvokeCapture($"[suggest:{line.Length}]", line);
 
         exitCode.Should().Be(0);
-        output.Split('\n', StringSplitOptions.RemoveEmptyEntries).Should().Contain(expected);
+        output.ReplaceLineEndings("\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Should().Contain(expected);
     }
 }

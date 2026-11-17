@@ -46,7 +46,7 @@ public class SchemaCommandTests : IDisposable
         var (exitCode, output, _) = CliTestHelper.InvokeCapture("schema");
 
         exitCode.Should().Be(0);
-        output.Should().Be(string.Join("", SchemaCommand.Schemas.Select(s => $"{s.Command}\t{s.File}\n")));
+        output.ReplaceLineEndings("\n").Should().Be(string.Join("", SchemaCommand.Schemas.Select(s => $"{s.Command}\t{s.File}\n")));
     }
 
     [Fact]
