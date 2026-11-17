@@ -1,6 +1,6 @@
 # 12 — A source build reports the last release's version
 
-Status: claimed
+Status: done
 Type: bug
 Category: bug
 Blocked by: None — can start immediately
@@ -17,8 +17,12 @@ a build from any commit reports the last release's version. mpes ran Steward bui
 
 ## Acceptance criteria
 
-- [ ] `steward version` text names the commit for a build that is not a release, e.g. `steward 0.19.0+b90bcaa (source build)`
-- [ ] JSON keeps `version` as `x.y.z` and adds `commit` and `releaseBuild`
-- [ ] The release script marks its builds, which print the plain version
+- [x] `steward version` text names the commit for a build that is not a release, e.g. `steward 0.19.0+b90bcaa (source build)`
+- [x] JSON keeps `version` as `x.y.z` and adds `commit` and `releaseBuild`
+- [x] The release script marks its builds, which print the plain version
+
+## Answer
+
+Done in 740a92b. An AssemblyMetadata StewardReleaseBuild item carries -p:StewardReleaseBuild=true, which Build-ReleaseAssets.ps1 now passes to pack and publish. Any other build prints 'steward X+<short sha> (source build, not a release)', taking the commit the SDK appends to the informational version. JSON keeps version as x.y.z, so existing parsers such as mpes's still work, and adds commit and releaseBuild (schema updated). Checked a release-flagged build prints 'steward 0.19.0'; VersionCommandTests covers both forms.
 
 ## Comments
