@@ -30,8 +30,8 @@ one date for "today", the same in the working tree and the snapshot. Either use 
 
 ## Acceptance criteria
 
-- [ ] `local-change-date` writes the local date, as its name says
+- [ ] One date for today: keep UTC, which RFC-006 chose, and document it where `auto_fields` is configured
 - [ ] A working-tree check treats untracked files as changed, so it expects the date a snapshot of the staged file will expect
-- [ ] Tests pin both, independent of the machine's time zone
+- [ ] A test pins that an untracked page counts as changed
 
 ## Comments

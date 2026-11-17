@@ -108,6 +108,42 @@ public class SinceScopeResolverTests
     }
 
 
+    [Fact]
+    public void ChangedFiles_IncludeUntrackedButNotIgnoredFiles()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "steward-changed-untracked-" + Guid.NewGuid().ToString("N")[..8]);
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            RunGit(tempDir, "init");
+            RunGit(tempDir, "config user.email test@test.com");
+            RunGit(tempDir, "config user.name Test");
+            File.WriteAllText(Path.Combine(tempDir, ".gitignore"), "ignored.md\n");
+            File.WriteAllText(Path.Combine(tempDir, "README.md"), "# Hello");
+            RunGit(tempDir, "add .gitignore README.md");
+            RunGit(tempDir, "commit -m initial");
+            Directory.CreateDirectory(Path.Combine(tempDir, "docs"));
+            File.WriteAllText(Path.Combine(tempDir, "docs", "new.md"), "# New");
+            File.WriteAllText(Path.Combine(tempDir, "ignored.md"), "# Ignored");
+            File.WriteAllText(Path.Combine(tempDir, "README.md"), "# Changed");
+
+            var changed = GitDiffHelper.GetChangedFiles(tempDir);
+
+            changed.Should().BeEquivalentTo("README.md", "docs/new.md");
+            new ChangedScopeResolver().Resolve(AllFiles, tempDir).Select(f => f.RelativePath)
+                .Should().BeEquivalentTo("README.md");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                foreach (var file in Directory.EnumerateFiles(tempDir, "*", SearchOption.AllDirectories))
+                    File.SetAttributes(file, FileAttributes.Normal);
+                Directory.Delete(tempDir, true);
+            }
+        }
+    }
+
     private static void RunGit(string workingDir, string args)
     {
         _ = GetGitOutput(workingDir, args);

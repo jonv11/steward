@@ -28,6 +28,7 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ### Fixed In 0.19.0
 
+- Untracked, non-ignored files count as locally changed, for `today-if-local-change` dates and `check --changed`. A new page previously kept its hand-written date in the working tree and then failed STWD-007 once staged and checked from a snapshot. The date stays UTC, as RFC-006 specifies; the configuration reference now says so (adoption-trial-defects/13).
 - `steward version` names the commit of a source build (`steward 0.19.0+b90bcaa (source build, not a release)`; JSON adds `commit` and `releaseBuild` and keeps `version` as `x.y.z`), so a build from `dev` is no longer mistaken for the release it shares a number with. The release script marks its builds with `-p:StewardReleaseBuild=true` (adoption-trial-defects/12).
 - `config doctor` accepts a family vocabulary that narrows the general frontmatter vocabulary, while still reporting family values outside it.
 

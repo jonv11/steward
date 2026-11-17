@@ -6,11 +6,21 @@ namespace Steward.Core.Validation;
 internal static class GitDiffHelper
 {
     /// <summary>
-    /// Returns files changed relative to HEAD (unstaged + staged), or null if git is unavailable.
+    /// Returns files changed relative to HEAD (unstaged + staged) plus untracked files that are not
+    /// ignored, or null if git is unavailable. Untracked files count because staging one makes it a
+    /// change, so a working-tree run must agree with a check of the staged snapshot
+    /// (adoption-trial-defects/13).
     /// </summary>
     public static IReadOnlyList<string>? GetChangedFiles(string repositoryRoot)
     {
-        return RunGitDiff(repositoryRoot, "diff --name-only HEAD");
+        var changed = RunGitDiff(repositoryRoot, "diff --name-only HEAD");
+        if (changed == null)
+            return null;
+
+        var untracked = RunGitDiff(repositoryRoot, "ls-files --others --exclude-standard");
+        return untracked == null
+            ? changed
+            : changed.Concat(untracked).Distinct(StringComparer.Ordinal).ToList();
     }
 
     /// <summary>

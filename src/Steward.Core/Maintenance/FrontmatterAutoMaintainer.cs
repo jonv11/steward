@@ -115,6 +115,7 @@ public sealed class FrontmatterAutoMaintainer : IArtifactMaintainer
             if (context.ChangedFiles?.Contains(relativePath) != true)
                 return null;
 
+            // UTC on purpose (RFC-006), matching the freshness rules, so every machine agrees on "today".
             return DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
 

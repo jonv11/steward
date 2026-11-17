@@ -15,7 +15,7 @@ Steward's latest published version is **`v0.18.1`**, tagged and released to GitH
 | Area | Current truth |
 |------|---------------|
 | Runtime | .NET 10 |
-| Tests | 979 passing: 645 core and 334 CLI |
+| Tests | 984 passing: 646 core and 338 CLI |
 | Validation rules | 24 (`STWD-001` through `STWD-024`) |
 | Auto-fix rules | 4 (`STWD-003`, `STWD-007`, `STWD-012`, `STWD-018`) |
 | Built-in init profiles | `software`, `docs`, `minimal` |
@@ -68,7 +68,7 @@ Strict family vocabularies and plan-ordered shared-file maintenance ship with th
 
 ## Current Health
 
-- Build and all 979 tests pass locally (Release configuration, re-verified 2026-11-15).
+- Build and all 984 tests pass locally (Release configuration, re-verified 2026-11-17).
 - Markdown lint passes.
 - The [test quality assessment](../history/audits/unit-test-quality-audit-2026-11-14.md) strengthened redaction and Git-scoping oracles and removed silent successful Git-test exits. Remaining risks include UTC-midnight date assertions and untested search I/O-failure handling.
 - Latest inspected default-branch CI (2026-11-12, `88f36e5`) passes Linux/macOS but fails six Windows schema/completion tests at upstream commit `88f36e5`; local macOS results do not verify those Windows failures.

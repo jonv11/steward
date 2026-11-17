@@ -1,7 +1,7 @@
 ---
 type: guide
 status: Active
-last_updated: 2026-11-15
+last_updated: 2026-11-17
 ---
 
 # Configuration Reference
@@ -290,7 +290,7 @@ governance:
 
 #### Auto-fields behavior
 
-When `governance.frontmatter.auto_fields.<field>: true` is set, Steward updates that frontmatter field to today's date (`yyyy-MM-dd`) on files that have local git changes. It only updates fields that already exist in the file's frontmatter — it does not add new fields.
+When `governance.frontmatter.auto_fields.<field>: true` is set, Steward updates that frontmatter field to today's UTC date (`yyyy-MM-dd`, per RFC-006, whatever the local time zone) on files that have local git changes: modified or staged relative to `HEAD`, or untracked and not ignored. A new page therefore gets the same date before and after it is staged. It only updates fields that already exist in the file's frontmatter — it does not add new fields.
 
 This is implemented as an automatic maintenance task. Run `steward maintain --apply` to apply the updates.
 
