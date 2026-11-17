@@ -1,6 +1,6 @@
 # 12 — A source build reports the last release's version
 
-Status: ready-for-agent
+Status: claimed
 Type: bug
 Category: bug
 Blocked by: None — can start immediately
