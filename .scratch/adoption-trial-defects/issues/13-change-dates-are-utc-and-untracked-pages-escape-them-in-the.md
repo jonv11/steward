@@ -1,6 +1,6 @@
 # 13 — Change dates are UTC and untracked pages escape them
 
-Status: claimed
+Status: done
 Type: bug
 Category: bug
 Blocked by: None — can start immediately
@@ -30,8 +30,12 @@ one date for "today", the same in the working tree and the snapshot. Either use 
 
 ## Acceptance criteria
 
-- [ ] One date for today: keep UTC, which RFC-006 chose, and document it where `auto_fields` is configured
-- [ ] A working-tree check treats untracked files as changed, so it expects the date a snapshot of the staged file will expect
-- [ ] A test pins that an untracked page counts as changed
+- [x] One date for today: keep UTC, which RFC-006 chose, and document it where `auto_fields` is configured
+- [x] A working-tree check treats untracked files as changed, so it expects the date a snapshot of the staged file will expect
+- [x] A test pins that an untracked page counts as changed
+
+## Answer
+
+Done in e397ed8. The inconsistency came from untracked files, not from UTC. GitDiffHelper.GetChangedFiles adds 'git ls-files --others --exclude-standard' to 'git diff --name-only HEAD', so today-if-local-change and check --changed treat a new page the same before and after staging. UTC stays, as RFC-006 specifies; the code comment and docs/guide/configuration-reference.md now say it, along with what counts as a local change. SinceScopeResolverTests.ChangedFiles_IncludeUntrackedButNotIgnoredFiles pins it.
 
 ## Comments
