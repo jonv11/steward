@@ -1,6 +1,6 @@
-# 13 — Change dates are UTC, and untracked pages escape them in the working tree
+# 13 — Change dates are UTC and untracked pages escape them
 
-Status: ready-for-agent
+Status: claimed
 Type: bug
 Category: bug
 Blocked by: None — can start immediately
