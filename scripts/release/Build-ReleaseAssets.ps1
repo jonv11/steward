@@ -29,7 +29,7 @@ New-Item -ItemType Directory -Path $publishRoot | Out-Null
 
 Push-Location $repoRoot
 try {
-    dotnet pack src/Steward.Cli/Steward.Cli.csproj -c $Configuration -o $versionRoot
+    dotnet pack src/Steward.Cli/Steward.Cli.csproj -c $Configuration -o $versionRoot -p:StewardReleaseBuild=true
 
     foreach ($runtimeId in $RuntimeIds) {
         $publishDir = Join-Path $publishRoot $runtimeId
@@ -43,6 +43,7 @@ try {
             --self-contained true `
             -p:PublishSingleFile=true `
             -p:PublishTrimmed=false `
+            -p:StewardReleaseBuild=true `
             -o $publishDir
 
         New-Item -ItemType Directory -Path $bundleDir | Out-Null

@@ -13,7 +13,9 @@
         "version": { "type": "string" },
         "runtimeVersion": { "type": "string" },
         "osPlatform": { "type": "string" },
-        "architecture": { "type": "string" }
+        "architecture": { "type": "string" },
+        "commit": { "type": ["string", "null"], "description": "The commit of a source build; null for a release build." },
+        "releaseBuild": { "type": "boolean", "description": "True for a build the release script produced." }
       },
       "additionalProperties": false
     }

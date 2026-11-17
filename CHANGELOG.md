@@ -28,6 +28,7 @@ The format is based on Keep a Changelog. Steward remains on a pre-1.0 SemVer lin
 
 ### Fixed In 0.19.0
 
+- `steward version` names the commit of a source build (`steward 0.19.0+b90bcaa (source build, not a release)`; JSON adds `commit` and `releaseBuild` and keeps `version` as `x.y.z`), so a build from `dev` is no longer mistaken for the release it shares a number with. The release script marks its builds with `-p:StewardReleaseBuild=true` (adoption-trial-defects/12).
 - `config doctor` accepts a family vocabulary that narrows the general frontmatter vocabulary, while still reporting family values outside it.
 
 - Maintenance composes generated regions and metadata edits in plan order when they share a file. Preview stays read-only, and one apply preserves every region instead of overwriting earlier updates.

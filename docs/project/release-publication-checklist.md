@@ -2,7 +2,7 @@
 type: project
 status: Active
 summary: Verification and publication checklist for intentional Steward releases
-last_updated: 2026-06-06
+last_updated: 2026-11-17
 ---
 
 # Release Publication Checklist
@@ -19,7 +19,7 @@ last_updated: 2026-06-06
 - [ ] The chosen bump matches ADR-013 and the highest merged release-intent label since the previous release.
 - [ ] Version string in `Directory.Build.props` (`Version`, `AssemblyVersion`, `FileVersion`) is updated to the target release version.
 - [ ] `CHANGELOG.md` contains a dated section for the target release version and `Unreleased` is adjusted accordingly.
-- [ ] `steward version` output matches the target release version.
+- [ ] `steward version` output matches the target release version and does not say `source build`.
 - [ ] `README.md`, `AGENTS.md`, `status.md`, and `roadmap.md` describe the target as pending release without claiming publication.
 - [ ] CI is green on all three platforms (Windows, Linux, macOS) from `.github/workflows/ci.yml`.
 - [ ] If this is the first use of the tag-driven GitHub Release workflow, the workflow definition has been reviewed and the label set in `.github/release-labels.json` has been synchronized into GitHub.

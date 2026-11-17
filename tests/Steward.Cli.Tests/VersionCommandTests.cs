@@ -52,4 +52,35 @@ public class VersionCommandTests
         output.Should().NotContain("\"RuntimeVersion\"");
         output.Should().NotContain("\"OsPlatform\"");
     }
+
+    [Fact]
+    public void Version_SourceBuild_SaysSoAndReportsReleaseBuildFalse()
+    {
+        var (_, text, _) = CliTestHelper.InvokeCapture("version");
+        var (_, json, _) = CliTestHelper.InvokeCapture("version", "--output", "json");
+
+        text.Should().Contain("(source build, not a release)");
+        var data = JsonDocument.Parse(json).RootElement.GetProperty("data");
+        data.GetProperty("releaseBuild").GetBoolean().Should().BeFalse();
+        data.GetProperty("version").GetString().Should().MatchRegex(@"^\d+\.\d+\.\d+$");
+    }
+
+    [Theory]
+    [InlineData(true, null, "steward 1.2.3")]
+    [InlineData(false, "abc1234", "steward 1.2.3+abc1234 (source build, not a release)")]
+    [InlineData(false, null, "steward 1.2.3 (source build, not a release)")]
+    public void Describe_NamesTheCommitOnlyForSourceBuilds(bool releaseBuild, string? commit, string expected)
+    {
+        var info = new Steward.Core.Models.VersionInfo
+        {
+            Version = "1.2.3",
+            RuntimeVersion = "r",
+            OsPlatform = "o",
+            Architecture = "a",
+            Commit = commit,
+            ReleaseBuild = releaseBuild,
+        };
+
+        Steward.Cli.Commands.VersionCommand.Describe(info).Should().Be(expected);
+    }
 }
