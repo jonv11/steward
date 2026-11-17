@@ -2,7 +2,7 @@
 
 A configurable repository stewardship CLI for humans and AI agents. Steward validates documentation structure, enforces governance policies, and keeps repository artifacts in sync — all driven by declarative YAML configuration.
 
-Latest published release: **`v0.18.1`** (pre-`1.0.0`). See [Current Status](#current-status).
+Latest published release: **`v0.18.1`** (pre-`1.0.0`); `v0.19.0` is prepared and pending release. See [Current Status](#current-status).
 
 ## Quick Start
 
@@ -205,13 +205,13 @@ For complete field documentation, valid values, defaults, and configuration exam
 
 ## Current Status
 
-Steward's latest published release is `v0.18.1` on a pre-`1.0.0` release line. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
+Steward's latest published release is `v0.18.1` on a pre-`1.0.0` release line; `v0.19.0` is prepared and pending release. `1.0.0` requires explicit authorization per [ADR-013](docs/decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md).
 
 **What works today:** All 24 validation rules, all commands listed above, three built-in profiles (`software`, `docs`, `minimal`), artifact family classification, deterministic maintenance, Markdown structural editing, JSON and SARIF output, and scoped validation.
 
 **Known limitations:** .NET 10 SDK required (not yet widely adopted). `search --role` matches explicit artifact declarations only, not family-classified files. 4 of 24 rules support auto-fix. `mixed` and `knowledge` profiles are not yet scaffolded via `init`.
 
-**Current release state:** `v0.18.1` is published to nuget.org and GitHub Releases. Stable `v1.0.0` remains unauthorized. See [project status](docs/project/status.md) and the [roadmap](docs/project/roadmap.md).
+**Current release state:** `v0.18.1` is published to nuget.org and GitHub Releases. `v0.19.0` is prepared on `dev` and not yet published. Stable `v1.0.0` remains unauthorized. See [project status](docs/project/status.md) and the [roadmap](docs/project/roadmap.md).
 
 ## Documentation
 

@@ -1,8 +1,8 @@
 ---
 type: project
 status: Active
-summary: Rule phase-in and baseline is the committed next milestone after v0.18.1
-last_updated: 2026-11-09
+summary: v0.19.0 ships rule phase-in and baseline; the baseline-growth gate is deferred
+last_updated: 2026-11-17
 review_after: 2026-12-24
 ---
 
@@ -20,6 +20,10 @@ Effort: `.scratch/rule-phase-in-baseline/spec.md`.
 Committed as the next milestone after `v0.18.1` (see [status](status.md) for the current release posture). Selected over the other candidates because it's the one item both external repositories in the 2026-08-24 adoption trial hit and both flagged as blocking, not just annoying — see the [maintainer configuration experience audit](../history/audits/maintainer-configuration-experience-audit-2026-08-24.md), which called it the "highest-impact adoption gap."
 
 The design authority is [RFC-017](../decisions/rfcs/RFC-017-rule-phase-in-and-baseline.md) (Accepted). As of 2026-11-09 the baseline is implemented on `dev` and unreleased: `baseline generate`, `baseline status`, `check` suppression and drift, and the `config validate`/`config doctor` checks. The opt-in `--fail-on-baseline-growth` gate (ticket 08) is the only open slice and needs triage on how it compares against git history. The [setup-steward](../../.agents/skills/setup-steward/SKILL.md) skill uses a baseline for rules with existing debt on releases newer than `0.18.1`.
+
+### Release v0.19.0
+
+`v0.19.0` is a minor bump under [ADR-013](../decisions/adrs/ADR-013-pre-1-0-versioning-and-release-authorization.md) because it advances roadmap scope rather than correcting `v0.18.1`. It ships this milestone's baseline and the opt-in [document contracts](../guide/document-contracts.md) (STWD-022 to STWD-024) that MPES depends on and no published release supports. The `--fail-on-baseline-growth` gate (ticket 08) is explicitly deferred past `v0.19.0`; it still needs triage.
 
 ### Explicit Deferral (carried from v0.18.0)
 
